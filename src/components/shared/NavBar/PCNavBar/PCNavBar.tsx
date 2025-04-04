@@ -123,12 +123,12 @@ const PCNavBar = () => {
                 ৳
                 {5 > 0 ? (
                   <span className="ms-1">
-                    <CountUp
+                    {/* <CountUp
                       enableScrollSpy={true}
                       duration={3}
                       start={100}
                       end={5 > 0 ? 2500 : 0}
-                    />
+                    /> */}
                   </span>
                 ) : (
                   <span className="ms-1">0</span>

@@ -16,6 +16,7 @@
     "dotenv": "^16.4.7",
     "framer-motion": "^12.6.3",
     "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.487.0",
     "mini-svg-data-uri": "^1.4.4",
     "motion": "^12.6.3",
     "next": "15.1.3",

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import Button from "@/components/ui/Button/Button";
+import Button from "@/components/ui/buttons/Button/Button";
 import { FlipWords } from "@/components/ui/flip-words";
 import { LinkPreview } from "@/components/ui/link-preview";
 import MyFormInputAceternity from "@/components/ui/MyForm/MyFormInputAceternity/MyFormInputAceternity";

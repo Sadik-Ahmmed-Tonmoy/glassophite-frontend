@@ -11,7 +11,7 @@ import MyFormCheckBox from "@/components/ui/MyForm/MyFormCheckBox/MyFormCheckBox
 import Link from "next/link";
 import { FieldValues } from "react-hook-form";
 import { BsGithub, BsGoogle } from "react-icons/bs";
-import Button from "@/components/ui/Button/Button";
+import Button from "@/components/ui/buttons/Button/Button";
 
 export function LoginWithEmail() {
   const [checked, setChecked] = React.useState(false);

@@ -10,13 +10,14 @@ export default {
     extend: {
       colors: {
         "blue-primary": "#3C55A5",
-        "green-primary": "#1BB68A",
+        "green-primary": "#007C74",
+        "green-secondary": "#00A693",
         "green-light": "#E8F8F3",
         "gray-light": "#4B5563",
       },
       container: {
         screens: {
-          DEFAULT: "1290px",
+          DEFAULT: "1440px",
         },
         center: true,
         padding: "1.2rem",
@@ -26,6 +27,6 @@ export default {
       },
     },
   },
-  
+  darkMode: "class",
   plugins: [],
 } satisfies Config;

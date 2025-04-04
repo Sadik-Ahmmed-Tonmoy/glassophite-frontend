@@ -1,6 +1,6 @@
 
 import Footer from "@/components/shared/Footer/Footer";
-import NavBar from "@/components/shared/NavBar/NavBar";
+import NavBar from "@/components/shared/Navbar/NavBar";
 
 import React, { ReactNode } from "react";
 

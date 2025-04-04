@@ -5,6 +5,7 @@ import SessionProviderForNextAuth from "@/nextAuth/SessionProviderForNextAuth";
 import ReduxStoreProvider from "@/redux/ReduxStoreProvider";
 import { Toaster } from "sonner";
 import MyContextProvider from "@/lib/MyContextProvider";
+import { NextUiProvider } from "@/lib/NextUiProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,8 +36,10 @@ export default function RootLayout({
         <MyContextProvider>
           <SessionProviderForNextAuth>
             <ReduxStoreProvider>
-              <Toaster />
-              {children}
+              <NextUiProvider>
+                <Toaster />
+                {children}
+              </NextUiProvider>
             </ReduxStoreProvider>
           </SessionProviderForNextAuth>
         </MyContextProvider>

@@ -1,0 +1,89 @@
+/* components/MobileDropDown.module.css */
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.menuItem {
+  border-bottom: 1px solid #ccc;
+  padding: 10px;
+}
+
+.menuHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.menuHeader:hover {
+  background-color: #f0f0f0;
+}
+
+.menuTitle {
+  font-size: 16px;
+  font-weight: bold;
+  text-decoration: none;
+  color: #000;
+}
+
+.subMenuContainer {
+  padding-left: 10px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.subMenuItem {
+  border-bottom: 1px solid #ccc;
+  padding: 10px 0;
+}
+
+.subMenuHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.subMenuHeader:hover {
+  background-color: #f0f0f0;
+}
+
+.subMenuTitle {
+  font-size: 14px;
+  font-weight: bold;
+  text-decoration: none;
+  color: #000;
+}
+
+.childMenuContainer {
+  margin-left: 20px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.childMenuItem {
+  display: block;
+  padding: 5px 0;
+  color: #0070f3;
+  text-decoration: none;
+}
+
+.childMenuItem:hover {
+  text-decoration: underline;
+}
+
+.menuItem.open .subMenuContainer,
+.subMenuItem.open .childMenuContainer {
+  max-height: 500px; /* Adjust this value as needed */
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

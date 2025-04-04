@@ -1,11 +1,18 @@
-import React from 'react';
+import React from "react";
+import MobileNavBar from "./MobileNavBar/MobileNavBar";
+import PCNavBar from "./PCNavBar/PCNavBar";
 
-const NavBar = () => {
-    return (
-        <div>
-            NavBar
-        </div>
-    );
+const Navbar = () => {
+  return (
+    <div>
+      <div className="hidden lg:block">
+        <PCNavBar />
+      </div>
+      <div className="block lg:hidden">
+        <MobileNavBar />
+      </div>
+    </div>
+  );
 };
 
-export default NavBar;
+export default Navbar;

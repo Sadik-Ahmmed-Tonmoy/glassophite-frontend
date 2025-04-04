@@ -23,7 +23,7 @@ export function LoginWithEmail() {
   return (
     <div
       style={{ boxShadow: "0px 0px 16px 0px rgba(228, 237, 240, 0.80)" }}
-      className="max-w-xl w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-white dark:bg-black relative z-10"
+      className="max-w-xl w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-white dark:bg-black relative z-10 my-5"
     >
       <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200 text-center">
         Welcome to Glassophite
@@ -109,7 +109,7 @@ export function LoginWithEmail() {
         </div>
       </MyFormWrapper>
 
-      <p className="mb-2 lg:mb-10 text-center text-neutral-600  dark:text-neutral-300 text-opacity-75 font-inter text-[14px] font-normal leading-normal">
+      <div className="mb-2 lg:mb-10 text-center text-neutral-600  dark:text-neutral-300 text-opacity-75 font-inter text-[14px] font-normal leading-normal">
         Don&apos; have an account?
         {/* <Link to={"/sign-up"}>
                                 {" "}
@@ -131,7 +131,7 @@ export function LoginWithEmail() {
         >
           Login
         </LinkPreview> */}
-      </p>
+      </div>
     </div>
   );
 }

@@ -28,7 +28,7 @@ function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className="w-[350px] mx-auto">
+    <div className="w-full max-w-[350px] mx-auto">
       <div className="bg-gray-100 rounded-md">
         <div className="w-full h-52 relative">
           <button

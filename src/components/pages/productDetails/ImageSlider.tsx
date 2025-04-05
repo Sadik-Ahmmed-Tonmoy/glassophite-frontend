@@ -2,21 +2,86 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
-
+import { ChevronLeft, ChevronRight, XCircle } from "lucide-react";
+import { FaSearchengin } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
+import { MyButton } from "@/components/ui/buttons/MyButton/MyButton";
 
-interface ImageSliderProps {
-  images: string[];
+interface ImageItem {
+  image: string;
+  id: number;
 }
 
-export default function ImageSlider({ images }: ImageSliderProps) {
+interface ImageSliderProps {
+  images: ImageItem[];
+  inStock: boolean;
+  selectedVariantColor?: string;
+}
+
+export default function ImageSlider({
+  images,
+  inStock,
+  selectedVariantColor,
+}: ImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [prevVariantColor, setPrevVariantColor] =
+    useState(selectedVariantColor);
   const [isHovering, setIsHovering] = useState(false);
+  const [showZoom, setShowZoom] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Reset current index when images change
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [images]);
+
+  // Track variant color changes for animation
+  useEffect(() => {
+    if (selectedVariantColor !== prevVariantColor) {
+      setPrevVariantColor(selectedVariantColor);
+    }
+  }, [selectedVariantColor, prevVariantColor]);
+
+  // Handle hover with delay
+  const handleMouseEnter = () => {
+    setIsHovering(true);
+
+    // Clear any existing timer
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+    }
+
+    // Set a new timer for showing the zoom view
+    hoverTimerRef.current = setTimeout(() => {
+      setShowZoom(true);
+    }, 300);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+    setShowZoom(false);
+
+    // Clear the timer if it exists
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+  };
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) {
+        clearTimeout(hoverTimerRef.current);
+      }
+    };
+  }, []);
 
   const goToPrevious = () => {
     const isFirstSlide = currentIndex === 0;
@@ -32,6 +97,20 @@ export default function ImageSlider({ images }: ImageSliderProps) {
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
+  };
+
+  // Handle mouse movement for zoom
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageContainerRef.current) return;
+
+    const { left, top, width, height } =
+      imageContainerRef.current.getBoundingClientRect();
+
+    // Calculate position relative to the container
+    const x = e.clientX - left;
+    const y = e.clientY - top;
+
+    setPosition({ x, y });
   };
 
   // Handle swipe gestures
@@ -55,100 +134,172 @@ export default function ImageSlider({ images }: ImageSliderProps) {
     }
   };
 
-  // Auto-play functionality
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isHovering) {
-        goToNext();
-      }
-    }, 5000);
+  const customStyle = {
+    transform: `translate(calc(65% - ${position.x}px), calc(100% - ${position.y}px)) translate(-${position.x}px, -${position.y}px) scale(1.50, 1.50)`,
+  };
 
-    return () => clearInterval(interval);
-  }, [currentIndex, isHovering]);
+  if (!images || images.length === 0) {
+    return (
+      <div className="relative h-[450px] w-full overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
+        <p className="text-gray-500">No images available</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-col items-center justify-center">
       <div
-        className="relative h-[450px] w-full overflow-hidden rounded-lg bg-gray-100"
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
+        ref={imageContainerRef}
+        className="relative  max-h-[500px] max-w-[500px] h-full w-full xl:h-[500px] xl:w-[500px] aspect-square overflow-hidden rounded-lg bg-gray-100"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onMouseMove={handleMouseMove}
       >
-        <div
-          className={`transition-all duration-500 ease-in-out ${
-            isHovering ? "scale-150" : "scale-100"
-          }`}
-        >
-          <Image
-            src={
-              images[currentIndex] || "/placeholder.svg?height=450&width=450"
-            }
-            alt={`Product image ${currentIndex + 1}`}
-            fill
-            className="object-contain"
-            priority
-          />
+        <div className="relative h-full w-full overflow-hidden rounded-lg bg-gray-100">
+          {images?.length > 0 && (
+            <div className="relative h-full w-full  ">
+              <Image
+                src={
+                  images[currentIndex]?.image ||
+                  "/placeholder.svg?height=450&width=450"
+                }
+                alt={`Product image ${currentIndex + 1}`}
+                width={800}
+                height={800}
+                priority
+                quality={80}
+                placeholder="blur"
+                blurDataURL={images[currentIndex]?.image}
+                // className={`object-center h-full w-full rounded-lg ${
+                //   selectedVariantColor === prevVariantColor
+                //     ? "z-10 transition-all duration-500"
+                //     : "transition-all delay-500"
+                // }`}
+                // style={{
+                //   clipPath:
+                //     selectedVariantColor === prevVariantColor
+                //       ? "polygon(0 0, 100% 0, 100% 100%, 0% 100%)"
+                //       : "polygon(0 100%, 100% 100%, 100% 100%, 0% 100%)",
+                // }}
+                className="object-center h-full w-full rounded-lg"
+              />
+            </div>
+          )}
         </div>
-
-        {isHovering && (
-          <div className="absolute bottom-4 right-4 bg-white/80 p-2 rounded-full">
-            <ZoomIn className="h-5 w-5 text-gray-700" />
+        {/* Hover indicator */}
+        {images?.length > 0 && isHovering && inStock && (
+          <div
+            className="hidden lg:flex absolute h-52 w-52 rounded-lg pointer-events-none items-center justify-center"
+            style={{
+              backgroundColor: "rgba(0, 0, 0, 0.2)",
+              top: Math.max(0, Math.min(position.y - 100, 350)),
+              left: Math.max(0, Math.min(position.x - 100, 350)),
+            }}
+          >
+            {/* <Search className="h-8 w-8 text-white opacity-80" /> */}
+            <FaSearchengin className="h-8 w-8 text-white opacity-80" />
           </div>
         )}
 
-        <button
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full h-10 w-10"
-          onClick={goToPrevious}
-        >
-          <ChevronLeft className="h-5 w-5" />
-          <span className="sr-only">Previous slide</span>
-        </button>
+        {/* Stock Out Overlay */}
+        {!inStock && (
+          <div className="absolute inset-0 bg-black/50 z-20 flex flex-col items-center justify-center">
+            <XCircle className="w-16 h-16 text-white mb-3" />
+            <span className="text-white font-bold text-2xl">STOCK OUT</span>
+          </div>
+        )}
 
-        <button
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full h-10 w-10"
-          onClick={goToNext}
-        >
-          <ChevronRight className="h-5 w-5" />
-          <span className="sr-only">Next slide</span>
-        </button>
+        {images.length > 1 && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-1.5 z-30">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={cn(
+                  "w-2.5 h-2.5 rounded-full transition-all",
+                  index === currentIndex ? "bg-black w-5" : "bg-gray-300"
+                )}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-1.5">
-          {images.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={cn(
-                "w-2.5 h-2.5 rounded-full transition-all",
-                index === currentIndex ? "bg-black w-5" : "bg-gray-300"
-              )}
-              aria-label={`Go to slide ${index + 1}`}
+      {/* Zoom view */}
+      {images?.length > 0 && showZoom && inStock && (
+        <div
+          className={cn(
+            "hidden lg:block h-[400px] w-[450px] overflow-hidden absolute top-0 -right-[470px] rounded-lg z-20 border border-gray-200 bg-white"
+          )}
+        >
+          <div className="h-full w-full">
+            <img
+              src={
+                images[currentIndex]?.image ||
+                "/placeholder.svg?height=450&width=450"
+              }
+              alt={`Zoomed product image ${currentIndex + 1}`}
+              style={customStyle}
+              className="rounded-lg"
             />
-          ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="mt-4 flex justify-center space-x-2 overflow-x-auto pb-2">
-        {images.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={`relative h-20 w-20 overflow-hidden rounded transition-all ${
-              index === currentIndex
-                ? "border-2 border-black"
-                : "border border-gray-200 opacity-70 hover:opacity-100"
-            }`}
+      {/* Thumbnails and navigation */}
+      {images.length > 1 && (
+        <div className="mt-4 flex justify-center items-center space-x-2 overflow-x-auto pb-2">
+          <MyButton
+            variant="outline"
+            size="icon"
+            className="bg-white/80 hover:bg-white rounded-full h-10 w-10 z-30"
+            onClick={goToPrevious}
           >
-            <Image
-              src={images[index] || "/placeholder.svg?height=80&width=80"}
-              alt={`Thumbnail ${index + 1}`}
-              fill
-              className="object-cover"
-            />
-          </button>
-        ))}
-      </div>
+            <ChevronLeft className="h-5 w-5" />
+            <span className="sr-only">Previous slide</span>
+          </MyButton>
+
+          {images.map((img, index) => (
+            <button
+              key={img.id}
+              onClick={() => goToSlide(index)}
+              className={`relative h-20 w-20 overflow-hidden rounded transition-all ${
+                index === currentIndex
+                  ? "border-2 border-black"
+                  : "border border-gray-200 opacity-70 hover:opacity-100"
+              }`}
+            >
+              <Image
+                src={img.image || "/placeholder.svg?height=80&width=80"}
+                alt={`Thumbnail ${index + 1}`}
+                fill
+                className="object-cover"
+              />
+
+              {/* Thumbnail Stock Out Indicator */}
+              {!inStock && (
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                  <XCircle className="w-6 h-6 text-white/80" />
+                </div>
+              )}
+            </button>
+          ))}
+
+          <MyButton
+            variant="outline"
+            size="icon"
+            className="bg-white/80 hover:bg-white rounded-full h-10 w-10 z-30"
+            onClick={goToNext}
+          >
+            <ChevronRight className="h-5 w-5" />
+            <span className="sr-only">Next slide</span>
+          </MyButton>
+        </div>
+      )}
     </div>
   );
 }

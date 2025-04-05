@@ -1,26 +1,33 @@
 "use client"
 
-import { useState } from "react"
-import { Badge, SeparatorHorizontal, Star } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Star, Heart } from "lucide-react"
 
-// import { Badge } from "@/components/ui/badge"
-// import { Button } from "@/components/ui/button"
-// import { Separator } from "@/components/ui/separator"
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+
+import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ImageSlider from "./ImageSlider"
-import YouMightLike from "./YouMightLike"
-import SimilarProducts from "./SimilarProducts"
+import ReviewSlider from "./ReviewSlider"
+import VariantSelector from "./VariantSelector"
+import { Badge } from "@/components/ui/Badge"
+import { MyButton } from "@/components/ui/buttons/MyButton/MyButton"
+import AddToCartButton from "@/components/ui/buttons/AddToCartButton/AddToCartButton"
+import RequestStockButton from "@/components/ui/buttons/RequestStockButton/RequestStockButton"
 
 interface Review {
   rating: number
   comment: string
 }
 
-interface Product {
-  img: string
+interface ImageItem {
+  image: string
+  id: number
+}
+
+interface Variant {
+  id: number
   title: string
-  shortDescription: string
-  longDescription: string
   color: string
   priceAfterDiscount?: number
   mainPrice?: number
@@ -28,6 +35,14 @@ interface Product {
   inStock: boolean
   quantity: number
   productCode: string
+  shortDescription: string
+  imgList: ImageItem[]
+}
+
+interface Product {
+  id: number
+  shortDescription: string
+  longDescription: string
   brand: string
   material: string
   dimensions: string
@@ -40,17 +55,29 @@ interface Product {
   targetAudience: string
   careInstructions: string
   reviews: Review[]
-  imgList: string[]
+  variants: Variant[]
 }
 
 interface ProductDetailsProps {
   product: Product
-  allProducts: Product[]
-  currentIndex: number
 }
 
-export default function ProductDetails({ product, allProducts = [], currentIndex = 0 }: ProductDetailsProps) {
+export default function ProductDetails({ product }: ProductDetailsProps) {
+  const [selectedVariantId, setSelectedVariantId] = useState<number>(product.variants[0]?.id || 0)
   const [quantity, setQuantity] = useState(1)
+  const [isWishlistActive, setIsWishlistActive] = useState(false)
+
+  // Find the selected variant
+  const selectedVariant = product.variants.find((variant) => variant.id === selectedVariantId) || product.variants[0]
+
+  // Reset quantity when variant changes
+  useEffect(() => {
+    setQuantity(1)
+  }, [selectedVariantId])
+
+  const handleVariantChange = (variantId: number) => {
+    setSelectedVariantId(variantId)
+  }
 
   const decreaseQuantity = () => {
     if (quantity > 1) {
@@ -59,31 +86,61 @@ export default function ProductDetails({ product, allProducts = [], currentIndex
   }
 
   const increaseQuantity = () => {
-    if (quantity < product.quantity || !product.inStock) {
+    if (selectedVariant && quantity < selectedVariant.quantity) {
       setQuantity(quantity + 1)
     }
   }
 
+  const toggleWishlist = () => {
+    setIsWishlistActive(!isWishlistActive)
+  }
+
   // Calculate average rating
   const avgRating =
-    product?.reviews?.length > 0
-      ? product?.reviews?.reduce((acc, review) => acc + review.rating, 0) / product?.reviews?.length
+    product.reviews.length > 0
+      ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length
       : 0
+
+  if (!product || !selectedVariant) {
+    return <div className="p-8 text-center">Product not found</div>
+  }
 
   return (
     <div className="space-y-12">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-          <ImageSlider images={product?.imgList} />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="relative lg:col-span-5">
+          <ImageSlider images={selectedVariant.imgList} inStock={selectedVariant.inStock} />
+
+          {/* Wishlist Button */}
+          <button
+            className={`absolute top-4 right-4 z-30 bg-white/80 p-2 rounded-full hover:bg-white transition-all duration-300 ${
+              isWishlistActive ? "scale-110" : "scale-100"
+            }`}
+            onClick={toggleWishlist}
+            aria-label={isWishlistActive ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <Heart className={`h-5 w-5 ${isWishlistActive ? "fill-red-500 text-red-500" : "text-gray-700"}`} />
+          </button>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-6 lg:col-span-7">
           <div>
-            <h1 className="text-3xl font-bold">{product?.title}</h1>
-            <p className="text-gray-500 mt-2">{product?.shortDescription}</p>
+            <div className="flex justify-between items-start">
+              <h1 className="text-3xl font-bold">{selectedVariant.title}</h1>
+              {!selectedVariant.inStock ? (
+                <Badge variant="destructive" className="text-sm">
+                  Out of Stock
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-sm border-green-500 text-green-600">
+                  {selectedVariant.quantity <= 5 ? `Only ${selectedVariant.quantity} left!` : "In Stock"}
+                </Badge>
+              )}
+            </div>
+            <p className="text-gray-500 mt-2">{selectedVariant.shortDescription}</p>
 
             <div className="flex items-center mt-4 space-x-2">
-              {product?.reviews?.length > 0 && (
+              {product.reviews.length > 0 && (
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <Star
@@ -91,20 +148,20 @@ export default function ProductDetails({ product, allProducts = [], currentIndex
                       className={`h-4 w-4 ${i < Math.round(avgRating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
                     />
                   ))}
-                  <span className="ml-2 text-sm text-gray-500">({product?.reviews?.length} reviews)</span>
+                  <span className="ml-2 text-sm text-gray-500">({product.reviews.length} reviews)</span>
                 </div>
               )}
-              <span className="text-sm text-gray-500">Product Code: {product?.productCode}</span>
+              <span className="text-sm text-gray-500">SKU: {selectedVariant.productCode}</span>
             </div>
           </div>
 
           <div className="flex items-center space-x-4">
-            {product?.priceAfterDiscount && product?.mainPrice ? (
+            {selectedVariant.priceAfterDiscount && selectedVariant.mainPrice ? (
               <>
-                <span className="text-2xl font-bold">${product?.priceAfterDiscount}</span>
-                <span className="text-gray-500 line-through">${product?.mainPrice}</span>
-                {product?.discountPercent && (
-                  <Badge className="bg-green-500 hover:bg-green-600">{product?.discountPercent}% OFF</Badge>
+                <span className="text-2xl font-bold text-green-600">${selectedVariant.priceAfterDiscount}</span>
+                <span className="text-gray-500 line-through">${selectedVariant.mainPrice}</span>
+                {selectedVariant.discountPercent && (
+                  <Badge className="bg-green-500 hover:bg-green-600">{selectedVariant.discountPercent}% OFF</Badge>
                 )}
               </>
             ) : (
@@ -112,43 +169,46 @@ export default function ProductDetails({ product, allProducts = [], currentIndex
             )}
           </div>
 
-          <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 rounded-full border" style={{ backgroundColor: product?.color }}></div>
-            <span>Color</span>
-          </div>
+          <VariantSelector
+            variants={product.variants}
+            selectedVariantId={selectedVariantId}
+            onSelectVariant={handleVariantChange}
+          />
 
           <div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center border rounded-md">
-                <button
+                <MyButton
+                  variant="ghost"
+                  size="icon"
                   onClick={decreaseQuantity}
-                  disabled={!product?.inStock || quantity <= 1}
+                  disabled={!selectedVariant.inStock || quantity <= 1}
                 >
                   -
-                </button>
+                </MyButton>
                 <span className="w-10 text-center">{quantity}</span>
-                <button
+                <MyButton
+                  variant="ghost"
+                  size="icon"
                   onClick={increaseQuantity}
-                  disabled={!product?.inStock || quantity >= product?.quantity}
+                  disabled={!selectedVariant.inStock || quantity >= selectedVariant.quantity}
                 >
                   +
-                </button>
+                </MyButton>
               </div>
-              <button className="flex-1" disabled={!product?.inStock}>
-                {product?.inStock ? "Add to Cart" : "Out of Stock"}
-              </button>
-            </div>
-
-            <div className="mt-4">
-              <Badge  className="text-sm">
-                {product?.inStock ? `In Stock (${product?.quantity} available)` : "Out of Stock"}
-              </Badge>
+              {!selectedVariant.inStock ? (
+                // <MyButton className="flex-1 bg-amber-500 hover:bg-amber-600">Request Stock</MyButton>
+                <RequestStockButton/>
+              ) : (
+                // <MyButton className="flex-1 bg-green-600 hover:bg-green-700">Add to Cart</MyButton>
+                <AddToCartButton />
+              )}
             </div>
           </div>
 
-          <SeparatorHorizontal />
+          <Separator />
 
-          {/* <Tabs defaultValue="description">
+          <Tabs defaultValue="description">
             <TabsList className="grid grid-cols-3">
               <TabsTrigger value="description">Description</TabsTrigger>
               <TabsTrigger value="specifications">Specifications</TabsTrigger>
@@ -204,17 +264,9 @@ export default function ProductDetails({ product, allProducts = [], currentIndex
             <TabsContent value="reviews" className="mt-4">
               <ReviewSlider reviews={product.reviews} />
             </TabsContent>
-          </Tabs> */}
+          </Tabs>
         </div>
       </div>
-      {allProducts?.length > 0 && (
-        <>
-          <SimilarProducts currentProduct={product} allProducts={allProducts} currentIndex={currentIndex} />
-
-          <YouMightLike products={allProducts} currentIndex={currentIndex} />
-        </>
-      )}
-      
     </div>
   )
 }

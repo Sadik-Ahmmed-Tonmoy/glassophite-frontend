@@ -3,7 +3,7 @@ import "./AddToCartButton.css"; // Import your CSS file here
 
 const AddToCartButton = () => {
   return (
-    <button className="CartBtn bg-gradient-to-br from-green-secondary via-green-800 to-green-secondary hover:from-green-primary hover:via-green-600 hover:to-green-secondary transition-colors text-white flex justify-center items-center gap-1 py-3 rounded-md">
+    <button className="CartBtn w-full bg-gradient-to-br from-green-secondary via-green-800 to-green-secondary hover:from-green-primary hover:via-green-600 hover:to-green-secondary transition-colors text-white flex justify-center items-center gap-1 py-3 rounded-md">
       <span className="IconContainer">
         <svg
           xmlns="http://www.w3.org/2000/svg"

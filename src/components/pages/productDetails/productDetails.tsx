@@ -149,8 +149,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           <VariantSelector variants={product.variants} selectedVariantId={selectedVariantId} onSelectVariant={handleVariantChange} />
 
           <div>
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <div className={cn("flex items-center border rounded-md",
+            <div className="flex flex-col xs:flex-row sm:items-center gap-4 ">
+              <div className={cn("flex items-center border rounded-md w-fit",
                 selectedVariant.inStock ? "flex" : "hidden",
               )}>
                 <MyButton variant="ghost" size="icon" onClick={decreaseQuantity} disabled={!selectedVariant.inStock || quantity <= 1}>
@@ -166,7 +166,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   +
                 </MyButton>
               </div>
-              {!selectedVariant.inStock ? (
+             <div className="flex-1 flex items-center space-x-2 sm:space-x-4">
+             {!selectedVariant.inStock ? (
                 // <MyButton className="flex-1 bg-amber-500 hover:bg-amber-600">Request Stock</MyButton>
                 <RequestStockButton />
               ) : (
@@ -174,6 +175,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 <AddToCartButton />
               )}
               <WishlistButton />
+             </div>
             </div>
           </div>
 

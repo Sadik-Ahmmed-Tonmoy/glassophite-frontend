@@ -1,14 +1,10 @@
 "use client"
-import { cn } from "@/lib/utils"
 import "./RequestStockButton.css" // Import your CSS file here
 
 const RequestStockButton = () => {
   return (
-    <button className="RequestBtn w-full px-2 bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800 hover:from-gray-700 hover:via-gray-800 hover:to-gray-900 transition-colors text-white flex justify-center items-center gap-1 xs:py-3 rounded-md">
-      <span className={cn(
-        "IconContainer p-2",
-        " !hidden sm:!block "
-      )}>
+    <button className="RequestBtn w-full bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800 hover:from-gray-700 hover:via-gray-800 hover:to-gray-900 transition-colors text-white flex justify-center items-center gap-1 py-3 rounded-md">
+      <span className="IconContainer">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           height="1em"

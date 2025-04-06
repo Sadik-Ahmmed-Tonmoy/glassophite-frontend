@@ -2,7 +2,7 @@ import React from "react";
 import MobileNavBar from "./MobileNavBar/MobileNavBar";
 import PCNavBar from "./PCNavBar/PCNavBar";
 
-const Navbar = () => {
+const NavigationBar = () => {
   return (
     <div>
       <div className="hidden lg:block">
@@ -15,4 +15,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default NavigationBar;

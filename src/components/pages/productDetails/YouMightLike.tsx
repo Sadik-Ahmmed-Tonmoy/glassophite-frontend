@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import ProductCard from "@/components/ui/ProductCard/ProductCard"
+// import ProductCard from "@/components/ui/ProductCard/ProductCard"
+// import { productMockData } from "@/lib/productMockData"
 
 
 interface Product {
@@ -86,11 +87,11 @@ export default function YouMightLike({ products, currentIndex }: YouMightLikePro
         className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {shuffledProducts.map(({ product, index }) => (
+        {/* {shuffledProducts.map(({ product, index }) => (
           <div key={index} className="min-w-[250px] max-w-[250px]">
-            <ProductCard product={product} index={index} />
+            <ProductCard product={productMockData}  />
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   )

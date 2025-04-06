@@ -1,7 +1,190 @@
-export const productMockData = {
+import { TProduct, TReview } from "@/app/types/types";
+
+
+export const reviewsData: TReview[] = [
+  {
     id: 1,
-    shortDescription:
-      "A luxury purple frame that exudes sophistication and class.",
+    name: "John Doe",
+    email: "johndoe@example.com",
+    rating: 5,
+    comment: "Excellent product! Highly recommend it.",
+    date: "2025-04-06",
+    helpful: 10,
+    unhelpful: 2,
+    verified: true,
+    images: ["image1.jpg", "image2.jpg"]
+  },
+  {
+    id: 2,
+    name: "Jane Smith",
+    email: "janesmith@example.com",
+    rating: 4,
+    comment: "Good quality, but could be improved in certain areas.",
+    date: "2025-04-05",
+    helpful: 8,
+    unhelpful: 1,
+    verified: false,
+    images: ["image3.jpg"]
+  },
+  {
+    id: 3,
+    name: "Alice Johnson",
+    email: "alice.johnson@example.com",
+    rating: 3,
+    comment: "Average experience, not what I expected.",
+    date: "2025-04-04",
+    helpful: 3,
+    unhelpful: 5,
+    verified: true,
+    images: []
+  },
+  {
+    id: 4,
+    name: "Bob Williams",
+    email: "bob.williams@example.com",
+    rating: 2,
+    comment: "Did not meet my expectations. Poor quality.",
+    date: "2025-04-03",
+    helpful: 0,
+    unhelpful: 8,
+    verified: false,
+    images: ["image4.jpg"]
+  }
+];
+
+export const productMockData: TProduct = {
+  id: 1,
+  shortDescription: "A luxury purple frame that exudes sophistication and class.",
+  longDescription:
+    "Purple Horizon sunglasses are the epitome of luxury. With their rich purple color and elegant design, they are perfect for those who want to add a touch of class to their accessory collection.",
+  brand: "Elite Styles",
+  material: "Metal Alloy",
+  dimensions: "Medium",
+  weight: "170g",
+  shippingInfo: "Currently out of stock",
+  frameType: "Full-Rim",
+  lensType: "UV400 Protection, Anti-Scratch",
+  warranty: "1-year warranty for manufacturing defects",
+  countryOfOrigin: "France",
+  targetAudience: "Unisex, Luxury Seekers",
+  careInstructions: "Store in a protective case. Clean lenses with a microfiber cloth.",
+  averageRating: 4.5,
+  totalReviews: 100,
+  variants: [
+    {
+      id: 11,
+      title: "Black Horizon",
+      color: "#232323",
+      priceAfterDiscount: 1200,
+      mainPrice: 1500,
+      discountPercent: 20,
+      inStock: true,
+      quantity: 5,
+      productCode: "BL-2025-001",
+      shortDescription: "A luxury black frame that exudes sophistication and class.",
+      imgList: [
+        {
+          image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+          id: 111,
+        },
+        {
+          image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+          id: 222,
+        },
+        {
+          image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+          id: 333,
+        },
+      ],
+    },
+    {
+      id: 12,
+      title: "Blue Horizon",
+      color: "#1d81c8",
+      priceAfterDiscount: 120,
+      mainPrice: 150,
+      discountPercent: 20,
+      inStock: false,
+      quantity: 0,
+      productCode: "NA1-2025-002",
+      shortDescription: "A luxury blue frame that exudes sophistication and class.",
+      imgList: [
+        {
+          image: "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
+          id: 321,
+        },
+        {
+          image: "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
+          id: 322,
+        },
+        {
+          image: "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
+          id: 323,
+        },
+      ],
+    },
+    {
+      id: 13,
+      title: "Red Horizon",
+      color: "#e0241b",
+      priceAfterDiscount: 75,
+      mainPrice: 100,
+      discountPercent: 25,
+      inStock: true,
+      quantity: 3,
+      productCode: "NA2-2025-003",
+      shortDescription: "A luxury red frame that exudes sophistication and class.",
+      imgList: [
+        {
+          image: "https://i.ibb.co.com/cSPHCJpb/Chat-GPT-Image-Apr-4-2025-03-26-17-PM.png",
+          id: 654,
+        },
+        {
+          image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+          id: 655,
+        },
+        {
+          image: "https://i.ibb.co.com/cSPHCJpb/Chat-GPT-Image-Apr-4-2025-03-26-17-PM.png",
+          id: 656,
+        },
+      ],
+    },
+    {
+      id: 14,
+      title: "Purple Horizon",
+      color: "#c6a7cb",
+      priceAfterDiscount: 220,
+      mainPrice: 200,
+      discountPercent: 27,
+      inStock: false,
+      quantity: 0,
+      productCode: "AD-2025-004",
+      shortDescription: "A luxury purple frame that exudes sophistication and class.",
+      imgList: [
+        {
+          image: "https://i.ibb.co.com/RpdmpMC6/Chat-GPT-Image-Apr-4-2025-03-20-49-PM.png",
+          id: 789,
+        },
+        {
+          image: "https://i.ibb.co.com/RpdmpMC6/Chat-GPT-Image-Apr-4-2025-03-20-49-PM.png",
+          id: 790,
+        },
+        {
+          image: "https://i.ibb.co.com/RpdmpMC6/Chat-GPT-Image-Apr-4-2025-03-20-49-PM.png",
+          id: 791,
+        },
+      ],
+    },
+  ],
+};
+
+
+
+
+export const productsMockDataList: TProduct[] = [
+  {
+    id: 1,
+    shortDescription: "A luxury purple frame that exudes sophistication and class.",
     longDescription:
       "Purple Horizon sunglasses are the epitome of luxury. With their rich purple color and elegant design, they are perfect for those who want to add a touch of class to their accessory collection.",
     brand: "Elite Styles",
@@ -14,15 +197,9 @@ export const productMockData = {
     warranty: "1-year warranty for manufacturing defects",
     countryOfOrigin: "France",
     targetAudience: "Unisex, Luxury Seekers",
-    careInstructions:
-      "Store in a protective case. Clean lenses with a microfiber cloth.",
-    reviews: [
-      { rating: 5, comment: "Elegant and luxurious. A great buy!" },
-      {
-        rating: 4,
-        comment: "Love the color and feel, but a bit heavier than expected.",
-      },
-    ],
+    careInstructions: "Store in a protective case. Clean lenses with a microfiber cloth.",
+    averageRating: 4.5,
+    totalReviews: 100,
     variants: [
       {
         id: 11,
@@ -34,23 +211,15 @@ export const productMockData = {
         inStock: true,
         quantity: 5,
         productCode: "BL-2025-001",
-        shortDescription:
-          "A luxury black frame that exudes sophistication and class.",
+        shortDescription: "A luxury black frame that exudes sophistication and class.",
         imgList: [
           {
-            image:
-              "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+            image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
             id: 111,
           },
           {
-            image:
-              "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
-            id: 222,
-          },
-          {
-            image:
-              "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
-            id: 333,
+            image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+            id: 112,
           },
         ],
       },
@@ -64,552 +233,331 @@ export const productMockData = {
         inStock: false,
         quantity: 0,
         productCode: "NA1-2025-002",
-        shortDescription:
-          "A luxury blue frame that exudes sophistication and class.",
+        shortDescription: "A luxury blue frame that exudes sophistication and class.",
         imgList: [
           {
-            image:
-              "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
+            image: "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
             id: 321,
-          },
-          {
-            image:
-              "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
-            id: 322,
-          },
-          {
-            image:
-              "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
-            id: 323,
-          },
-        ],
-      },
-      {
-        id: 13,
-        title: "Red Horizon",
-        color: "#e0241b",
-        priceAfterDiscount: 75,
-        mainPrice: 100,
-        discountPercent: 25,
-        inStock: true,
-        quantity: 3,
-        productCode: "NA2-2025-003",
-        shortDescription:
-          "A luxury red frame that exudes sophistication and class.",
-        imgList: [
-          {
-            image:
-              "https://i.ibb.co.com/cSPHCJpb/Chat-GPT-Image-Apr-4-2025-03-26-17-PM.png",
-            id: 654,
-          },
-          {
-            image:
-              "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
-            id: 655,
-          },
-          {
-            image:
-              "https://i.ibb.co.com/cSPHCJpb/Chat-GPT-Image-Apr-4-2025-03-26-17-PM.png",
-            id: 656,
-          },
-        ],
-      },
-      {
-        id: 14,
-        title: "Purple Horizon",
-        color: "#c6a7cb",
-        priceAfterDiscount: 220,
-        mainPrice: 200,
-        discountPercent: 27,
-        inStock: false,
-        quantity: 0,
-        productCode: "AD-2025-004",
-        shortDescription:
-          "A luxury purple frame that exudes sophistication and class.",
-        imgList: [
-          {
-            image:
-              "https://i.ibb.co.com/RpdmpMC6/Chat-GPT-Image-Apr-4-2025-03-20-49-PM.png",
-            id: 789,
-          },
-          {
-            image:
-              "https://i.ibb.co.com/RpdmpMC6/Chat-GPT-Image-Apr-4-2025-03-20-49-PM.png",
-            id: 790,
-          },
-          {
-            image:
-              "https://i.ibb.co.com/RpdmpMC6/Chat-GPT-Image-Apr-4-2025-03-20-49-PM.png",
-            id: 791,
           },
         ],
       },
     ],
-  };
-
-
-  export const productsMockDataList = [
-    {
-      id: 1,
-      shortDescription:
-        "A luxury purple frame that exudes sophistication and class.",
-      longDescription:
-        "Purple Horizon sunglasses are the epitome of luxury. With their rich purple color and elegant design, they are perfect for those who want to add a touch of class to their accessory collection.",
-      brand: "Elite Styles",
-      material: "Metal Alloy",
-      dimensions: "Medium",
-      weight: "170g",
-      shippingInfo: "Currently out of stock",
-      frameType: "Full-Rim",
-      lensType: "UV400 Protection, Anti-Scratch",
-      warranty: "1-year warranty for manufacturing defects",
-      countryOfOrigin: "France",
-      targetAudience: "Unisex, Luxury Seekers",
-      careInstructions:
-        "Store in a protective case. Clean lenses with a microfiber cloth.",
-      reviews: [
-        { rating: 5, comment: "Elegant and luxurious. A great buy!" },
-        {
-          rating: 4,
-          comment: "Love the color and feel, but a bit heavier than expected.",
-        },
-      ],
-      variants: [
-        {
-          id: 11,
-          title: "Black Horizon",
-          color: "#232323",
-          priceAfterDiscount: 1200,
-          mainPrice: 1500,
-          discountPercent: 20,
-          inStock: true,
-          quantity: 5,
-          productCode: "BL-2025-001",
-          shortDescription:
-            "A luxury black frame that exudes sophistication and class.",
-          imgList: [
-            {
-              image:
-                "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
-              id: 111,
-            },
-            {
-              image:
-                "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
-              id: 112,
-            },
-          ],
-        },
-        {
-          id: 12,
-          title: "Blue Horizon",
-          color: "#1d81c8",
-          priceAfterDiscount: 120,
-          mainPrice: 150,
-          discountPercent: 20,
-          inStock: false,
-          quantity: 0,
-          productCode: "NA1-2025-002",
-          shortDescription:
-            "A luxury blue frame that exudes sophistication and class.",
-          imgList: [
-            {
-              image:
-                "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
-              id: 321,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: 2,
-      shortDescription:
-        "A sleek and modern silver frame for a minimalist style.",
-      longDescription:
-        "Silver Horizon sunglasses are perfect for those who prefer a clean and sharp look. Their lightweight design makes them an excellent choice for everyday wear.",
-      brand: "Elite Styles",
-      material: "Metal Alloy",
-      dimensions: "Medium",
-      weight: "180g",
-      shippingInfo: "Available for immediate shipment",
-      frameType: "Full-Rim",
-      lensType: "UV400 Protection, Polarized",
-      warranty: "1-year warranty for manufacturing defects",
-      countryOfOrigin: "Italy",
-      targetAudience: "Unisex, Minimalist Seekers",
-      careInstructions:
-        "Store in a protective case. Wipe lenses with a microfiber cloth.",
-      reviews: [
-        { rating: 5, comment: "Lightweight and stylish!" },
-        {
-          rating: 4,
-          comment: "Great sunglasses, but I expected them to be a little lighter.",
-        },
-      ],
-      variants: [
-        {
-          id: 21,
-          title: "Silver Horizon",
-          color: "#c0c0c0",
-          priceAfterDiscount: 1300,
-          mainPrice: 1600,
-          discountPercent: 18,
-          inStock: true,
-          quantity: 10,
-          productCode: "SV-2025-001",
-          shortDescription:
-            "A luxury silver frame that exudes sophistication and class.",
-          imgList: [
-            {
-              image:
-                "https://i.ibb.co.com/silver-image1.png",
-              id: 211,
-            },
-            {
-              image:
-                "https://i.ibb.co.com/silver-image2.png",
-              id: 212,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: 3,
-      shortDescription:
-        "A bold red frame that makes a statement in style.",
-      longDescription:
-        "Red Horizon sunglasses are designed for those who are bold and unapologetic. Their striking red color ensures that you stand out in any crowd.",
-      brand: "Elite Styles",
-      material: "Plastic",
-      dimensions: "Medium",
-      weight: "160g",
-      shippingInfo: "Currently out of stock",
-      frameType: "Full-Rim",
-      lensType: "UV400 Protection, Anti-Scratch",
-      warranty: "1-year warranty for manufacturing defects",
-      countryOfOrigin: "USA",
-      targetAudience: "Unisex, Bold Fashion Enthusiasts",
-      careInstructions:
-        "Store in a case. Clean lenses with a microfiber cloth.",
-      reviews: [
-        { rating: 5, comment: "Love the color and the bold design!" },
-        {
-          rating: 3,
-          comment: "A bit too heavy, but still stylish.",
-        },
-      ],
-      variants: [
-        {
-          id: 31,
-          title: "Red Horizon",
-          color: "#e0241b",
-          priceAfterDiscount: 1100,
-          mainPrice: 1400,
-          discountPercent: 20,
-          inStock: true,
-          quantity: 6,
-          productCode: "RD-2025-001",
-          shortDescription:
-            "A bold red frame for those who love to make a statement.",
-          imgList: [
-            {
-              image:
-                "https://i.ibb.co.com/red-image1.png",
-              id: 311,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: 4,
-      shortDescription: "A stylish silver frame for a bold, modern look.",
-      longDescription:
-        "Silver Edition sunglasses bring a cutting-edge design that is perfect for those who want to add some flair to their fashion collection. With UV protection and a contemporary frame, these sunglasses are both trendy and functional.",
-      brand: "Shiny Styles",
-      material: "Aluminum Alloy",
-      dimensions: "Medium",
-      weight: "165g",
-      shippingInfo: "Available for immediate shipment",
-      frameType: "Full-Rim",
-      lensType: "UV400 Protection, Anti-Glare",
-      warranty: "1-year warranty for manufacturing defects",
-      countryOfOrigin: "Germany",
-      targetAudience: "Unisex, Trendy Seekers",
-      careInstructions:
-        "Store in a protective case. Wipe lenses with a microfiber cloth.",
-      reviews: [
-        { rating: 5, comment: "A beautiful and sturdy design!" },
-        {
-          rating: 4,
-          comment: "Great glasses, but the fit is a bit tight on the temples.",
-        },
-      ],
-      variants: [
-        {
-          id: 41,
-          title: "Silver Edition",
-          color: "#b0b0b0",
-          priceAfterDiscount: 1350,
-          mainPrice: 1600,
-          discountPercent: 16,
-          inStock: true,
-          quantity: 12,
-          productCode: "SE-2025-001",
-          shortDescription:
-            "A stylish silver frame for a bold, modern look.",
-          imgList: [
-            {
-              image:
-                "https://i.ibb.co.com/silver-edition.png",
-              id: 411,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: 5,
-      shortDescription:
-        "A stunning gold frame for a luxurious touch to your wardrobe.",
-      longDescription:
-        "Gold Horizon sunglasses offer a classic design with a luxurious golden frame, perfect for anyone who loves the finer things in life. With their sophisticated style, these sunglasses provide both elegance and UV protection.",
-      brand: "Golden Vision",
-      material: "Metal Alloy",
-      dimensions: "Large",
-      weight: "180g",
-      shippingInfo: "Available for immediate shipment",
-      frameType: "Full-Rim",
-      lensType: "UV400 Protection, Polarized",
-      warranty: "2-year warranty for manufacturing defects",
-      countryOfOrigin: "Switzerland",
-      targetAudience: "Unisex, Luxury Seekers",
-      careInstructions:
-        "Store in a case. Clean lenses with a microfiber cloth.",
-      reviews: [
-        { rating: 5, comment: "A truly luxurious pair of sunglasses!" },
-        {
-          rating: 4,
-          comment: "Stylish and comfortable, but slightly heavy.",
-        },
-      ],
-      variants: [
-        {
-          id: 51,
-          title: "Gold Horizon",
-          color: "#d4af37",
-          priceAfterDiscount: 1400,
-          mainPrice: 1800,
-          discountPercent: 22,
-          inStock: true,
-          quantity: 8,
-          productCode: "GH-2025-001",
-          shortDescription:
-            "A stunning gold frame that exudes luxury.",
-          imgList: [
-            {
-              image:
-                "https://i.ibb.co.com/gold-horizon.png",
-              id: 511,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: 6,
-      shortDescription:
-        "A sleek black frame with subtle detailing for a modern style.",
-      longDescription:
-        "Black Knight sunglasses are designed for those who appreciate minimalist, modern designs with the perfect amount of flair. The UV protection ensures your eyes are safe while maintaining a sleek, stylish appearance.",
-      brand: "Black Knight",
-      material: "Plastic",
-      dimensions: "Medium",
-      weight: "150g",
-      shippingInfo: "Available for immediate shipment",
-      frameType: "Full-Rim",
-      lensType: "UV400 Protection, Anti-Reflective",
-      warranty: "1-year warranty for manufacturing defects",
-      countryOfOrigin: "USA",
-      targetAudience: "Unisex, Minimalist Seekers",
-      careInstructions:
-        "Store in a case. Wipe lenses with a microfiber cloth.",
-      reviews: [
-        { rating: 5, comment: "Love the fit, they look sleek and classy!" },
-        {
-          rating: 4,
-          comment: "Good value for the price.",
-        },
-      ],
-      variants: [
-        {
-          id: 61,
-          title: "Black Knight",
-          color: "#000000",
-          priceAfterDiscount: 950,
-          mainPrice: 1200,
-          discountPercent: 21,
-          inStock: true,
-          quantity: 10,
-          productCode: "BK-2025-001",
-          shortDescription:
-            "A sleek black frame for a modern style.",
-          imgList: [
-            {
-              image:
-                "https://i.ibb.co.com/black-knight.png",
-              id: 611,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: 7,
-      shortDescription:
-        "A stylish transparent frame that matches any outfit.",
-      longDescription:
-        "Clear Vision sunglasses offer a unique transparent frame that’s perfect for those who want to make a subtle yet fashionable statement. The UV400 lenses provide full protection while maintaining a light and airy aesthetic.",
-      brand: "Clear Vision",
-      material: "Plastic",
-      dimensions: "Small",
-      weight: "140g",
-      shippingInfo: "Currently out of stock",
-      frameType: "Full-Rim",
-      lensType: "UV400 Protection, Anti-Scratch",
-      warranty: "1-year warranty for manufacturing defects",
-      countryOfOrigin: "France",
-      targetAudience: "Unisex, Fashion Seekers",
-      careInstructions:
-        "Store in a case. Clean lenses with a microfiber cloth.",
-      reviews: [
-        { rating: 5, comment: "Perfect for a clear, minimalistic look!" },
-        {
-          rating: 4,
-          comment: "Slightly larger than expected, but still love them.",
-        },
-      ],
-      variants: [
-        {
-          id: 71,
-          title: "Clear Vision",
-          color: "#f4f4f4",
-          priceAfterDiscount: 1100,
-          mainPrice: 1400,
-          discountPercent: 21,
-          inStock: false,
-          quantity: 0,
-          productCode: "CV-2025-001",
-          shortDescription:
-            "A stylish transparent frame that matches any outfit.",
-          imgList: [
-            {
-              image:
-                "https://i.ibb.co.com/clear-vision.png",
-              id: 711,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: 8,
-      shortDescription:
-        "A sleek silver frame that gives off a futuristic vibe.",
-      longDescription:
-        "Silver Mirage sunglasses feature a sharp silver frame with reflective lenses for a bold, futuristic look. These sunglasses are perfect for those who want to stand out with modern elegance.",
-      brand: "Silver Mirage",
-      material: "Aluminum Alloy",
-      dimensions: "Medium",
-      weight: "170g",
-      shippingInfo: "Available for immediate shipment",
-      frameType: "Full-Rim",
-      lensType: "UV400 Protection, Polarized",
-      warranty: "1-year warranty for manufacturing defects",
-      countryOfOrigin: "Germany",
-      targetAudience: "Unisex, Futuristic Seekers",
-      careInstructions:
-        "Store in a case. Wipe lenses with a microfiber cloth.",
-      reviews: [
-        { rating: 5, comment: "Perfect for anyone who loves futuristic designs!" },
-        {
-          rating: 4,
-          comment: "Great fit, but the lenses are a little too reflective for my liking.",
-        },
-      ],
-      variants: [
-        {
-          id: 81,
-          title: "Silver Mirage",
-          color: "#c0c0c0",
-          priceAfterDiscount: 1300,
-          mainPrice: 1600,
-          discountPercent: 18,
-          inStock: true,
-          quantity: 5,
-          productCode: "SM-2025-001",
-          shortDescription:
-            "A sleek silver frame for a futuristic look.",
-          imgList: [
-            {
-              image:
-                "https://i.ibb.co.com/silver-mirage.png",
-              id: 811,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: 9,
-      shortDescription:
-        "A bold and stylish pair of black frame sunglasses with a unique design.",
-      longDescription:
-        "These Black Ace sunglasses feature a bold black frame and polarized lenses, offering maximum protection and style. Their distinctive design ensures you’ll stand out from the crowd.",
-      brand: "Black Ace",
-      material: "Polycarbonate",
-      dimensions: "Medium",
-      weight: "180g",
-      shippingInfo: "Currently out of stock",
-      frameType: "Full-Rim",
-      lensType: "Polarized, UV400 Protection",
-      warranty: "1-year warranty for manufacturing defects",
-      countryOfOrigin: "Japan",
-      targetAudience: "Unisex, Bold Seekers",
-      careInstructions:
-        "Store in a protective case. Clean lenses with a microfiber cloth.",
-      reviews: [
-        { rating: 5, comment: "Absolutely love these sunglasses!" },
-        {
-          rating: 4,
-          comment: "Very stylish but a bit heavy for long use.",
-        },
-      ],
-      variants: [
-        {
-          id: 91,
-          title: "Black Ace",
-          color: "#000000",
-          priceAfterDiscount: 1150,
-          mainPrice: 1500,
-          discountPercent: 23,
-          inStock: false,
-          quantity: 0,
-          productCode: "BA-2025-001",
-          shortDescription:
-            "A bold pair of sunglasses with a unique black design.",
-          imgList: [
-            {
-              image:
-                "https://i.ibb.co.com/black-ace.png",
-              id: 911,
-            },
-          ],
-        },
-      ],
-    },
-  ];
-  
-  
+  },
+  {
+    id: 2,
+    shortDescription: "A sleek and modern silver frame for a minimalist style.",
+    longDescription:
+      "Silver Horizon sunglasses are perfect for those who prefer a clean and sharp look. Their lightweight design makes them an excellent choice for everyday wear.",
+    brand: "Elite Styles",
+    material: "Metal Alloy",
+    dimensions: "Medium",
+    weight: "180g",
+    shippingInfo: "Available for immediate shipment",
+    frameType: "Full-Rim",
+    lensType: "UV400 Protection, Polarized",
+    warranty: "1-year warranty for manufacturing defects",
+    countryOfOrigin: "Italy",
+    targetAudience: "Unisex, Minimalist Seekers",
+    careInstructions: "Store in a protective case. Wipe lenses with a microfiber cloth.",
+    averageRating: 4.2,
+    totalReviews: 120,
+    variants: [
+      {
+        id: 21,
+        title: "Silver Horizon",
+        color: "#c0c0c0",
+        priceAfterDiscount: 1300,
+        mainPrice: 1600,
+        discountPercent: 18,
+        inStock: true,
+        quantity: 10,
+        productCode: "SV-2025-001",
+        shortDescription: "A luxury silver frame that exudes sophistication and class.",
+        imgList: [
+          {
+            image: "https://i.ibb.co.com/silver-image1.png",
+            id: 211,
+          },
+          {
+            image: "https://i.ibb.co.com/silver-image2.png",
+            id: 212,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 3,
+    shortDescription: "A bold red frame that makes a statement in style.",
+    longDescription:
+      "Red Horizon sunglasses are designed for those who are bold and unapologetic. Their striking red color ensures that you stand out in any crowd.",
+    brand: "Elite Styles",
+    material: "Plastic",
+    dimensions: "Medium",
+    weight: "160g",
+    shippingInfo: "Currently out of stock",
+    frameType: "Full-Rim",
+    lensType: "UV400 Protection, Anti-Scratch",
+    warranty: "1-year warranty for manufacturing defects",
+    countryOfOrigin: "USA",
+    targetAudience: "Unisex, Bold Fashion Enthusiasts",
+    careInstructions: "Store in a case. Clean lenses with a microfiber cloth.",
+    averageRating: 4.8,
+    totalReviews: 80,
+    variants: [
+      {
+        id: 31,
+        title: "Red Horizon",
+        color: "#e0241b",
+        priceAfterDiscount: 1100,
+        mainPrice: 1400,
+        discountPercent: 20,
+        inStock: true,
+        quantity: 6,
+        productCode: "RD-2025-001",
+        shortDescription: "A bold red frame for those who love to make a statement.",
+        imgList: [
+          {
+            image: "https://i.ibb.co.com/red-image1.png",
+            id: 311,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 4,
+    shortDescription: "A stylish silver frame for a bold, modern look.",
+    longDescription:
+      "Silver Edition sunglasses bring a cutting-edge design that is perfect for those who want to add some flair to their fashion collection. With UV protection and a contemporary frame, these sunglasses are both trendy and functional.",
+    brand: "Shiny Styles",
+    material: "Aluminum Alloy",
+    dimensions: "Medium",
+    weight: "165g",
+    shippingInfo: "Available for immediate shipment",
+    frameType: "Full-Rim",
+    lensType: "UV400 Protection, Anti-Glare",
+    warranty: "1-year warranty for manufacturing defects",
+    countryOfOrigin: "Germany",
+    targetAudience: "Unisex, Trendy Seekers",
+    careInstructions: "Store in a protective case. Wipe lenses with a microfiber cloth.",
+   
+    averageRating: 4.5,
+    totalReviews: 90,
+    variants: [
+      {
+        id: 41,
+        title: "Silver Edition",
+        color: "#b0b0b0",
+        priceAfterDiscount: 1350,
+        mainPrice: 1600,
+        discountPercent: 16,
+        inStock: true,
+        quantity: 12,
+        productCode: "SE-2025-001",
+        shortDescription: "A stylish silver frame for a bold, modern look.",
+        imgList: [
+          {
+            image: "https://i.ibb.co.com/silver-edition.png",
+            id: 411,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 5,
+    shortDescription: "A stunning gold frame for a luxurious touch to your wardrobe.",
+    longDescription:
+      "Gold Horizon sunglasses offer a classic design with a luxurious golden frame, perfect for anyone who loves the finer things in life. With their sophisticated style, these sunglasses provide both elegance and UV protection.",
+    brand: "Golden Vision",
+    material: "Metal Alloy",
+    dimensions: "Large",
+    weight: "180g",
+    shippingInfo: "Available for immediate shipment",
+    frameType: "Full-Rim",
+    lensType: "UV400 Protection, Polarized",
+    warranty: "2-year warranty for manufacturing defects",
+    countryOfOrigin: "Switzerland",
+    targetAudience: "Unisex, Luxury Seekers",
+    careInstructions: "Store in a case. Clean lenses with a microfiber cloth.",
+    averageRating: 4.7,
+    totalReviews: 110,
+    variants: [
+      {
+        id: 51,
+        title: "Gold Horizon",
+        color: "#d4af37",
+        priceAfterDiscount: 1400,
+        mainPrice: 1800,
+        discountPercent: 22,
+        inStock: true,
+        quantity: 8,
+        productCode: "GH-2025-001",
+        shortDescription: "A stunning gold frame that exudes luxury.",
+        imgList: [
+          {
+            image: "https://i.ibb.co.com/gold-horizon.png",
+            id: 511,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 6,
+    shortDescription: "A sleek black frame with subtle detailing for a modern style.",
+    longDescription:
+      "Black Knight sunglasses are designed for those who appreciate minimalist, modern designs with the perfect amount of flair. The UV protection ensures your eyes are safe while maintaining a sleek, stylish appearance.",
+    brand: "Black Knight",
+    material: "Plastic",
+    dimensions: "Medium",
+    weight: "150g",
+    shippingInfo: "Available for immediate shipment",
+    frameType: "Full-Rim",
+    lensType: "UV400 Protection, Anti-Reflective",
+    warranty: "1-year warranty for manufacturing defects",
+    countryOfOrigin: "USA",
+    targetAudience: "Unisex, Minimalist Seekers",
+    careInstructions: "Store in a case. Wipe lenses with a microfiber cloth.",
+    averageRating: 4.6,
+    totalReviews: 95,
+    variants: [
+      {
+        id: 61,
+        title: "Black Knight",
+        color: "#000000",
+        priceAfterDiscount: 950,
+        mainPrice: 1200,
+        discountPercent: 21,
+        inStock: true,
+        quantity: 10,
+        productCode: "BK-2025-001",
+        shortDescription: "A sleek black frame for a modern style.",
+        imgList: [
+          {
+            image: "https://i.ibb.co.com/black-knight.png",
+            id: 611,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 7,
+    shortDescription: "A stylish transparent frame that matches any outfit.",
+    longDescription:
+      "Clear Vision sunglasses offer a unique transparent frame that’s perfect for those who want to make a subtle yet fashionable statement. The UV400 lenses provide full protection while maintaining a light and airy aesthetic.",
+    brand: "Clear Vision",
+    material: "Plastic",
+    dimensions: "Small",
+    weight: "140g",
+    shippingInfo: "Currently out of stock",
+    frameType: "Full-Rim",
+    lensType: "UV400 Protection, Anti-Scratch",
+    warranty: "1-year warranty for manufacturing defects",
+    countryOfOrigin: "France",
+    targetAudience: "Unisex, Fashion Seekers",
+    careInstructions: "Store in a case. Clean lenses with a microfiber cloth.",
+    averageRating: 4.4,
+    totalReviews: 85,
+    variants: [
+      {
+        id: 71,
+        title: "Clear Vision",
+        color: "#f4f4f4",
+        priceAfterDiscount: 1100,
+        mainPrice: 1400,
+        discountPercent: 21,
+        inStock: false,
+        quantity: 0,
+        productCode: "CV-2025-001",
+        shortDescription: "A stylish transparent frame that matches any outfit.",
+        imgList: [
+          {
+            image: "https://i.ibb.co.com/clear-vision.png",
+            id: 711,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 8,
+    shortDescription: "A sleek silver frame that gives off a futuristic vibe.",
+    longDescription:
+      "Silver Mirage sunglasses feature a sharp silver frame with reflective lenses for a bold, futuristic look. These sunglasses are perfect for those who want to stand out with modern elegance.",
+    brand: "Silver Mirage",
+    material: "Aluminum Alloy",
+    dimensions: "Medium",
+    weight: "170g",
+    shippingInfo: "Available for immediate shipment",
+    frameType: "Full-Rim",
+    lensType: "UV400 Protection, Polarized",
+    warranty: "1-year warranty for manufacturing defects",
+    countryOfOrigin: "Germany",
+    targetAudience: "Unisex, Futuristic Seekers",
+    careInstructions: "Store in a case. Wipe lenses with a microfiber cloth.",
+     averageRating: 4.3,
+    totalReviews: 70,
+    variants: [
+      {
+        id: 81,
+        title: "Silver Mirage",
+        color: "#c0c0c0",
+        priceAfterDiscount: 1300,
+        mainPrice: 1600,
+        discountPercent: 18,
+        inStock: true,
+        quantity: 5,
+        productCode: "SM-2025-001",
+        shortDescription: "A sleek silver frame for a futuristic look.",
+        imgList: [
+          {
+            image: "https://i.ibb.co.com/silver-mirage.png",
+            id: 811,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 9,
+    shortDescription: "A bold and stylish pair of black frame sunglasses with a unique design.",
+    longDescription:
+      "These Black Ace sunglasses feature a bold black frame and polarized lenses, offering maximum protection and style. Their distinctive design ensures you’ll stand out from the crowd.",
+    brand: "Black Ace",
+    material: "Polycarbonate",
+    dimensions: "Medium",
+    weight: "180g",
+    shippingInfo: "Currently out of stock",
+    frameType: "Full-Rim",
+    lensType: "Polarized, UV400 Protection",
+    warranty: "1-year warranty for manufacturing defects",
+    countryOfOrigin: "Japan",
+    targetAudience: "Unisex, Bold Seekers",
+    careInstructions: "Store in a protective case. Clean lenses with a microfiber cloth.",
+    averageRating: 4.9,
+    totalReviews: 60,
+    variants: [
+      {
+        id: 91,
+        title: "Black Ace",
+        color: "#000000",
+        priceAfterDiscount: 1150,
+        mainPrice: 1500,
+        discountPercent: 23,
+        inStock: false,
+        quantity: 0,
+        productCode: "BA-2025-001",
+        shortDescription: "A bold pair of sunglasses with a unique black design.",
+        imgList: [
+          {
+            image: "https://i.ibb.co.com/black-ace.png",
+            id: 911,
+          },
+        ],
+      },
+    ],
+  },
+];

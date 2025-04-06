@@ -1,9 +1,20 @@
 
-type TReview = {
-    rating: number;
-    comment: string;
-  };
+
   
+  export type TReview = {
+    id?: number
+    name: string
+    email?: string
+    rating: number
+    comment: string
+    date?: string
+    helpful?: number
+    unhelpful?: number
+    verified?: boolean
+    images?: string[]
+  }
+
+
   type TImage = {
     image: string;
     id: number;
@@ -38,7 +49,9 @@ type TReview = {
     countryOfOrigin?: string;
     targetAudience?: string;
     careInstructions?: string;
-    reviews?: TReview[];
+    // reviews?: TReview[];
+    averageRating?: number;
+    totalReviews?: number;
     variants: TVariant[];
   };
   

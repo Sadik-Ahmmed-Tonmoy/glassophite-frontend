@@ -4,7 +4,7 @@ import type React from "react";
 
 import { MyButton } from "@/components/ui/buttons/MyButton/MyButton";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Heart, XCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, XCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FaSearchengin } from "react-icons/fa6";
 
@@ -25,8 +25,7 @@ export default function ImageSlider({ images, inStock, selectedVariantColor }: I
   const [isHovering, setIsHovering] = useState(false);
   const [showZoom, setShowZoom] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
+ 
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -68,7 +67,6 @@ export default function ImageSlider({ images, inStock, selectedVariantColor }: I
     }
   };
 
-
   // Clean up timer on unmount
   useEffect(() => {
     return () => {
@@ -98,7 +96,7 @@ export default function ImageSlider({ images, inStock, selectedVariantColor }: I
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!imageContainerRef.current) return;
 
-    const { left, top, width, height } = imageContainerRef.current.getBoundingClientRect();
+    const { left, top } = imageContainerRef.current.getBoundingClientRect();
 
     // Calculate position relative to the container
     const x = e.clientX - left;
@@ -107,27 +105,9 @@ export default function ImageSlider({ images, inStock, selectedVariantColor }: I
     setPosition({ x, y });
   };
 
-  // Handle swipe gestures
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX);
-  };
+ 
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStart - touchEnd > 50) {
-      // Swipe left
-      goToNext();
-    }
-
-    if (touchStart - touchEnd < -50) {
-      // Swipe right
-      goToPrevious();
-    }
-  };
-
+  
   const customStyle = {
     transform: `translate(calc(100% - ${position.x}px), calc(100% - ${position.y}px)) translate(-${position.x}px, -${position.y}px) scale(1.75, 1.75)`,
   };
@@ -142,21 +122,18 @@ export default function ImageSlider({ images, inStock, selectedVariantColor }: I
 
   return (
     <div className="relative flex flex-col items-center justify-center">
-      
-        
       <div
         ref={imageContainerRef}
         className="relative  max-h-[500px] max-w-[500px] h-full w-full xl:h-[500px] xl:w-[500px] aspect-square overflow-hidden rounded-lg bg-gray-100"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
+     
         // onTouchEnd={handleTouchEnd}
         onMouseMove={handleMouseMove}
       >
         <div className="relative h-full w-full overflow-hidden rounded-lg bg-gray-100">
-            {/* Wishlist Button */}
-            {/* <button
+          {/* Wishlist Button */}
+          {/* <button
             className={`absolute top-4 right-4 z-30 bg-white/80 p-2 rounded-full hover:bg-white transition-all duration-300 ${
               isWishlistActive ? "scale-110" : "scale-100"
             }`}
@@ -245,7 +222,12 @@ export default function ImageSlider({ images, inStock, selectedVariantColor }: I
       {/* Thumbnails and navigation */}
       {images.length > 1 && (
         <div className="mt-4 flex justify-center items-center space-x-2 overflow-x-auto pb-2">
-          <MyButton variant="outline" size="icon" className="bg-white/80 hover:bg-white rounded-full h-8 w-8 sm:h-10 sm:w-10 z-30" onClick={goToPrevious}>
+          <MyButton
+            variant="outline"
+            size="icon"
+            className="bg-white/80 hover:bg-white rounded-full h-8 w-8 sm:h-10 sm:w-10 z-30"
+            onClick={goToPrevious}
+          >
             <ChevronLeft className="h-5 w-5" />
             <span className="sr-only">Previous slide</span>
           </MyButton>

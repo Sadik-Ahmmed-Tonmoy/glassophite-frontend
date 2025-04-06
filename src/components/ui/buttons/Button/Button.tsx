@@ -5,12 +5,16 @@ import { cn } from "@/lib/utils";
 const Button = ({
   children,
   className,
+  onClick,
 }: {
   children: React.ReactNode;
   className?: string;
+  onClick?: () => void;
+  // onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }) => {
   return (
     <button
+      onClick={onClick}
       className={cn(
         "relative group/btn flex items-center justify-center bg-slate-500 w-full rounded-md h-10 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] dark:bg-zinc-800",
         className

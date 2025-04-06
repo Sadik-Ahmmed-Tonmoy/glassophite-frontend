@@ -13,54 +13,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ImageSlider from "./ImageSlider";
 import VariantSelector from "./VariantSelector";
 import SimilarProducts from "./SimilarProducts/SimilarProducts";
-import { productMockData, productsMockDataList } from "@/lib/productMockData";
+import { productMockData, productsMockDataList, reviewsData } from "@/lib/productMockData";
 import { cn } from "@/lib/utils";
+import ProductReview from "./ProductReview";
+import { TProduct } from "@/app/types/types";
 
-interface Review {
-  rating: number;
-  comment: string;
-}
 
-interface ImageItem {
-  image: string;
-  id: number;
-}
 
-interface Variant {
-  id: number;
-  title: string;
-  color: string;
-  priceAfterDiscount?: number;
-  mainPrice?: number;
-  discountPercent?: number;
-  inStock: boolean;
-  quantity: number;
-  productCode: string;
-  shortDescription: string;
-  imgList: ImageItem[];
-}
 
-interface Product {
-  id: number;
-  shortDescription: string;
-  longDescription: string;
-  brand: string;
-  material: string;
-  dimensions: string;
-  weight: string;
-  shippingInfo: string;
-  frameType: string;
-  lensType: string;
-  warranty: string;
-  countryOfOrigin: string;
-  targetAudience: string;
-  careInstructions: string;
-  reviews: Review[];
-  variants: Variant[];
-}
+
+
 
 interface ProductDetailsProps {
-  product: Product;
+  product: TProduct;
 }
 
 export default function ProductDetails({ product }: ProductDetailsProps) {
@@ -92,7 +57,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   };
 
   // Calculate average rating
-  const avgRating = product.reviews.length > 0 ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length : 0;
+  // const avgRating = product.reviews.length > 0 ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length : 0;
 
   if (!product || !selectedVariant) {
     return <div className="p-8 text-center">Product not found</div>;
@@ -122,12 +87,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             <p className="text-gray-500 mt-2">{selectedVariant.shortDescription}</p>
 
             <div className="flex items-center mt-4 space-x-2">
-              {product.reviews.length > 0 && (
+              {product.averageRating && (
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className={`h-4 w-4 ${i < Math.round(avgRating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`} />
+                    <Star key={i} className={`h-4 w-4 ${i < Math.round(product?.averageRating ?? 0) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`} />
                   ))}
-                  <span className="ml-2 text-sm text-gray-500">({product.reviews.length} reviews)</span>
+                  <span className="ml-2 text-sm text-gray-500">({product?.averageRating} reviews)</span>
                 </div>
               )}
               <span className="text-sm text-gray-500">SKU: {selectedVariant.productCode}</span>
@@ -193,7 +158,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             </TabsContent>
 
             <TabsContent value="specifications" className="mt-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <div>
                     <span className="font-semibold">Brand:</span> {product.brand}
@@ -241,6 +206,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </div>
       </div>
       <SimilarProducts allProducts={productsMockDataList} currentProduct={ productMockData}/>
+         {/* Reviews Section */}
+         <div className="mt-8 md:mt-16">
+        <ProductReview productId={product.id} initialReviews={reviewsData} />
+      </div>
     </div>
   );
 }

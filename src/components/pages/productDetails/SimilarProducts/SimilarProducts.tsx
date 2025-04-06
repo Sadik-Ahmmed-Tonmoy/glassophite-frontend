@@ -38,6 +38,7 @@ export default function SimilarProducts({ currentProduct, allProducts }: Similar
           <MyButton variant="outline" size="icon" className="rounded-full h-8 w-8 swiper-button-prev-custom">
             <ChevronLeft className="h-4 w-4" />
           </MyButton>
+         
           <MyButton variant="outline" size="icon" className="rounded-full h-8 w-8 swiper-button-next-custom">
             <ChevronRight className="h-4 w-4" />
           </MyButton>
@@ -60,14 +61,18 @@ export default function SimilarProducts({ currentProduct, allProducts }: Similar
             spaceBetween: 10,
           },
           480: {
-            slidesPerView: 2,
+            slidesPerView: 1,
             spaceBetween: 15,
           },
           768: {
-            slidesPerView: 3,
+            slidesPerView: 2,
             spaceBetween: 20,
           },
           1024: {
+            slidesPerView: 3,
+            spaceBetween: 20,
+          },
+          1280: {
             slidesPerView: 4,
             spaceBetween: 20,
           },
@@ -75,7 +80,7 @@ export default function SimilarProducts({ currentProduct, allProducts }: Similar
         className="similar-products-swiper"
       >
         {allProducts?.map((product, index) => (
-          <SwiperSlide key={index} className="swiper-slide-custom">
+          <SwiperSlide key={index} className="swiper-slide-custom ">
             <ProductCard product={product} />
           </SwiperSlide>
         ))}

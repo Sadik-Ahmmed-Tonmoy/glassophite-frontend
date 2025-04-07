@@ -49,7 +49,6 @@
     countryOfOrigin?: string;
     targetAudience?: string;
     careInstructions?: string;
-    // reviews?: TReview[];
     averageRating?: number;
     totalReviews?: number;
     variants: TVariant[];

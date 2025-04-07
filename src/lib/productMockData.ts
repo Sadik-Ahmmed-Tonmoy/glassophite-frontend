@@ -1,4 +1,4 @@
-import { TProduct, TReview } from "@/app/types/types";
+import { TProduct, TReview } from "@/types/types";
 
 
 export const reviewsData: TReview[] = [
@@ -181,7 +181,7 @@ export const productMockData: TProduct = {
 
 
 
-export const productsMockDataList: TProduct[] = [
+export const mockProducts: TProduct[] = [
   {
     id: 1,
     shortDescription: "A luxury purple frame that exudes sophistication and class.",

@@ -1,13 +1,11 @@
 "use client";
-import { TProduct, TVariant } from "@/app/types/types";
+import { TProduct, TVariant } from "@/types/types";
 import { Heart, XCircle } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import AddToCartButton from "../buttons/AddToCartButton/AddToCartButton";
 import RequestStockButton from "../buttons/RequestStockButton/RequestStockButton";
 import ViewDetailsButton from "../buttons/ViewDetailsButton/view-details-button";
-
-
 
 interface ProductCardProps {
   product: TProduct

@@ -4,7 +4,7 @@ import { Swiper, SwiperSlide } from "swiper/react"
 import { Navigation, Pagination } from "swiper/modules"
 import { MyButton } from "@/components/ui/buttons/MyButton/MyButton"
 import ProductCard from "@/components/ui/ProductCard/ProductCard"
-import type { TProduct } from "@/app/types/types"
+import type { TProduct } from "@/types/types"
 
 // Import Swiper styles
 import "swiper/css"

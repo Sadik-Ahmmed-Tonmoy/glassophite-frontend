@@ -16,7 +16,7 @@ import SimilarProducts from "./SimilarProducts/SimilarProducts";
 import { productMockData, productsMockDataList, reviewsData } from "@/lib/productMockData";
 import { cn } from "@/lib/utils";
 import ProductReview from "./ProductReview";
-import { TProduct } from "@/app/types/types";
+import { TProduct } from "@/types/types";
 
 
 

@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ImageSlider from "./ImageSlider";
 import VariantSelector from "./VariantSelector";
 import SimilarProducts from "./SimilarProducts/SimilarProducts";
-import { productMockData, productsMockDataList, reviewsData } from "@/lib/productMockData";
+import { mockProducts, productMockData, reviewsData } from "@/lib/productMockData";
 import { cn } from "@/lib/utils";
 import ProductReview from "./ProductReview";
 import { TProduct } from "@/types/types";
@@ -205,7 +205,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </Tabs>
         </div>
       </div>
-      <SimilarProducts allProducts={productsMockDataList} currentProduct={ productMockData}/>
+      <SimilarProducts allProducts={mockProducts} currentProduct={ productMockData}/>
          {/* Reviews Section */}
          <div className="mt-8 md:mt-16">
         <ProductReview productId={product.id} initialReviews={reviewsData} />

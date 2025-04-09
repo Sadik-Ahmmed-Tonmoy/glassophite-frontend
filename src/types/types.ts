@@ -55,4 +55,50 @@
   };
   
 
+  export interface Order {
+    id: string
+    orderNumber: string
+    orderDate: string
+    processingDate?: string
+    shippingDate?: string
+    deliveryDate?: string
+    cancellationDate?: string
+    estimatedDelivery?: string
+    status: "processing" | "shipped" | "delivered" | "cancelled"
+    items: OrderItem[]
+    subtotal: number
+    shipping: number
+    tax: number
+    discount: number
+    total: number
+    paymentMethod: string
+    paymentDetails?: {
+      cardType: string
+      lastFourDigits: string
+      expiryDate: string
+    }
+    shippingAddress: {
+      name: string
+      street: string
+      city: string
+      state: string
+      zipCode: string
+      country: string
+      phone?: string
+    }
+    trackingNumber?: string
+    trackingUrl?: string
+  }
+  
+  export interface OrderItem {
+    id: string
+    name: string
+    sku: string
+    price: number
+    quantity: number
+    variant?: string
+    image?: string
+    originalPrice?: number
+  }
+  
   

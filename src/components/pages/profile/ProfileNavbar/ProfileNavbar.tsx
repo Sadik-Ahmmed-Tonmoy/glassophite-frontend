@@ -1,47 +1,47 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Home, ShoppingBag, User, Search, ShoppingCart, Heart } from "lucide-react"
+import { Heart, Home, Search, ShoppingBag, ShoppingCart } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function ProfileNavbar() {
-  const pathname = usePathname()
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
+  const pathname = usePathname();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
-        setScrolled(true)
+        setScrolled(true);
       } else {
-        setScrolled(false)
+        setScrolled(false);
       }
-    }
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen)
+    setIsMenuOpen(!isMenuOpen);
     // Prevent body scroll when menu is open
     if (!isMenuOpen) {
-      document.body.style.overflow = "hidden"
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = ""
+      document.body.style.overflow = "";
     }
-  }
+  };
 
   const closeMenu = () => {
-    setIsMenuOpen(false)
-    document.body.style.overflow = ""
-  }
+    setIsMenuOpen(false);
+    document.body.style.overflow = "";
+  };
 
   const isActive = (path: string) => {
-    return pathname === path || pathname.startsWith(path)
-  }
+    return pathname === path || pathname.startsWith(path);
+  };
 
   return (
     <header
@@ -54,7 +54,9 @@ export default function ProfileNavbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 group">
             <ShoppingBag className="h-6 w-6 text-primary transition-transform duration-300 group-hover:scale-110" />
-            <span className="font-bold text-xl group-hover:text-primary transition-colors duration-300">EyeStyle</span>
+            <span className="font-bold text-xl group-hover:text-primary transition-colors duration-300">
+              EyeStyle
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -70,7 +72,9 @@ export default function ProfileNavbar() {
             <Link
               href="/products"
               className={`text-sm font-medium transition-all duration-300 hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-primary after:transition-all after:duration-300 ${
-                isActive("/products") ? "text-primary after:w-full" : "text-gray-700"
+                isActive("/products")
+                  ? "text-primary after:w-full"
+                  : "text-gray-700"
               }`}
             >
               Products
@@ -78,7 +82,9 @@ export default function ProfileNavbar() {
             <Link
               href="/about"
               className={`text-sm font-medium transition-all duration-300 hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-primary after:transition-all after:duration-300 ${
-                isActive("/about") ? "text-primary after:w-full" : "text-gray-700"
+                isActive("/about")
+                  ? "text-primary after:w-full"
+                  : "text-gray-700"
               }`}
             >
               About
@@ -86,7 +92,9 @@ export default function ProfileNavbar() {
             <Link
               href="/contact"
               className={`text-sm font-medium transition-all duration-300 hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-primary after:transition-all after:duration-300 ${
-                isActive("/contact") ? "text-primary after:w-full" : "text-gray-700"
+                isActive("/contact")
+                  ? "text-primary after:w-full"
+                  : "text-gray-700"
               }`}
             >
               Contact
@@ -120,7 +128,6 @@ export default function ProfileNavbar() {
                 </span>
               </div>
             </Link>
-          
           </div>
 
           {/* Mobile Menu Button */}
@@ -206,15 +213,18 @@ export default function ProfileNavbar() {
               <Heart className="h-5 w-5" />
               <span>Wishlist</span>
             </Link>
-          
           </nav>
         </div>
       </div>
 
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={closeMenu} aria-hidden="true" />
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={closeMenu}
+          aria-hidden="true"
+        />
       )}
     </header>
-  )
+  );
 }

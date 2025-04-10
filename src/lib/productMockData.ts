@@ -53,7 +53,7 @@ export const reviewsData: TReview[] = [
 ];
 
 export const productMockData: TProduct = {
-  id: 1,
+  id: "11",
   shortDescription: "A luxury purple frame that exudes sophistication and class.",
   longDescription:
     "Purple Horizon sunglasses are the epitome of luxury. With their rich purple color and elegant design, they are perfect for those who want to add a touch of class to their accessory collection.",

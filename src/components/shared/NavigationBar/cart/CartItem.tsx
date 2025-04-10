@@ -45,7 +45,7 @@ export default function CartItem({ item }: any) {
 
         {/* Product Details */}
         <div className="flex-1 min-w-0">
-          <div className="flex justify-between">
+          <div className="flex justify-between  ">
             <div className="flex-1 pr-2">
               <h3 className="text-sm font-medium text-gray-900 line-clamp-2">{item.name}</h3>
               <div className="mt-1 flex items-center text-xs text-gray-500 space-x-2">
@@ -77,7 +77,7 @@ export default function CartItem({ item }: any) {
           </div>
 
           {/* Price and Quantity */}
-          <div className="mt-2 flex items-center justify-between">
+          <div className="mt-2 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center border rounded-md">
               <button
                 onClick={() => handleQuantityChange(item.quantity - 1)}

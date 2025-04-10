@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Slider } from "@/components/ui/slider"
+import { useState, useEffect } from "react"
 
 interface PriceRangeSliderProps {
   minPrice: number

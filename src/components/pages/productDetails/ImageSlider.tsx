@@ -7,14 +7,12 @@ import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, XCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FaSearchengin } from "react-icons/fa6";
+import { TImage } from "@/types/types";
 
-interface ImageItem {
-  image: string;
-  id: number;
-}
+
 
 interface ImageSliderProps {
-  images: ImageItem[];
+  images: TImage[];
   inStock: boolean;
   selectedVariantColor?: string;
 }

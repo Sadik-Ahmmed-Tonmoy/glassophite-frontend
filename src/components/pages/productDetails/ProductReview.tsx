@@ -62,7 +62,7 @@ const animationStyles = `
 `;
 
 interface Review {
-  id?: number;
+  id?: string;
   name: string;
   email?: string;
   rating: number;
@@ -75,7 +75,7 @@ interface Review {
 }
 
 interface ProductReviewProps {
-  productId: number;
+  productId: string;
   initialReviews: Review[];
 }
 
@@ -234,7 +234,7 @@ export default function ProductReview({ productId, initialReviews }: ProductRevi
     }, 1000);
   };
 
-  const handleHelpfulClick = (reviewId: number | undefined, isHelpful: boolean) => {
+  const handleHelpfulClick = (reviewId: string | undefined, isHelpful: boolean) => {
     if (!reviewId) return;
 
     setReviews((prev) =>

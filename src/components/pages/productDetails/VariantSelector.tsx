@@ -2,19 +2,14 @@
 
 import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { TVariant } from "@/types/types"
 
-interface Variant {
-  id: number
-  title: string
-  color: string
-  inStock: boolean
-  quantity: number
-}
+
 
 interface VariantSelectorProps {
-  variants: Variant[]
-  selectedVariantId: number
-  onSelectVariant: (variantId: number) => void
+  variants: TVariant[]
+  selectedVariantId: string
+  onSelectVariant: (variantId: string) => void
 }
 
 export default function VariantSelector({ variants, selectedVariantId, onSelectVariant }: VariantSelectorProps) {
@@ -22,12 +17,12 @@ export default function VariantSelector({ variants, selectedVariantId, onSelectV
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium">Color</h3>
-        <span className="text-xs text-gray-500">{variants.find((v) => v.id === selectedVariantId)?.title || ""}</span>
+        <span className="text-xs text-gray-500">{variants.find((v) => v.id == selectedVariantId)?.title || ""}</span>
       </div>
 
       <div className="flex flex-wrap gap-3">
         {variants.map((variant) => {
-          const isSelected = selectedVariantId === variant.id
+          const isSelected = selectedVariantId == variant.id
           const isOutOfStock = !variant.inStock
 
           return (

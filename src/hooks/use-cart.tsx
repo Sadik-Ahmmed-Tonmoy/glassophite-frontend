@@ -22,7 +22,7 @@ interface CartContextType {
   totalPrice: number
   addItem: (item: CartItem) => void
   removeItem: (id: string) => void
-  updateItemQuantity: (id: string, quantity: number) => void
+  updateItemQuantity: (id: string | number, quantity: number) => void
   clearCart: () => void
   saveForLater: (id: string) => void
   moveToCart: (id: string) => void
@@ -109,7 +109,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         // Update quantity of existing item
         const updatedItems = [...prevItems]
         const existingItem = updatedItems[existingItemIndex]
-        const newQuantity = existingItem.quantity + newItem.quantity
+        // const newQuantity = existingItem.quantity + newItem.quantity
+        const newQuantity =  newItem.quantity
 
         updatedItems[existingItemIndex] = {
           ...existingItem,
@@ -128,8 +129,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prevItems) => prevItems.filter((item) => item.id !== id))
   }
 
-  const updateItemQuantity = (id: string, quantity: number) => {
-    setItems((prevItems) => prevItems.map((item) => (item.id === id ? { ...item, quantity } : item)))
+  const updateItemQuantity = (id: string | number, quantity: number) => {
+    setItems((prevItems) => prevItems.map((item) => (item.id == id ? { ...item, quantity } : item)))
   }
 
   const clearCart = () => {

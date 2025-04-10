@@ -43,7 +43,7 @@ export default function DeliveryInfo() {
 
         <div className="mt-2 pt-2 border-t border-blue-200 flex items-start">
           <Info size={14} className="text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
-          <p className="text-xs text-blue-600">
+          <p className="text-xs text-blue-600 text-wrap">
             Free shipping on orders over ₹1000. Orders placed before 2 PM are processed the same day.
           </p>
         </div>

@@ -12,6 +12,7 @@ import { MdOutlineShoppingBag } from "react-icons/md";
 import { PiShoppingBagOpenFill } from "react-icons/pi";
 import DropDownMenus from "../DropDownMenus/DropDownMenus";
 import styles from "./PCNavBar.module.css";
+import CartButton from "../cart/CartButton";
 
 const PCNavBar = () => {
   const [shakeCartFloatingButton, setShakeCartFloatingButton] = useState(false);
@@ -102,6 +103,7 @@ const PCNavBar = () => {
               0
             </p>
           </button>
+           <CartButton />
 
           <ThemeSwitcher />
 

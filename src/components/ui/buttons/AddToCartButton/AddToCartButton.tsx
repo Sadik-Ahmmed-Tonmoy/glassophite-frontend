@@ -1,9 +1,72 @@
 "use client";
+import { useCart } from "@/hooks/use-cart";
 import "./AddToCartButton.css"; // Import your CSS file here
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
-const AddToCartButton = () => {
+
+interface AddToCartButtonProps {
+  product: {
+    id: string
+    title: string
+    brand?: string
+    size?: string
+    color?: string
+    colorName?: string
+    price: number
+    priceAfterDiscount?: number
+    inStock: boolean
+    quantity: number
+    img?: string
+  }
+  cartQuantity?: number
+  className?: string
+}
+
+const AddToCartButton = ({ product, cartQuantity, className = "" }: AddToCartButtonProps) => {
+
+    // Add the toast function
+    const { addItem } = useCart()
+    const { toast } = useToast()
+    const [isAdded, setIsAdded] = useState(false)
+  
+    const handleAddToCart = () => {
+      if (!product.inStock) return
+  
+      const cartItem = {
+        id: product.id || `product-${Date.now()}`, // Fallback ID if none provided
+        name: product.title || "Unnamed Product",
+        brand: product.brand || "EyeStyle",
+        size: product.size || "Standard",
+        price: product.price || 0,
+        discountPrice: product.priceAfterDiscount,
+        image: product.img || "/placeholder.svg?height=80&width=80",
+        quantity: cartQuantity || 1,
+        maxQuantity: product.quantity || 0,
+        color: product.color,
+        colorName: product.colorName || "Default",
+      }
+  
+      addItem(cartItem)
+  
+      // Show toast notification
+      toast({
+        title: "Added to cart",
+        description: `${product.title} has been added to your cart`,
+        type: "success",
+      })
+  
+      setIsAdded(true)
+      setTimeout(() => setIsAdded(false), 2000)
+    }
+
+    
   return (
-    <button className="CartBtn w-full bg-gradient-to-br from-green-secondary via-green-800 to-green-secondary hover:from-green-primary hover:via-green-600 hover:to-green-secondary transition-colors text-white flex justify-center items-center gap-1 py-3 rounded-md">
+    <button
+    onClick={handleAddToCart}
+    disabled={!product.inStock}
+    
+    className="CartBtn w-full bg-gradient-to-br from-green-secondary via-green-800 to-green-secondary hover:from-green-primary hover:via-green-600 hover:to-green-secondary transition-colors text-white flex justify-center items-center gap-1 py-3 rounded-md">
       <span className="IconContainer">
         <svg
           xmlns="http://www.w3.org/2000/svg"

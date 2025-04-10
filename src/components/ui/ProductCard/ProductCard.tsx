@@ -161,7 +161,26 @@ function ProductCard({ product }: ProductCardProps) {
             {!selectedVariant.inStock ? (
               <RequestStockButton />
             ) : (
-              <AddToCartButton />
+              // <AddToCartButton />
+              <AddToCartButton
+              product={{
+                id: selectedVariant?.id.toString() || "",
+                title: selectedVariant?.title || "",
+                brand: product.brand,
+                size: product.dimensions,
+                color: selectedVariant?.color,
+                colorName: selectedVariant?.title?.split(" ").pop() || "",
+                price: selectedVariant?.mainPrice || 0,
+                priceAfterDiscount: selectedVariant?.priceAfterDiscount,
+                inStock: selectedVariant?.inStock || false,
+                quantity: selectedVariant?.quantity || 0,
+                img:
+                  selectedVariant?.imgList && selectedVariant.imgList.length > 0
+                    ? selectedVariant.imgList[0].image
+                    : undefined,
+              }}
+              className="flex-1"
+            />
             )}
           </div>
         </article>

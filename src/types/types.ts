@@ -2,7 +2,7 @@
 
   
   export type TReview = {
-    id?: number
+    id?: string
     name: string
     email?: string
     rating: number
@@ -15,13 +15,13 @@
   }
 
 
-  type TImage = {
+  export type TImage = {
     image: string;
-    id: number;
+    id: string;
   };
 
   export type TVariant = {
-    id: number;
+    id: string;
     title: string;
     color: string;
     priceAfterDiscount: number;
@@ -35,7 +35,7 @@
   };
   
   export type TProduct = {
-    id: number;
+    id: string;
     shortDescription?: string;
     longDescription?: string;
     brand?: string;

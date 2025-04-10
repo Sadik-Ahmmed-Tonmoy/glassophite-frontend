@@ -1,4 +1,4 @@
-import ProfileNavbar from "@/components/pages/profile/ProfileNavbar/ProfileNavbar";
+import ProfileNavbar from "@/components/shared/ProfileNavbar/ProfileNavbar";
 import ProfileSidebar from "@/components/pages/profile/ProfileSidebar";
 import { cn } from "@/lib/utils";
 import type React from "react";

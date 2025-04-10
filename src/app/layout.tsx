@@ -6,6 +6,7 @@ import ReduxStoreProvider from "@/redux/ReduxStoreProvider";
 import { Toaster } from "sonner";
 import MyContextProvider from "@/lib/MyContextProvider";
 import { NextUiProvider } from "@/lib/NextUiProvider";
+import { CartProvider } from "@/hooks/use-cart";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,8 +38,10 @@ export default function RootLayout({
           <SessionProviderForNextAuth>
             <ReduxStoreProvider>
               <NextUiProvider>
-                <Toaster />
-                {children}
+                <CartProvider>
+                  <Toaster />
+                  {children}
+                </CartProvider>
               </NextUiProvider>
             </ReduxStoreProvider>
           </SessionProviderForNextAuth>

@@ -4,10 +4,11 @@ import { useState } from "react"
 import Image from "next/image"
 import { ChevronDown, ChevronUp, ShoppingCart, CheckIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { OrderItem } from "@/lib/types"
+import { TOrderItem } from "@/types/types"
+
 
 interface OrderItemsListProps {
-  items: OrderItem[]
+  items: TOrderItem[]
   subtotal: number
   shipping: number
   tax: number

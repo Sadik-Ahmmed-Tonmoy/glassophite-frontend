@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import AddToCartButton from "@/components/ui/buttons/AddToCartButton/AddToCartButton";
+import { MyButton } from "@/components/ui/buttons/MyButton/MyButton";
 import RequestStockButton from "@/components/ui/buttons/RequestStockButton/RequestStockButton";
 import WishlistButton from "@/components/ui/buttons/WishlistButton/WishlistButton";
 import { Separator } from "@/components/ui/separator";
@@ -12,22 +13,21 @@ import {
   productMockData,
   reviewsData,
 } from "@/lib/productMockData";
+import { cn } from "@/lib/utils";
 import { TProduct } from "@/types/types";
-import { Minus, Plus, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import ImageSlider from "./ImageSlider";
 import ProductReview from "./ProductReview";
 import SimilarProducts from "./SimilarProducts/SimilarProducts";
 import VariantSelector from "./VariantSelector";
-import { MyButton } from "@/components/ui/buttons/MyButton/MyButton";
-import { cn } from "@/lib/utils";
 
 interface ProductDetailsProps {
   product: TProduct;
 }
 
 export default function ProductDetails({ product }: ProductDetailsProps) {
-  const { updateItemQuantity, items } = useCart();
+  const { items } = useCart();
   const selectedItemFormCart = items.find((item) => item.id == product.id);
   console.log(selectedItemFormCart, items, product.id);
 
@@ -35,14 +35,13 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     product.variants[0]?.id || ""
   );
   const [quantity, setQuantity] = useState(1);
-useEffect(() => {
+  useEffect(() => {
     if (selectedItemFormCart) {
       setQuantity(selectedItemFormCart.quantity);
     } else {
       setQuantity(1);
     }
-},[selectedItemFormCart])
-
+  }, [selectedItemFormCart]);
 
   // Find the selected variant
   const selectedVariant =
@@ -64,12 +63,12 @@ useEffect(() => {
     }
   };
 
-  const handleQuantityChange = (newQuantity: number) => {
-    console.log(newQuantity, selectedVariant.quantity);
-    if (newQuantity < 1) return;
-    if (newQuantity > selectedVariant.quantity) return;
-    updateItemQuantity(selectedVariant.id, newQuantity);
-  };
+  // const handleQuantityChange = (newQuantity: number) => {
+  //   console.log(newQuantity, selectedVariant.quantity);
+  //   if (newQuantity < 1) return;
+  //   if (newQuantity > selectedVariant.quantity) return;
+  //   updateItemQuantity(selectedVariant.id, newQuantity);
+  // };
 
   const increaseQuantity = () => {
     if (selectedVariant && quantity < selectedVariant.quantity) {
@@ -172,10 +171,18 @@ useEffect(() => {
 
           <div>
             <div className="flex flex-col xs:flex-row sm:items-center gap-4 ">
-              <div className={cn("flex items-center border rounded-md w-fit",
-                selectedVariant.inStock ? "flex" : "hidden",
-              )}>
-                <MyButton variant="ghost" size="icon" onClick={decreaseQuantity} disabled={!selectedVariant.inStock || quantity <= 1}>
+              <div
+                className={cn(
+                  "flex items-center border rounded-md w-fit",
+                  selectedVariant.inStock ? "flex" : "hidden"
+                )}
+              >
+                <MyButton
+                  variant="ghost"
+                  size="icon"
+                  onClick={decreaseQuantity}
+                  disabled={!selectedVariant.inStock || quantity <= 1}
+                >
                   -
                 </MyButton>
                 <span className="w-10 text-center">{quantity}</span>
@@ -183,7 +190,10 @@ useEffect(() => {
                   variant="ghost"
                   size="icon"
                   onClick={increaseQuantity}
-                  disabled={!selectedVariant.inStock || quantity >= selectedVariant.quantity}
+                  disabled={
+                    !selectedVariant.inStock ||
+                    quantity >= selectedVariant.quantity
+                  }
                 >
                   +
                 </MyButton>

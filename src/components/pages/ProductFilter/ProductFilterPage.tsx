@@ -160,7 +160,7 @@ export default function ProductFilterPage() {
           result.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0))
           break
         case "newest":
-          result.sort((a, b) => b.id - a.id)
+          result.sort((a, b) => Number(b.id) - Number(a.id))
           break
         default:
           // Featured - could be a custom algorithm, here we'll use rating * reviews

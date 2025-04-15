@@ -27,6 +27,7 @@ import Button from "@/components/ui/buttons/Button/Button";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { TReview } from "@/types/types";
 
 // Import shadcn Dialog components
 // import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogClose } from "@/components/ui/dialog"
@@ -61,22 +62,11 @@ const animationStyles = `
 }
 `;
 
-interface Review {
-  id?: string;
-  name: string;
-  email?: string;
-  rating: number;
-  comment: string;
-  date?: string;
-  helpful?: number;
-  unhelpful?: number;
-  verified?: boolean;
-  images?: string[];
-}
+
 
 interface ProductReviewProps {
   productId: string;
-  initialReviews: Review[];
+  initialReviews: TReview[];
 }
 
 export default function ProductReview({ productId, initialReviews }: ProductReviewProps) {
@@ -84,10 +74,10 @@ export default function ProductReview({ productId, initialReviews }: ProductRevi
   // Add this constant at the top of the component function, after the interface definitions
   const MAX_IMAGES = 6;
 
-  const [reviews, setReviews] = useState<Review[]>(initialReviews || []);
+  const [reviews, setReviews] = useState<TReview[]>(initialReviews || []);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [formData, setFormData] = useState<Review>({
+  const [formData, setFormData] = useState<TReview>({
     name: "",
     email: "",
     rating: 0,
@@ -142,7 +132,7 @@ export default function ProductReview({ productId, initialReviews }: ProductRevi
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev: TReview) => ({ ...prev, [name]: value }));
 
     // Clear error when user types
     if (formErrors[name]) {
@@ -155,7 +145,7 @@ export default function ProductReview({ productId, initialReviews }: ProductRevi
   };
 
   const handleRatingClick = (rating: number) => {
-    setFormData((prev) => ({ ...prev, rating }));
+    setFormData((prev: TReview) => ({ ...prev, rating }));
 
     // Clear rating error
     if (formErrors.rating) {
@@ -205,9 +195,9 @@ export default function ProductReview({ productId, initialReviews }: ProductRevi
 
     // Simulate API call
     setTimeout(() => {
-      const newReview: Review = {
+      const newReview: TReview = {
         ...formData,
-        id: Date.now(),
+        id: Date.now().toString(),
         date: new Date().toISOString(),
         helpful: 0,
         unhelpful: 0,
@@ -395,7 +385,7 @@ export default function ProductReview({ productId, initialReviews }: ProductRevi
   };
 
   // Handle review image click
-  const handleReviewImageClick = (review: Review, imageIndex: number) => {
+  const handleReviewImageClick = (review: TReview, imageIndex: number) => {
     if (!review.images) return;
     setUploadedImages(review.images);
     setCurrentImageIndex(imageIndex);
@@ -772,21 +762,21 @@ export default function ProductReview({ productId, initialReviews }: ProductRevi
                     <p className="mt-3 ">{review.comment}</p>
 
                     {review.images && review.images.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {review.images.map((image, idx) => (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                        {review.images?.map((image: string, idx: number) => (
                           <div
-                            key={idx}
-                            className="relative h-16 w-16 rounded-md border border-gray-200 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity group"
-                            onClick={() => handleReviewImageClick(review, idx)}
+                          key={idx}
+                          className="relative h-16 w-16 rounded-md border border-gray-200 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity group"
+                          onClick={() => handleReviewImageClick(review, idx)}
                           >
-                            <img src={image || "/placeholder.svg"} alt={`Review image ${idx + 1}`} className="h-full w-full object-cover" />
-                            {/* Add eye icon overlay on hover */}
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
-                              <Eye className="h-4 w-4 text-white" />
-                            </div>
+                          <img src={image || "/placeholder.svg"} alt={`Review image ${idx + 1}`} className="h-full w-full object-cover" />
+                          {/* Add eye icon overlay on hover */}
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
+                            <Eye className="h-4 w-4 text-white" />
+                          </div>
                           </div>
                         ))}
-                      </div>
+                        </div>
                     )}
 
                     <div className="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-200">

@@ -49,7 +49,7 @@ export default function PaymentMethod({
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    watch,
+
   } = useForm<CreditCardFormValues>({
     resolver: zodResolver(creditCardSchema),
     defaultValues: {

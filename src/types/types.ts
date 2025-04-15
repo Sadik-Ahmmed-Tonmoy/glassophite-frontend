@@ -55,7 +55,7 @@
   };
   
 
-  export interface Order {
+  export interface TOrder {
     id: string
     orderNumber: string
     orderDate: string
@@ -65,7 +65,7 @@
     cancellationDate?: string
     estimatedDelivery?: string
     status: "processing" | "shipped" | "delivered" | "cancelled"
-    items: OrderItem[]
+    items: TOrderItem[]
     subtotal: number
     shipping: number
     tax: number
@@ -90,7 +90,7 @@
     trackingUrl?: string
   }
   
-  export interface OrderItem {
+  export interface TOrderItem {
     id: string
     name: string
     sku: string

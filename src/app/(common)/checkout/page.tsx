@@ -1,23 +1,22 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { useCart } from "@/hooks/use-cart"
 import { useToast } from "@/hooks/use-toast"
+import { useState } from "react"
 
+import CheckoutStepper from "@/components/pages/checkout/CheckoutStepper"
+import CheckoutSummary from "@/components/pages/checkout/CheckoutSummary"
+import OrderConfirmation from "@/components/pages/checkout/OrderConfirmation"
+import OrderReview from "@/components/pages/checkout/OrderReview"
+import PaymentMethod from "@/components/pages/checkout/PaymentMethod"
+import ShippingForm from "@/components/pages/checkout/ShippingForm"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ShoppingCart } from "lucide-react"
 import Link from "next/link"
-import OrderConfirmation from "@/components/pages/checkout/OrderConfirmation"
-import CheckoutStepper from "@/components/pages/checkout/CheckoutStepper"
-import ShippingForm from "@/components/pages/checkout/ShippingForm"
-import PaymentMethod from "@/components/pages/checkout/PaymentMethod"
-import OrderReview from "@/components/pages/checkout/OrderReview"
-import CheckoutSummary from "@/components/pages/checkout/CheckoutSummary"
 
 export default function CheckoutPage() {
-  const { items, totalItems, totalPrice, clearCart } = useCart()
-  const router = useRouter()
+  const { items, totalPrice, clearCart } = useCart()
+
   const { toast } = useToast()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)

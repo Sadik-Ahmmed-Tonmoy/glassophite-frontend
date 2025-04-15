@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import { useCart } from "@/hooks/use-cart";
 import "./AddToCartButton.css"; // Import your CSS file here
@@ -23,7 +24,7 @@ interface AddToCartButtonProps {
   className?: string
 }
 
-const AddToCartButton = ({ product, cartQuantity, className = "" }: AddToCartButtonProps) => {
+const AddToCartButton = ({ product, cartQuantity, }: AddToCartButtonProps) => {
 
     // Add the toast function
     const { addItem } = useCart()

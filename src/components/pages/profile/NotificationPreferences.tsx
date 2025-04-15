@@ -182,7 +182,7 @@ export default function NotificationPreferences() {
           <div className="mt-6 flex items-center p-4 bg-gray-50 rounded-lg">
             <Smartphone size={20} className="text-gray-500 mr-3" />
             <p className="text-sm text-gray-600">
-              Push notifications will be sent to all devices where you're logged in. You can manage device-specific
+              Push notifications will be sent to all devices where you&#39;re logged in. You can manage device-specific
               settings in your device settings.
             </p>
           </div>

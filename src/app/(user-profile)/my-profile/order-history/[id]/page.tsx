@@ -3,7 +3,7 @@
 import OrderDetails from "@/components/pages/profile/OrderDetails"
 import ProfileHeader from "@/components/pages/profile/ProfileHeader"
 import { getOrderById } from "@/lib/data"
-import { Order } from "@/types/types"
+import { TOrder } from "@/types/types"
 import { useParams, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 
@@ -11,7 +11,7 @@ import { useState, useEffect } from "react"
 export default function OrderDetailsPage() {
   const params = useParams()
   const router = useRouter()
-  const [order, setOrder] = useState<Order | null>(null)
+  const [order, setOrder] = useState<TOrder | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

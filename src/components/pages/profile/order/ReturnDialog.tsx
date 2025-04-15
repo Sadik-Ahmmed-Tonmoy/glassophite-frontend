@@ -17,7 +17,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
-import { OrderItem } from "@/types/types"
+import { TOrderItem } from "@/types/types"
 import { Textarea } from "@/components/ui/textarea"
 
 // Define a type for the return request
@@ -37,7 +37,7 @@ interface ReturnRequest {
 interface ReturnDialogProps {
   orderId: string
   orderNumber: string
-  orderItems: OrderItem[]
+  orderItems: TOrderItem[]
   isDelivered: boolean
 }
 
@@ -179,20 +179,20 @@ export default function ReturnDialog({ orderId, orderNumber, orderItems, isDeliv
   }
 
   // Reset form
-  const resetForm = () => {
-    setReturnReason("")
-    setReturnAdditionalDetails("")
-    setReturnMethod("mail")
-    setRefundMethod("original")
-    setReturnImages([])
+  // const resetForm = () => {
+  //   setReturnReason("")
+  //   setReturnAdditionalDetails("")
+  //   setReturnMethod("mail")
+  //   setRefundMethod("original")
+  //   setReturnImages([])
 
-    // Reset return items
-    const initialReturnItems: { [key: string]: boolean } = {}
-    orderItems.forEach((item) => {
-      initialReturnItems[item.id] = false
-    })
-    setReturnItems(initialReturnItems)
-  }
+  //   // Reset return items
+  //   const initialReturnItems: { [key: string]: boolean } = {}
+  //   orderItems.forEach((item) => {
+  //     initialReturnItems[item.id] = false
+  //   })
+  //   setReturnItems(initialReturnItems)
+  // }
 
   // Render return steps
   const renderReturnSteps = () => {

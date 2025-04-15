@@ -3,7 +3,7 @@ import { TProduct, TReview } from "@/types/types";
 
 export const reviewsData: TReview[] = [
   {
-    id: 1,
+    id: "1",
     name: "John Doe",
     email: "johndoe@example.com",
     rating: 5,
@@ -15,7 +15,7 @@ export const reviewsData: TReview[] = [
     images: ["image1.jpg", "image2.jpg"]
   },
   {
-    id: 2,
+    id: "2",
     name: "Jane Smith",
     email: "janesmith@example.com",
     rating: 4,
@@ -27,7 +27,7 @@ export const reviewsData: TReview[] = [
     images: ["image3.jpg"]
   },
   {
-    id: 3,
+    id: "3",
     name: "Alice Johnson",
     email: "alice.johnson@example.com",
     rating: 3,
@@ -39,7 +39,7 @@ export const reviewsData: TReview[] = [
     images: []
   },
   {
-    id: 4,
+    id: "4",
     name: "Bob Williams",
     email: "bob.williams@example.com",
     rating: 2,
@@ -72,7 +72,7 @@ export const productMockData: TProduct = {
   totalReviews: 100,
   variants: [
     {
-      id: 11,
+      id: "11",
       title: "Black Horizon",
       color: "#232323",
       priceAfterDiscount: 1200,
@@ -85,20 +85,20 @@ export const productMockData: TProduct = {
       imgList: [
         {
           image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
-          id: 111,
+          id: "111",
         },
         {
           image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
-          id: 222,
+          id: "222",
         },
         {
           image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
-          id: 333,
+          id: "333",
         },
       ],
     },
     {
-      id: 12,
+      id: "12",
       title: "Blue Horizon",
       color: "#1d81c8",
       priceAfterDiscount: 120,
@@ -111,20 +111,20 @@ export const productMockData: TProduct = {
       imgList: [
         {
           image: "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
-          id: 321,
+          id: "321",
         },
         {
           image: "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
-          id: 322,
+          id: "322",
         },
         {
           image: "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
-          id: 323,
+          id: "323",
         },
       ],
     },
     {
-      id: 13,
+      id: "13",
       title: "Red Horizon",
       color: "#e0241b",
       priceAfterDiscount: 75,
@@ -137,20 +137,20 @@ export const productMockData: TProduct = {
       imgList: [
         {
           image: "https://i.ibb.co.com/cSPHCJpb/Chat-GPT-Image-Apr-4-2025-03-26-17-PM.png",
-          id: 654,
+          id: "654",
         },
         {
           image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
-          id: 655,
+          id: "655",
         },
         {
           image: "https://i.ibb.co.com/cSPHCJpb/Chat-GPT-Image-Apr-4-2025-03-26-17-PM.png",
-          id: 656,
+          id: "656",
         },
       ],
     },
     {
-      id: 14,
+      id: "14",
       title: "Purple Horizon",
       color: "#c6a7cb",
       priceAfterDiscount: 220,
@@ -163,15 +163,15 @@ export const productMockData: TProduct = {
       imgList: [
         {
           image: "https://i.ibb.co.com/RpdmpMC6/Chat-GPT-Image-Apr-4-2025-03-20-49-PM.png",
-          id: 789,
+          id: "789",
         },
         {
           image: "https://i.ibb.co.com/RpdmpMC6/Chat-GPT-Image-Apr-4-2025-03-20-49-PM.png",
-          id: 790,
+          id: "790",
         },
         {
           image: "https://i.ibb.co.com/RpdmpMC6/Chat-GPT-Image-Apr-4-2025-03-20-49-PM.png",
-          id: 791,
+          id: "791",
         },
       ],
     },
@@ -183,7 +183,7 @@ export const productMockData: TProduct = {
 
 export const mockProducts: TProduct[] = [
   {
-    id: 1,
+    id: "1",
     shortDescription: "A luxury purple frame that exudes sophistication and class.",
     longDescription:
       "Purple Horizon sunglasses are the epitome of luxury. With their rich purple color and elegant design, they are perfect for those who want to add a touch of class to their accessory collection.",
@@ -202,7 +202,7 @@ export const mockProducts: TProduct[] = [
     totalReviews: 100,
     variants: [
       {
-        id: 11,
+        id: "11",
         title: "Black Horizon",
         color: "#232323",
         priceAfterDiscount: 1200,
@@ -215,16 +215,16 @@ export const mockProducts: TProduct[] = [
         imgList: [
           {
             image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
-            id: 111,
+            id: "111",
           },
           {
             image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
-            id: 112,
+            id: "112",
           },
         ],
       },
       {
-        id: 12,
+        id: "12",
         title: "Blue Horizon",
         color: "#1d81c8",
         priceAfterDiscount: 120,
@@ -237,14 +237,14 @@ export const mockProducts: TProduct[] = [
         imgList: [
           {
             image: "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
-            id: 321,
+            id: "321",
           },
         ],
       },
     ],
   },
   {
-    id: 2,
+    id: "2",
     shortDescription: "A sleek and modern silver frame for a minimalist style.",
     longDescription:
       "Silver Horizon sunglasses are perfect for those who prefer a clean and sharp look. Their lightweight design makes them an excellent choice for everyday wear.",
@@ -263,7 +263,7 @@ export const mockProducts: TProduct[] = [
     totalReviews: 120,
     variants: [
       {
-        id: 21,
+        id: "21",
         title: "Silver Horizon",
         color: "#c0c0c0",
         priceAfterDiscount: 1300,
@@ -276,18 +276,18 @@ export const mockProducts: TProduct[] = [
         imgList: [
           {
             image: "https://i.ibb.co.com/silver-image1.png",
-            id: 211,
+            id: "211",
           },
           {
             image: "https://i.ibb.co.com/silver-image2.png",
-            id: 212,
+            id: "212",
           },
         ],
       },
     ],
   },
   {
-    id: 3,
+    id: "3",
     shortDescription: "A bold red frame that makes a statement in style.",
     longDescription:
       "Red Horizon sunglasses are designed for those who are bold and unapologetic. Their striking red color ensures that you stand out in any crowd.",
@@ -306,7 +306,7 @@ export const mockProducts: TProduct[] = [
     totalReviews: 80,
     variants: [
       {
-        id: 31,
+        id: "31",
         title: "Red Horizon",
         color: "#e0241b",
         priceAfterDiscount: 1100,
@@ -319,14 +319,14 @@ export const mockProducts: TProduct[] = [
         imgList: [
           {
             image: "https://i.ibb.co.com/red-image1.png",
-            id: 311,
+            id: "311",
           },
         ],
       },
     ],
   },
   {
-    id: 4,
+    id: "4",
     shortDescription: "A stylish silver frame for a bold, modern look.",
     longDescription:
       "Silver Edition sunglasses bring a cutting-edge design that is perfect for those who want to add some flair to their fashion collection. With UV protection and a contemporary frame, these sunglasses are both trendy and functional.",
@@ -346,7 +346,7 @@ export const mockProducts: TProduct[] = [
     totalReviews: 90,
     variants: [
       {
-        id: 41,
+        id: "41",
         title: "Silver Edition",
         color: "#b0b0b0",
         priceAfterDiscount: 1350,
@@ -359,14 +359,14 @@ export const mockProducts: TProduct[] = [
         imgList: [
           {
             image: "https://i.ibb.co.com/silver-edition.png",
-            id: 411,
+            id: "411",
           },
         ],
       },
     ],
   },
   {
-    id: 5,
+    id: "5",
     shortDescription: "A stunning gold frame for a luxurious touch to your wardrobe.",
     longDescription:
       "Gold Horizon sunglasses offer a classic design with a luxurious golden frame, perfect for anyone who loves the finer things in life. With their sophisticated style, these sunglasses provide both elegance and UV protection.",
@@ -385,7 +385,7 @@ export const mockProducts: TProduct[] = [
     totalReviews: 110,
     variants: [
       {
-        id: 51,
+        id: "51",
         title: "Gold Horizon",
         color: "#d4af37",
         priceAfterDiscount: 1400,
@@ -398,14 +398,14 @@ export const mockProducts: TProduct[] = [
         imgList: [
           {
             image: "https://i.ibb.co.com/gold-horizon.png",
-            id: 511,
+            id: "511",
           },
         ],
       },
     ],
   },
   {
-    id: 6,
+    id: "6",
     shortDescription: "A sleek black frame with subtle detailing for a modern style.",
     longDescription:
       "Black Knight sunglasses are designed for those who appreciate minimalist, modern designs with the perfect amount of flair. The UV protection ensures your eyes are safe while maintaining a sleek, stylish appearance.",
@@ -424,7 +424,7 @@ export const mockProducts: TProduct[] = [
     totalReviews: 95,
     variants: [
       {
-        id: 61,
+        id: "61",
         title: "Black Knight",
         color: "#000000",
         priceAfterDiscount: 950,
@@ -437,14 +437,14 @@ export const mockProducts: TProduct[] = [
         imgList: [
           {
             image: "https://i.ibb.co.com/black-knight.png",
-            id: 611,
+            id: "611",
           },
         ],
       },
     ],
   },
   {
-    id: 7,
+    id: "7",
     shortDescription: "A stylish transparent frame that matches any outfit.",
     longDescription:
       "Clear Vision sunglasses offer a unique transparent frame that’s perfect for those who want to make a subtle yet fashionable statement. The UV400 lenses provide full protection while maintaining a light and airy aesthetic.",
@@ -463,7 +463,7 @@ export const mockProducts: TProduct[] = [
     totalReviews: 85,
     variants: [
       {
-        id: 71,
+        id: "71",
         title: "Clear Vision",
         color: "#f4f4f4",
         priceAfterDiscount: 1100,
@@ -476,14 +476,14 @@ export const mockProducts: TProduct[] = [
         imgList: [
           {
             image: "https://i.ibb.co.com/clear-vision.png",
-            id: 711,
+            id: "711",
           },
         ],
       },
     ],
   },
   {
-    id: 8,
+    id: "8",
     shortDescription: "A sleek silver frame that gives off a futuristic vibe.",
     longDescription:
       "Silver Mirage sunglasses feature a sharp silver frame with reflective lenses for a bold, futuristic look. These sunglasses are perfect for those who want to stand out with modern elegance.",
@@ -502,7 +502,7 @@ export const mockProducts: TProduct[] = [
     totalReviews: 70,
     variants: [
       {
-        id: 81,
+        id: "81",
         title: "Silver Mirage",
         color: "#c0c0c0",
         priceAfterDiscount: 1300,
@@ -515,14 +515,14 @@ export const mockProducts: TProduct[] = [
         imgList: [
           {
             image: "https://i.ibb.co.com/silver-mirage.png",
-            id: 811,
+            id: "811",
           },
         ],
       },
     ],
   },
   {
-    id: 9,
+    id: "9",
     shortDescription: "A bold and stylish pair of black frame sunglasses with a unique design.",
     longDescription:
       "These Black Ace sunglasses feature a bold black frame and polarized lenses, offering maximum protection and style. Their distinctive design ensures you’ll stand out from the crowd.",
@@ -541,7 +541,7 @@ export const mockProducts: TProduct[] = [
     totalReviews: 60,
     variants: [
       {
-        id: 91,
+        id: "91",
         title: "Black Ace",
         color: "#000000",
         priceAfterDiscount: 1150,
@@ -554,7 +554,7 @@ export const mockProducts: TProduct[] = [
         imgList: [
           {
             image: "https://i.ibb.co.com/black-ace.png",
-            id: 911,
+            id: "911",
           },
         ],
       },

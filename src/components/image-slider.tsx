@@ -97,7 +97,7 @@ export default function ImageSlider({ images, inStock, selectedVariantColor }: I
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!imageContainerRef.current) return
 
-    const { left, top, width, height } = imageContainerRef.current.getBoundingClientRect()
+    const { left, top,  } = imageContainerRef.current.getBoundingClientRect()
 
     // Calculate position relative to the container
     const x = e.clientX - left

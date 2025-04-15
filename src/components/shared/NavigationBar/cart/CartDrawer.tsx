@@ -13,9 +13,7 @@ import EmptyCart from "./EmptyCart";
 // Import the new components
 import {
   Sheet,
-  SheetClose,
-  SheetContent,
-  SheetHeader
+  SheetContent
 } from "@/components/ui/sheet";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import DeliveryInfo from "./DeliveryInfo";

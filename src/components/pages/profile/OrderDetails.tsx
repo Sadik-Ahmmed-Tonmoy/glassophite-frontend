@@ -1,36 +1,39 @@
-"use client"
-import Link from "next/link"
-import { ArrowLeft, Download } from "lucide-react"
-import type { Order } from "@/lib/types"
-import { Button } from "@/components/ui/button"
-import ReturnDialog from "./order/ReturnDialog"
-import ContactSupportDialog from "./order/ContactSupportDialog"
-import AddressDisplay from "./order/AddressDisplay"
-import OrderTimeline from "./order/OrderTimeline"
-import OrderItemsList from "./order/OrderItemsList"
-import PaymentInformation from "./order/PaymentInformation"
-import OrderStatusBadge from "./order/OrderStatusBadge"
+"use client";
+import Link from "next/link";
+import { ArrowLeft, Download } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import ReturnDialog from "./order/ReturnDialog";
+import ContactSupportDialog from "./order/ContactSupportDialog";
+import AddressDisplay from "./order/AddressDisplay";
+import OrderTimeline from "./order/OrderTimeline";
+import OrderItemsList from "./order/OrderItemsList";
+import PaymentInformation from "./order/PaymentInformation";
+import OrderStatusBadge from "./order/OrderStatusBadge";
+import { TOrder } from "@/types/types";
 
 interface OrderDetailsProps {
-  order: Order
+  order: TOrder;
 }
 
 export default function OrderDetails({ order }: OrderDetailsProps) {
   // Handle invoice download
   const handleDownloadInvoice = () => {
     // In a real application, this would generate and download a PDF
-    console.log("Downloading invoice for order:", order.id)
+    console.log("Downloading invoice for order:", order.id);
 
     // Create a simulated download delay
-    const link = document.createElement("a")
-    link.href = "#"
-    link.download = `Invoice-${order.orderNumber}.pdf`
+    const link = document.createElement("a");
+    link.href = "#";
+    link.download = `Invoice-${order.orderNumber}.pdf`;
     link.onclick = (e) => {
-      e.preventDefault()
-      alert("Invoice download started. In a real application, this would download a PDF file.")
-    }
-    link.click()
-  }
+      e.preventDefault();
+      alert(
+        "Invoice download started. In a real application, this would download a PDF file."
+      );
+    };
+    link.click();
+  };
 
   return (
     <div className="space-y-6">
@@ -65,7 +68,10 @@ export default function OrderDetails({ order }: OrderDetailsProps) {
       {/* Order Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Shipping Information */}
-        <AddressDisplay title="Shipping Address" address={order.shippingAddress} />
+        <AddressDisplay
+          title="Shipping Address"
+          address={order.shippingAddress}
+        />
 
         {/* Payment Information */}
         <PaymentInformation
@@ -95,14 +101,21 @@ export default function OrderDetails({ order }: OrderDetailsProps) {
             />
           )}
 
-          <Button variant="outline" className="flex items-center" onClick={handleDownloadInvoice}>
+          <Button
+            variant="outline"
+            className="flex items-center"
+            onClick={handleDownloadInvoice}
+          >
             <Download size={16} className="mr-1.5" />
             Download Invoice
           </Button>
 
-          <ContactSupportDialog orderId={order.id} orderNumber={order.orderNumber} />
+          <ContactSupportDialog
+            orderId={order.id}
+            orderNumber={order.orderNumber}
+          />
         </div>
       </div>
     </div>
-  )
+  );
 }

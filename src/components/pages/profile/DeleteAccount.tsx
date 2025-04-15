@@ -79,7 +79,7 @@ export default function DeleteAccount() {
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              To confirm, type "DELETE" in the field below:
+              To confirm, type &quot;DELETE&quot; in the field below:
             </label>
             <input
               type="text"

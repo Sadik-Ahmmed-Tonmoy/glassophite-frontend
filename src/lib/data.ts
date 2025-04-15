@@ -1,7 +1,6 @@
-import { Order } from "@/types/types"
+import { TOrder } from "@/types/types";
 
-
-export const mockOrders: Order[] = [
+export const mockOrders: TOrder[] = [
   {
     id: "ord-001",
     orderNumber: "ORD-2023-001",
@@ -227,13 +226,13 @@ export const mockOrders: Order[] = [
     trackingNumber: "TRK456789123",
     trackingUrl: "https://example.com/track/TRK456789123",
   },
-]
+];
 
-export const getOrderById = (id: string): Promise<Order | null> => {
+export const getOrderById = (id: string): Promise<TOrder | null> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const order = mockOrders.find((o) => o.id === id) || null
-      resolve(order)
-    }, 500)
-  })
-}
+      const order = mockOrders.find((o) => o.id === id) || null;
+      resolve(order);
+    }, 500);
+  });
+};

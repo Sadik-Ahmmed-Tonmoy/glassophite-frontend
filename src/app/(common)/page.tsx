@@ -1,5 +1,7 @@
 import LoginWithGoogle from "@/components/LoginWithGoogle";
 import Banner from "@/components/pages/home/Banner/Banner";
+import HorizontalScroll from "@/components/pages/home/HorizontalScroll/HorizontalScroll";
+import Footer from "@/components/shared/Footer/Footer";
 import ProductCard from "@/components/ui/ProductCard/ProductCard";
 import { productMockData } from "@/lib/productMockData";
 import { Metadata } from "next";
@@ -103,10 +105,13 @@ export const metadata: Metadata = {
 
 const page = () => {
   return (
-    <div>
+    <div className="relative">
       <Banner />
       <LoginWithGoogle />
       <ProductCard product={productMockData} />
+      <HorizontalScroll/>
+      <Footer/>
+      
     </div>
   );
 };

@@ -3,7 +3,8 @@ import Image from "next/image"
 
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Star } from "lucide-react"
-import { Badge } from "./ui/Badge"
+import { Badge } from "./ui/badge"
+
 
 interface Review {
   rating: number

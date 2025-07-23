@@ -110,6 +110,7 @@ const page = () => {
       <LoginWithGoogle />
       <ProductCard product={productMockData} />
       <HorizontalScroll/>
+      <ProductCard product={productMockData} />
       <Footer/>
       
     </div>

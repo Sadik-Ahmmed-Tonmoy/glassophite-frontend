@@ -69,22 +69,21 @@ export default function HorizontalScroll() {
             <div className="sticky top-0 overflow-hidden">
               <div ref={containerRef} className="flex w-[500vw] bg-red-500 overflow-hidden">
                 <div className="scroll-section h-screen w-screen  flex flex-col justify-center overflow-hidden items-center bg-gradient-to-r from-[#ff7e5f] to-red-500">
-                  <h2 className="text-[20vw] font-semibold relative bottom-5 inline-block text-black">
-                    PASSION
-                  </h2>
-                  <Image
-                    src="/placeholder.svg?height=500&width=500"
-                    className="2xl:w-[550px] w-[380px] absolute bottom-0"
+          
+                 
+                   <Image
+                    src="https://w0.peakpx.com/wallpaper/744/825/HD-wallpaper-ferrari-488-gtb-2018-red-sports-car-side-view-sports-coupe-tuning-488-italian-sports-cars-pogea-racing-ferrari.jpg"
+                    className="h-screen w-screen"
                     width={500}
                     height={500}
                     alt="Team image"
                   />
                 </div>
                 <div className="scroll-section h-screen w-screen  flex flex-col justify-center overflow-hidden items-center bg-gradient-to-r  from-red-500 to-[#ff7e5f]">
-                  <h2 className="text-[20vw] font-semibold relative bottom-5 inline-block text-black">
-                    WORK
+             <h2 className="text-[20vw] font-semibold relative bottom-5 inline-block text-black">
+                    PASSION
                   </h2>
-                  <Image
+                     <Image
                     src="/placeholder.svg?height=500&width=500"
                     className="2xl:w-[550px] w-[380px] absolute bottom-0"
                     width={500}
@@ -92,7 +91,7 @@ export default function HorizontalScroll() {
                     alt="Team image"
                   />
                 </div>
-                <div className="scroll-section h-screen w-screen bg-orange-400 flex flex-col justify-center overflow-hidden items-center">
+                <div className="scroll-section h-screen w-screen  bg-orange-400 flex flex-col justify-center overflow-hidden items-center">
                   <h2 className="text-[20vw] font-semibold relative bottom-5 inline-block text-black">
                     MOTIVATION
                   </h2>

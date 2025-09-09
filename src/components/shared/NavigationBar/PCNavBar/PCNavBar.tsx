@@ -73,8 +73,8 @@ const PCNavBar = () => {
               <BsPerson className="w-6 h-6" />
 
               <span className="relative">
-                <span data-translate> Profile</span>
-                <span className={styles.text} data-translate>Profile</span>
+                <span data-translate>Account</span>
+                <span className={styles.text} data-translate>Account</span>
               </span>
             </button>
           </Link>
@@ -84,8 +84,8 @@ const PCNavBar = () => {
           >
             <AiOutlineHeart className="w-6 h-6 " />
             <span className="relative">
-             <span data-translate> Wishlist</span>
-              <span className={styles.text} data-translate> Wishlist</span>
+             <span data-translate>Wishlist</span>
+              <span className={styles.text} data-translate>Wishlist</span>
             </span>
             <p className="absolute -top-[6px] right-[0px] rounded-full bg-primary-color h-[18px] w-[18px] text-white flex items-center justify-center bg-[#00a76b] text-xs">
               0

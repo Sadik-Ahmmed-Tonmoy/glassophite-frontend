@@ -3,7 +3,8 @@ import Image from "next/image"
 
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Star } from "lucide-react"
-import { Badge } from "./ui/badge"
+import { Badge } from "@nextui-org/react"
+
 
 
 interface Review {
@@ -52,7 +53,9 @@ export default function ProductCard({ product, index }: ProductCardProps) {
           )}
           {!product.inStock && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <Badge variant="outline" className="text-white border-white">
+              <Badge 
+              // variant="outline" 
+              className="text-white border-white">
                 Out of Stock
               </Badge>
             </div>

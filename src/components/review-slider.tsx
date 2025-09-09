@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, Star, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+// import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 
 interface Review {
@@ -61,11 +61,11 @@ export default function ReviewSlider({ reviews }: ReviewSliderProps) {
             <div key={index} className="min-w-full px-4" style={{ flex: "0 0 100%" }}>
               <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
                 <div className="flex items-center mb-4">
-                  <Avatar className="h-10 w-10 mr-3">
-                    <AvatarFallback className="bg-gray-200 text-gray-600">
+                  {/* <Avatar className="h-10 w-10 mr-3">
+                    <AvatarFallback className="bg-gray-200 text-gray-600"> */}
                       <User className="h-5 w-5" />
-                    </AvatarFallback>
-                  </Avatar>
+                    {/* </AvatarFallback>
+                  </Avatar> */}
                   <div>
                     <p className="font-medium">Customer</p>
                     <div className="flex items-center mt-1">

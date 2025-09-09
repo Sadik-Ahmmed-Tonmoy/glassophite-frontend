@@ -5,10 +5,11 @@ import { Star, Heart } from "lucide-react"
 import ImageSlider from "./image-slider"
 import ReviewSlider from "./review-slider"
 import VariantSelector from "./variant-selector"
-import { Badge } from "@/components/ui/badge"
+// import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@nextui-org/react"
 
 interface Review {
   rating: number
@@ -127,11 +128,15 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             <div className="flex justify-between items-start">
               <h1 className="text-3xl font-bold">{selectedVariant.title}</h1>
               {!selectedVariant.inStock ? (
-                <Badge variant="destructive" className="text-sm">
+                <Badge 
+                // variant="destructive"
+                 className="text-sm">
                   Out of Stock
                 </Badge>
               ) : (
-                <Badge variant="outline" className="text-sm border-green-500 text-green-600">
+                <Badge 
+                // variant="outline"
+                 className="text-sm border-green-500 text-green-600">
                   {selectedVariant.quantity <= 5 ? `Only ${selectedVariant.quantity} left!` : "In Stock"}
                 </Badge>
               )}

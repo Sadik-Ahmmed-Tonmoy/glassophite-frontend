@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+
 import AddToCartButton from "@/components/ui/buttons/AddToCartButton/AddToCartButton";
 import { MyButton } from "@/components/ui/buttons/MyButton/MyButton";
 import RequestStockButton from "@/components/ui/buttons/RequestStockButton/RequestStockButton";
@@ -21,6 +21,7 @@ import ImageSlider from "./ImageSlider";
 import ProductReview from "./ProductReview";
 import SimilarProducts from "./SimilarProducts/SimilarProducts";
 import VariantSelector from "./VariantSelector";
+import { Badge } from "@nextui-org/react";
 
 interface ProductDetailsProps {
   product: TProduct;
@@ -99,14 +100,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               <h1 className="text-3xl font-bold">{selectedVariant.title}</h1>
               {!selectedVariant.inStock ? (
                 <Badge
-                  variant="destructive"
+                  // variant="destructive"
                   className="text-sm text-red-500 border-red-500"
                 >
                   Out of Stock
                 </Badge>
               ) : (
                 <Badge
-                  variant="outline"
+                  // variant="outline"
                   className="text-sm border-green-500 text-green-600"
                 >
                   {selectedVariant.quantity <= 5

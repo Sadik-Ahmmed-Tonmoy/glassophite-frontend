@@ -5,26 +5,43 @@ export async function POST(req: Request) {
   try {
     const { texts, target } = await req.json();
 
-    const customGlossary: Record<string, string> = {
-      Account: "অ্যাকাউন্ট",
-      Settings: "সেটিংস",
-      Logout: "লগ আউট",
-      server: "লগ আউট",
+    // const customGlossary: Record<string, string> = {
+    //   Account: "অ্যাকাউন্ট",
+    //   Settings: "সেটিংস",
+    //   Logout: "লগ আউট",
+    //   server: "লগ আউট",
+    // };
+
+    const glossary: Record<string, Record<string, string>> = {
+      bn: {
+        Account: "অ্যাকাউন্ট s",
+        Settings: "সেটিংস",
+        Logout: "লগ আউট",
+        server: "লগ আউট",
+      },
+      es: {
+        // Spanish
+        Profile: "Perfil",
+        Settings: "Configuración",
+        Logout: "Cerrar sesión",
+      },
     };
 
     // Always use glossary translation if exists
-   texts.map((text: string) => {
-      if (customGlossary[text]) return customGlossary[text]; // override
+    texts.map((text: string) => {
+      if (glossary[target]?.[text]) return glossary[target][text]; // override
       return text; // fallback: send to API later
     });
 
     // Only send texts not in glossary to API
-    const textsToTranslate = texts.filter((t: string) => !customGlossary[t]);
+    const textsToTranslate = texts.filter(
+      (t: string) => !glossary[target]?.[t]
+    );
 
     let apiTranslations: string[] = [];
     if (textsToTranslate.length > 0) {
       const res = await fetch(
-   `https://translation.googleapis.com/language/translate/v2?key=AIzaSyCfIDqsAcDMUKSaqjOfD0qfdao8ZfeeUcI`,
+        `https://translation.googleapis.com/language/translate/v2?key=AIzaSyCfIDqsAcDMUKSaqjOfD0qfdao8ZfeeUcI`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -38,13 +55,15 @@ export async function POST(req: Request) {
       );
 
       const data = await res.json();
-      apiTranslations = data.data.translations.map((t: any) => t.translatedText);
+      apiTranslations = data.data.translations.map(
+        (t: any) => t.translatedText
+      );
     }
 
     // Merge API results with glossary
     let apiIndex = 0;
     const merged = texts.map((t: string) =>
-      customGlossary[t] ? customGlossary[t] : apiTranslations[apiIndex++]
+      glossary[target]?.[t] ? glossary[target][t] : apiTranslations[apiIndex++]
     );
 
     return NextResponse.json({ translations: merged });
@@ -54,10 +73,7 @@ export async function POST(req: Request) {
   }
 }
 
-
-
 // without google api like i18translateon
-
 
 // import { NextResponse } from "next/server";
 

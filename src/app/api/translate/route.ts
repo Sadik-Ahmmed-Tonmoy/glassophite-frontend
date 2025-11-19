@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
     const glossary: Record<string, Record<string, string>> = {
       bn: {
-        Account: "অ্যাকাউন্ট s",
+        Account: "অ্যাকাউন্ট",
         Settings: "সেটিংস",
         Logout: "লগ আউট",
         server: "লগ আউট",

@@ -1,5 +1,9 @@
 import LoginWithGoogle from "@/components/LoginWithGoogle";
 import Banner from "@/components/pages/home/Banner/Banner";
+import BrandStatementSection from "@/components/pages/home/BrandStatementSection";
+import FeaturedCollectionSection from "@/components/pages/home/FeaturedCollectionSection";
+import HeroCinematicSection from "@/components/pages/home/HeroCinematicSection";
+import HeroSection from "@/components/pages/home/HeroSection";
 import HorizontalScroll from "@/components/pages/home/HorizontalScroll/HorizontalScroll";
 import Footer from "@/components/shared/Footer/Footer";
 import ProductCard from "@/components/ui/ProductCard/ProductCard";
@@ -106,7 +110,11 @@ export const metadata: Metadata = {
 const page = () => {
   return (
     <div className="relative">
-      <Banner />
+      {/* <Banner /> */}
+      <HeroCinematicSection/>
+      <BrandStatementSection/>
+      <FeaturedCollectionSection/>
+      <HeroSection/>
       <LoginWithGoogle />
       <ProductCard product={productMockData} />
       <HorizontalScroll/>

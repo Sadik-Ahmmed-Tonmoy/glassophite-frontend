@@ -1,31 +1,18 @@
-import Link from "next/link"
 import Image from "next/image"
+import Link from "next/link"
 
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Star } from "lucide-react"
+import { TProduct } from "@/types/types"
 import { Badge } from "@nextui-org/react"
+import { Star } from "lucide-react"
 
 
 
-interface Review {
-  rating: number
-  comment: string
-}
 
-interface Product {
-  img: string
-  title: string
-  shortDescription: string
-  color: string
-  priceAfterDiscount?: number
-  mainPrice?: number
-  discountPercent?: number
-  inStock: boolean
-  reviews: Review[]
-}
+
 
 interface ProductCardProps {
-  product: Product
+  product: TProduct
   index: number
 }
 

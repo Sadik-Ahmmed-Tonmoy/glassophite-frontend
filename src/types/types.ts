@@ -36,6 +36,15 @@
   
   export type TProduct = {
     id: string;
+
+    img : string
+     title: string 
+     color:string 
+    inStock: boolean
+  reviews: TReview[]
+discountPercent: string
+  priceAfterDiscount?: number
+  mainPrice?: number
     shortDescription?: string;
     longDescription?: string;
     brand?: string;
@@ -51,6 +60,8 @@
     careInstructions?: string;
     averageRating?: number;
     totalReviews?: number;
+    isFeatured?: boolean;
+    category?:string;
     variants: TVariant[];
   };
   

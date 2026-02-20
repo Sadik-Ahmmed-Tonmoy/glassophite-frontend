@@ -1,10 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import Image from "next/image";
-import { useEffect, useRef } from "react";
-import { animate, scroll, spring } from "motion";
 import { ReactLenis } from "lenis/react";
+import { animate, scroll, spring } from "motion";
+import { useContext, useEffect, useRef, useState } from "react";
+
+import { ContextProvider } from "@/lib/MyContextProvider";
+import OriginStorySection from "./HorizontalScrollComponents/OriginStorySection";
+import CraftsmanshipShowcaseSection from "./HorizontalScrollComponents/CraftsmanshipShowcaseSection";
+import InnovationLabsSection from "./HorizontalScrollComponents/InnovationLabsSection";
 
 export default function HorizontalScroll() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -22,7 +26,7 @@ export default function HorizontalScroll() {
       {
         transform: ["none", `translateX(-${totalSections - 1}00vw)`],
       } as any,
-      { ...spring() }
+      { ...spring() },
     );
 
     // Connect the animation to the scroll position
@@ -52,80 +56,61 @@ export default function HorizontalScroll() {
     // }
   }, []);
 
+  const [show, setShow] = useState(true);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setShow(entry.isIntersecting),
+      { threshold: 0.1 },
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
+  const context = useContext(ContextProvider);
+
+  if (!context) return null;
   return (
     <ReactLenis root>
       <main>
         <article>
-          {/* <header className="text-white relative w-full bg-slate-950 grid place-content-center h-[80vh]">
-            <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
-
-            <h1 className="text-6xl font-bold text-center tracking-tight">
-              I know You Love to Scroll <br />
-              So Scroll
-            </h1>
-          </header> */}
-
-          <section ref={sectionRef} className="h-[500vh] relative">
+          <section
+            ref={sectionRef}
+            className="h-[300vh] relative bg-gradient-to-b from-[#0a0617] via-[#120b26] to-[#0b0614] hidden md:block w-full"
+          >
             <div className="sticky top-0 overflow-hidden">
-              <div ref={containerRef} className="flex w-[500vw] bg-red-500 overflow-hidden">
-                <div className="scroll-section h-screen w-screen  flex flex-col justify-center overflow-hidden items-center bg-gradient-to-r from-[#ff7e5f] to-red-500">
-          
-                 
-                   <Image
-                    src="https://w0.peakpx.com/wallpaper/744/825/HD-wallpaper-ferrari-488-gtb-2018-red-sports-car-side-view-sports-coupe-tuning-488-italian-sports-cars-pogea-racing-ferrari.jpg"
-                    className="h-screen w-screen"
-                    width={500}
-                    height={500}
-                    alt="Team image"
-                  />
+              <div
+                ref={containerRef}
+                className="flex w-[500vw]  overflow-hidden"
+              >
+                <div className="scroll-section h-screen w-screen  flex flex-col justify-center overflow-hidden items-center ">
+                  <div
+                    id="couple"
+                    className="relative w-full h-full overflow-hidden "
+                  >
+                    <div className="absolute inset-0 z-10 flex items-center justify-center ">
+                    <OriginStorySection />
+                    </div>
+                  </div>
+
+                  {/* <div className="relative w-full h-screen overflow-hidden ">
+                   
+                    <Lightning hue={250} intensity={1.2} size={1.3} />
+
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center">
+                      <CoupleProfilesSection />
+                    </div>
+                  </div> */}
                 </div>
-                <div className="scroll-section h-screen w-screen  flex flex-col justify-center overflow-hidden items-center bg-gradient-to-r  from-red-500 to-[#ff7e5f]">
-             <h2 className="text-[20vw] font-semibold relative bottom-5 inline-block text-black">
-                    PASSION
-                  </h2>
-                     <Image
-                    src="/placeholder.svg?height=500&width=500"
-                    className="2xl:w-[550px] w-[380px] absolute bottom-0"
-                    width={500}
-                    height={500}
-                    alt="Team image"
-                  />
+                <div className="scroll-section h-screen w-screen  flex flex-col justify-center overflow-hidden relative">
+                  <div className="h-full w-full absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-size-[54px_54px] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+
+                  <CraftsmanshipShowcaseSection />
+                  <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-size-[54px_54px] mask-[radial-gradient(ellipse_60%_50%_at_50%_95%,#000_70%,transparent_100%)]"></div>
                 </div>
-                <div className="scroll-section h-screen w-screen  bg-orange-400 flex flex-col justify-center overflow-hidden items-center">
-                  <h2 className="text-[20vw] font-semibold relative bottom-5 inline-block text-black">
-                    MOTIVATION
-                  </h2>
-                  <Image
-                    src="/placeholder.svg?height=500&width=500"
-                    className="2xl:w-[550px] w-[380px] absolute bottom-0"
-                    width={500}
-                    height={500}
-                    alt="Team image"
-                  />
-                </div>
-                <div className="scroll-section h-screen w-screen bg-yellow-400 flex flex-col justify-center overflow-hidden items-center">
-                  <h2 className="text-[20vw] font-semibold relative bottom-5 inline-block text-black">
-                    INSPIRATION
-                  </h2>
-                  <Image
-                    src="/placeholder.svg?height=500&width=500"
-                    className="2xl:w-[550px] w-[380px] absolute bottom-0"
-                    width={500}
-                    height={500}
-                    alt="Team image"
-                  />
-                </div>
-                <div className="scroll-section h-screen w-screen bg-green-400 flex flex-col justify-center overflow-hidden items-center">
-                  <h2 className="text-[20vw] font-semibold relative bottom-5 inline-block text-black">
-                    BELIEVE
-                  </h2>
-                  <Image
-                    src="/placeholder.svg?height=500&width=500"
-                    className="2xl:w-[550px] w-[380px] absolute bottom-0"
-                    width={500}
-                    height={500}
-                    alt="Team image"
-                  />
+                <div className="scroll-section h-screen w-screen  bg-orange-400 flex flex-col justify-center overflow-hidden ">
+                  <InnovationLabsSection/>
                 </div>
               </div>
             </div>

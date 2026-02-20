@@ -50,7 +50,7 @@ const PCNavBar = () => {
   };
   // search bar end
   return (
-    <div className={`${styles.navbar} w-full dark:bg-[#1f2020] dark:`}>
+    <div className={`${styles.navbar} w-full dark:bg-[#1f2020 dark:`}>
       {/* first row start */}
       <div className=" w-full container mx-auto flex justify-between items-center py-3">
         <Link href={"/"}>

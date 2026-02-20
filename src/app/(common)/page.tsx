@@ -1,15 +1,22 @@
 import LoginWithGoogle from "@/components/LoginWithGoogle";
-import Banner from "@/components/pages/home/Banner/Banner";
+import BestSellerCarouselSection from "@/components/pages/home/BestSellerCarouselSection";
 import BrandStatementSection from "@/components/pages/home/BrandStatementSection";
 import FeaturedCollectionSection from "@/components/pages/home/FeaturedCollectionSection";
+import GlassophitePromiseSection from "@/components/pages/home/GlassophitePromiseSection";
 import HeroCinematicSection from "@/components/pages/home/HeroCinematicSection";
 import HeroSection from "@/components/pages/home/HeroSection";
 import HorizontalScroll from "@/components/pages/home/HorizontalScroll/HorizontalScroll";
+import HorizontalStorySection from "@/components/pages/home/HorizontalStorySection";
+import LimitedEditionHighlightSection from "@/components/pages/home/LimitedEditionHighlightSection";
+import SEOContentSection from "@/components/pages/home/SEOContentSection";
+import SocialProofSection from "@/components/pages/home/SocialProofSection";
+import StyleInspirationSection from "@/components/pages/home/StyleInspirationSection";
+import VirtualTryOnSection from "@/components/pages/home/VirtualTryOnSection";
+import WhyChooseGlassophiteSection from "@/components/pages/home/WhyChooseGlassophiteSection";
 import Footer from "@/components/shared/Footer/Footer";
 import ProductCard from "@/components/ui/ProductCard/ProductCard";
 import { productMockData } from "@/lib/productMockData";
 import { Metadata } from "next";
-import React from "react";
 
 export const metadata: Metadata = {
   title:
@@ -112,13 +119,23 @@ const page = () => {
     <div className="relative">
       {/* <Banner /> */}
       <HeroCinematicSection/>
+      <VirtualTryOnSection/>
+      <SEOContentSection />
+      <GlassophitePromiseSection />
+      <StyleInspirationSection />
+      <SocialProofSection />
+      <LimitedEditionHighlightSection />
       <BrandStatementSection/>
+      <WhyChooseGlassophiteSection/>
+      <BestSellerCarouselSection />
       <FeaturedCollectionSection/>
+
+      <HorizontalScroll/>
       <HeroSection/>
       <LoginWithGoogle />
       <ProductCard product={productMockData} />
-      <HorizontalScroll/>
       <ProductCard product={productMockData} />
+      <HorizontalStorySection/>
       <Footer/>
       
     </div>

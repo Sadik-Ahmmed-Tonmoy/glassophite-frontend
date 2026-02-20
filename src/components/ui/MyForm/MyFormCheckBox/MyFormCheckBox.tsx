@@ -35,7 +35,7 @@ const MyFormCheckBox = ({ title, titleClassName, handleCheckboxChange = () => {}
           }`}
         />
       </div>
-      <p className={cn("text-black-80 font-inter text-[14px] font-normal leading-normal tracking-[-0.14px]", titleClassName)}> {title}</p>
+      <p className={cn("text-black-80 font-inter text-[14px] font-normal leading-normal tracking-[-0.14px] dark:text-white", titleClassName)}> {title}</p>
     </label>
   );
 };

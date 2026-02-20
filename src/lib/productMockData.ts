@@ -170,20 +170,20 @@ export const mockProducts: TProduct[] = [
             id: "111",
           },
           {
-            image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+           image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
             id: "112",
           },
         ],
       },
-      {
+       {
         id: "12",
         title: "Blue Horizon",
         color: "#1d81c8",
         priceAfterDiscount: 120,
         mainPrice: 150,
         discountPercent: 20,
-        inStock: false,
-        quantity: 0,
+        inStock: true,
+        quantity: 10,
         productCode: "NA1-2025-002",
         shortDescription: "A luxury blue frame that exudes sophistication and class.",
         imgList: [
@@ -193,11 +193,33 @@ export const mockProducts: TProduct[] = [
           },
         ],
       },
+       {
+        id: "13",
+        title: "Black Horizon 2",
+        color: "#232323",
+        priceAfterDiscount: 1200,
+        mainPrice: 1500,
+        discountPercent: 20,
+        inStock: true,
+        quantity: 5,
+        productCode: "BL-2025-001",
+        shortDescription: "A luxury black frame that exudes sophistication and class.",
+        imgList: [
+          {
+            image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+            id: "111",
+          },
+          {
+           image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+            id: "112",
+          },
+        ],
+      },
     ],
   },
   {
     id: "2",
-    img: "https://i.ibb.co.com/silver-image1.png",
+    img: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
     title: "Silver Horizon Sunglasses",
     color: "#c0c0c0",
     inStock: true,
@@ -236,12 +258,12 @@ export const mockProducts: TProduct[] = [
         shortDescription: "A luxury silver frame that exudes sophistication and class.",
         imgList: [
           {
-            image: "https://i.ibb.co.com/silver-image1.png",
-            id: "211",
+            image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+            id: "111",
           },
           {
-            image: "https://i.ibb.co.com/silver-image2.png",
-            id: "212",
+           image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+            id: "112",
           },
         ],
       },
@@ -288,8 +310,29 @@ export const mockProducts: TProduct[] = [
         shortDescription: "A bold red frame for those who love to make a statement.",
         imgList: [
           {
-            image: "https://i.ibb.co.com/red-image1.png",
+           image: "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
             id: "311",
+          },
+        ],
+      },  {
+        id: "11",
+        title: "Black Horizon",
+        color: "#232323",
+        priceAfterDiscount: 1200,
+        mainPrice: 1500,
+        discountPercent: 20,
+        inStock: false,
+        quantity: 0,
+        productCode: "BL-2025-001",
+        shortDescription: "A luxury black frame that exudes sophistication and class.",
+        imgList: [
+          {
+            image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+            id: "111",
+          },
+          {
+           image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+            id: "112",
           },
         ],
       },

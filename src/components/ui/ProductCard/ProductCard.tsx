@@ -57,23 +57,23 @@ function ProductCard({ product }: ProductCardProps) {
   // Animation variants
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 100,
-        damping: 15
-      }
+        damping: 15,
+      },
     },
     hover: {
       y: -5,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 400,
-        damping: 17
-      }
-    }
+        damping: 17,
+      },
+    },
   };
 
   const imageVariants = {
@@ -297,14 +297,14 @@ function ProductCard({ product }: ProductCardProps) {
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-2 mt-4">
             <ViewDetailsButton 
-              productId={product.id}
-              variantId={selectedVariant.id}
+              // productId={product.id}
+              // variantId={selectedVariant.id}
             />
             
             {!selectedVariant.inStock ? (
               <RequestStockButton 
-                productId={product.id}
-                variantId={selectedVariant.id}
+                // productId={product.id}
+                // variantId={selectedVariant.id}
               />
             ) : (
               <AddToCartButton

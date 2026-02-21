@@ -4,32 +4,19 @@ import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import ProductCard from "./product-card"
+import { TProduct } from "@/types/types"
 
-interface Product {
-  img: string
-  title: string
-  shortDescription: string
-  color: string
-  priceAfterDiscount?: number
-  mainPrice?: number
-  discountPercent?: number
-  inStock: boolean
-  reviews: Review[]
-}
 
-interface Review {
-  rating: number
-  comment: string
-}
+
 
 interface YouMightLikeProps {
-  products: Product[]
+  products: TProduct[]
   currentIndex: number
 }
 
 export default function YouMightLike({ products, currentIndex }: YouMightLikeProps) {
   const [scrollPosition, setScrollPosition] = useState(0)
-  const [shuffledProducts, setShuffledProducts] = useState<{ product: Product; index: number }[]>([])
+  const [shuffledProducts, setShuffledProducts] = useState<{ product: TProduct; index: number }[]>([])
 
   // Shuffle products on component mount
   useEffect(() => {

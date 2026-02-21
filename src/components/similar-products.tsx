@@ -3,43 +3,15 @@
 import { useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import ProductCard from "./product-card"
+import ProductCard from "./ui/ProductCard/ProductCard"
+import { TProduct } from "@/types/types"
 
-interface Review {
-  rating: number
-  comment: string
-}
 
-interface Product {
-  img: string
-  title: string
-  shortDescription: string
-  longDescription: string
-  color: string
-  priceAfterDiscount?: number
-  mainPrice?: number
-  discountPercent?: number
-  inStock: boolean
-  quantity: number
-  productCode: string
-  brand: string
-  material: string
-  dimensions: string
-  weight: string
-  shippingInfo: string
-  frameType: string
-  lensType: string
-  warranty: string
-  countryOfOrigin: string
-  targetAudience: string
-  careInstructions: string
-  reviews: Review[]
-  imgList: string[]
-}
+
 
 interface SimilarProductsProps {
-  currentProduct: Product
-  allProducts: Product[]
+  currentProduct: TProduct
+  allProducts: TProduct[]
   currentIndex: number
 }
 
@@ -105,7 +77,7 @@ export default function SimilarProducts({ currentProduct, allProducts, currentIn
       >
         {productsToShow.map(({ product, index }) => (
           <div key={index} className="min-w-[250px] max-w-[250px]">
-            <ProductCard product={product} index={index} />
+            <ProductCard product={product} key={index} />
           </div>
         ))}
       </div>

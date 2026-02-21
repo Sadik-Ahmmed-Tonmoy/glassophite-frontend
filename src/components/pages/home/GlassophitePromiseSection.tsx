@@ -2,38 +2,36 @@
 
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
-  Shield,
-  Award,
-  Diamond,
-  Leaf,
-  Heart,
-  Zap,
-  Clock,
-  RefreshCw,
-  Truck,
-  Star,
-  Sparkles,
-  Gem,
-  Eye,
-  Sun,
-  Droplets,
-  CheckCircle,
-  Medal,
-  ThumbsUp,
-  Globe,
-  Lock,
-  Wallet,
-  Headphones,
-  Recycle,
-  Factory,
-  Ruler,
-  Microscope,
   ArrowRight,
+  Award,
+  CheckCircle,
+  Clock,
+  Diamond,
+  Droplets,
+  Eye,
+  Factory,
+  Gem,
+  Globe,
+  Headphones,
+  Heart,
+  Leaf,
+  Lock,
+  Medal,
+  Microscope,
+  Recycle,
+  RefreshCw,
+  Ruler,
+  Shield,
+  Sun,
+  ThumbsUp,
+  Truck,
+  Wallet,
+  Zap,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function GlassophitePromiseSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -75,8 +73,10 @@ export default function GlassophitePromiseSection() {
     {
       id: "lifetime",
       title: "Lifetime Warranty",
-      description: "Every pair of Glassophite sunglasses comes with our comprehensive lifetime warranty against manufacturing defects.",
-      longDescription: "We stand behind every pair we make. If your Glassophite sunglasses have any manufacturing defect, we'll repair or replace them—for life. No questions asked.",
+      description:
+        "Every pair of Glassophite sunglasses comes with our comprehensive lifetime warranty against manufacturing defects.",
+      longDescription:
+        "We stand behind every pair we make. If your Glassophite sunglasses have any manufacturing defect, we'll repair or replace them—for life. No questions asked.",
       icon: Shield,
       category: "quality",
       stats: [
@@ -91,13 +91,16 @@ export default function GlassophitePromiseSection() {
         "Original craftsmanship",
       ],
       color: "#007C74",
-      bgImage: "https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?w=800&auto=format&fit=crop",
+      bgImage:
+        "https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?w=800&auto=format&fit=crop",
     },
     {
       id: "uv",
       title: "100% UV Protection",
-      description: "All our lenses provide complete protection against UVA, UVB, and UVC rays, ensuring your eyes stay safe in any condition.",
-      longDescription: "Your eye health is our priority. Every Glassophite lens is engineered to block 100% of harmful UV radiation, exceeding international safety standards.",
+      description:
+        "All our lenses provide complete protection against UVA, UVB, and UVC rays, ensuring your eyes stay safe in any condition.",
+      longDescription:
+        "Your eye health is our priority. Every Glassophite lens is engineered to block 100% of harmful UV radiation, exceeding international safety standards.",
       icon: Sun,
       category: "innovation",
       stats: [
@@ -112,13 +115,16 @@ export default function GlassophitePromiseSection() {
         "Blue light filter",
       ],
       color: "#3C55A5",
-      bgImage: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop",
+      bgImage:
+        "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop",
     },
     {
       id: "materials",
       title: "Premium Materials",
-      description: "We source only the finest materials—from Japanese titanium to Italian acetate—for unparalleled quality and comfort.",
-      longDescription: "Our commitment to quality starts with materials. We partner with the world's best suppliers to bring you eyewear that feels as good as it looks.",
+      description:
+        "We source only the finest materials—from Japanese titanium to Italian acetate—for unparalleled quality and comfort.",
+      longDescription:
+        "Our commitment to quality starts with materials. We partner with the world's best suppliers to bring you eyewear that feels as good as it looks.",
       icon: Gem,
       category: "quality",
       stats: [
@@ -133,13 +139,16 @@ export default function GlassophitePromiseSection() {
         "Swiss lenses",
       ],
       color: "#00A693",
-      bgImage: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=800&auto=format&fit=crop",
+      bgImage:
+        "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=800&auto=format&fit=crop",
     },
     {
       id: "sustainable",
       title: "Sustainable Craft",
-      description: "We're committed to reducing our environmental footprint through eco-friendly packaging and responsible manufacturing.",
-      longDescription: "Luxury shouldn't cost the earth. We're pioneering sustainable practices in eyewear manufacturing, from recycled materials to carbon-neutral shipping.",
+      description:
+        "We're committed to reducing our environmental footprint through eco-friendly packaging and responsible manufacturing.",
+      longDescription:
+        "Luxury shouldn't cost the earth. We're pioneering sustainable practices in eyewear manufacturing, from recycled materials to carbon-neutral shipping.",
       icon: Leaf,
       category: "sustainability",
       stats: [
@@ -154,26 +163,77 @@ export default function GlassophitePromiseSection() {
         "Carbon offset",
       ],
       color: "#007C74",
-      bgImage: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop",
+      bgImage:
+        "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop",
     },
   ];
 
   // Service guarantees
   const guarantees = [
-    { icon: Truck, title: "Free Shipping", description: "On all orders over ৳2000", key: "shipping" },
-    { icon: RefreshCw, title: "30-Day Returns", description: "Hassle-free exchanges", key: "returns" },
-    { icon: Lock, title: "Secure Payment", description: "128-bit SSL encryption", key: "secure" },
-    { icon: Wallet, title: "Price Match", description: "Best price guaranteed", key: "price" },
-    { icon: Headphones, title: "24/7 Support", description: "Always here to help", key: "support" },
-    { icon: Award, title: "Authentic", description: "100% genuine products", key: "authentic" },
+    {
+      icon: Truck,
+      title: "Free Shipping",
+      description: "On all orders over ৳2000",
+      key: "shipping",
+    },
+    {
+      icon: RefreshCw,
+      title: "30-Day Returns",
+      description: "Hassle-free exchanges",
+      key: "returns",
+    },
+    {
+      icon: Lock,
+      title: "Secure Payment",
+      description: "128-bit SSL encryption",
+      key: "secure",
+    },
+    {
+      icon: Wallet,
+      title: "Price Match",
+      description: "Best price guaranteed",
+      key: "price",
+    },
+    {
+      icon: Headphones,
+      title: "24/7 Support",
+      description: "Always here to help",
+      key: "support",
+    },
+    {
+      icon: Award,
+      title: "Authentic",
+      description: "100% genuine products",
+      key: "authentic",
+    },
   ];
 
   // Quality standards
   const standards = [
-    { icon: Ruler, title: "Precision Fit", description: "Ergonomically designed", value: "0.1mm tolerance" },
-    { icon: Eye, title: "Optical Clarity", description: "Distortion-free vision", value: "99.9% clarity" },
-    { icon: Droplets, title: "Hydrophobic", description: "Water & oil resistant", value: "Advanced coating" },
-    { icon: Zap, title: "Impact Resistant", description: "Military-grade durability", value: "Tested to MIL-SPEC" },
+    {
+      icon: Ruler,
+      title: "Precision Fit",
+      description: "Ergonomically designed",
+      value: "0.1mm tolerance",
+    },
+    {
+      icon: Eye,
+      title: "Optical Clarity",
+      description: "Distortion-free vision",
+      value: "99.9% clarity",
+    },
+    {
+      icon: Droplets,
+      title: "Hydrophobic",
+      description: "Water & oil resistant",
+      value: "Advanced coating",
+    },
+    {
+      icon: Zap,
+      title: "Impact Resistant",
+      description: "Military-grade durability",
+      value: "Tested to MIL-SPEC",
+    },
   ];
 
   const themeStyles = {
@@ -313,7 +373,8 @@ export default function GlassophitePromiseSection() {
             className={`text-sm sm:text-base md:text-lg ${styles.textMuted} max-w-2xl mx-auto px-4`}
             data-translate="promise.description"
           >
-            Every pair of Glassophite sunglasses comes with our unwavering commitment to quality, service, and your satisfaction
+            Every pair of Glassophite sunglasses comes with our unwavering
+            commitment to quality, service, and your satisfaction
           </p>
         </motion.div>
 
@@ -338,7 +399,9 @@ export default function GlassophitePromiseSection() {
                   : styles.categoryInactive
               }`}
               onClick={() => {
-                const index = promises.findIndex(p => p.category === category.id);
+                const index = promises.findIndex(
+                  (p) => p.category === category.id,
+                );
                 if (index !== -1) setActivePromise(index);
               }}
             >
@@ -357,7 +420,9 @@ export default function GlassophitePromiseSection() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mb-12 lg:mb-16"
         >
-          <div className={`relative rounded-2xl overflow-hidden backdrop-blur-sm border-2 ${styles.borderGlow}`}>
+          <div
+            className={`relative rounded-2xl overflow-hidden backdrop-blur-sm border-2 ${styles.borderGlow}`}
+          >
             <div className="grid lg:grid-cols-2">
               {/* Promise Image */}
               <motion.div
@@ -375,10 +440,10 @@ export default function GlassophitePromiseSection() {
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   priority
                 />
-                
+
                 {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                
+
                 {/* Icon Overlay */}
                 <div className="absolute top-4 left-4">
                   <div className="p-3 rounded-full bg-black/50 backdrop-blur-sm">
@@ -394,8 +459,12 @@ export default function GlassophitePromiseSection() {
                       className="p-2 rounded-lg bg-black/50 backdrop-blur-sm text-center"
                     >
                       <stat.icon className="w-3 h-3 text-[#007C74] mx-auto mb-1" />
-                      <div className="text-xs font-bold text-white">{stat.value}</div>
-                      <div className="text-[8px] text-white/70">{stat.label}</div>
+                      <div className="text-xs font-bold text-white">
+                        {stat.value}
+                      </div>
+                      <div className="text-[8px] text-white/70">
+                        {stat.label}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -411,32 +480,45 @@ export default function GlassophitePromiseSection() {
               >
                 <div className="h-full flex flex-col">
                   {/* Title */}
-                  <h3 className={`text-xl sm:text-2xl lg:text-3xl font-bold ${styles.text} mb-3`}>
+                  <h3
+                    className={`text-xl sm:text-2xl lg:text-3xl font-bold ${styles.text} mb-3`}
+                  >
                     {promises[activePromise].title}
                   </h3>
-                  
+
                   {/* Short Description */}
-                  <p className={`text-sm sm:text-base ${styles.textMuted} mb-4`}>
+                  <p
+                    className={`text-sm sm:text-base ${styles.textMuted} mb-4`}
+                  >
                     {promises[activePromise].description}
                   </p>
-                  
+
                   {/* Long Description */}
-                  <p className={`text-xs sm:text-sm ${styles.textMutedLighter} mb-6`}>
+                  <p
+                    className={`text-xs sm:text-sm ${styles.textMutedLighter} mb-6`}
+                  >
                     {promises[activePromise].longDescription}
                   </p>
 
                   {/* Key Features */}
                   <div className="mb-6">
-                    <h4 className={`text-xs sm:text-sm font-semibold ${styles.text} mb-3 uppercase tracking-wider`} data-translate="promise.features">
+                    <h4
+                      className={`text-xs sm:text-sm font-semibold ${styles.text} mb-3 uppercase tracking-wider`}
+                      data-translate="promise.features"
+                    >
                       Key Features
                     </h4>
                     <div className="grid grid-cols-2 gap-2">
-                      {promises[activePromise].features.map((feature, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <CheckCircle className="w-3 h-3 text-[#007C74]" />
-                          <span className={`text-xs ${styles.textMuted}`}>{feature}</span>
-                        </div>
-                      ))}
+                      {promises[activePromise].features.map(
+                        (feature, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <CheckCircle className="w-3 h-3 text-[#007C74]" />
+                            <span className={`text-xs ${styles.textMuted}`}>
+                              {feature}
+                            </span>
+                          </div>
+                        ),
+                      )}
                     </div>
                   </div>
 
@@ -446,7 +528,9 @@ export default function GlassophitePromiseSection() {
                       whileHover={{ x: 5 }}
                       className={`text-xs sm:text-sm ${styles.textMuted} hover:text-[#007C74] transition-colors flex items-center gap-1 mt-auto`}
                     >
-                      <span data-translate="promise.learnMore">Learn more about our commitment</span>
+                      <span data-translate="promise.learnMore">
+                        Learn more about our commitment
+                      </span>
                       <ArrowRight className="w-3 h-3" />
                     </motion.button>
                   </Link>
@@ -479,10 +563,13 @@ export default function GlassophitePromiseSection() {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="mb-12 lg:mb-16"
         >
-          <h3 className={`text-lg sm:text-xl font-semibold ${styles.text} mb-6 text-center`} data-translate="promise.guarantees">
+          <h3
+            className={`text-lg sm:text-xl font-semibold ${styles.text} mb-6 text-center`}
+            data-translate="promise.guarantees"
+          >
             Our Guarantees to You
           </h3>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {guarantees.map((guarantee, index) => (
               <motion.div
@@ -494,10 +581,16 @@ export default function GlassophitePromiseSection() {
                 className={`p-4 rounded-xl text-center backdrop-blur-sm border ${styles.card} ${styles.cardHover}`}
               >
                 <guarantee.icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#007C74] mx-auto mb-2" />
-                <h4 className={`text-xs sm:text-sm font-semibold ${styles.text} mb-1`} data-translate={`promise.guarantees.${guarantee.key}.title`}>
+                <h4
+                  className={`text-xs sm:text-sm font-semibold ${styles.text} mb-1`}
+                  data-translate={`promise.guarantees.${guarantee.key}.title`}
+                >
                   {guarantee.title}
                 </h4>
-                <p className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`} data-translate={`promise.guarantees.${guarantee.key}.desc`}>
+                <p
+                  className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`}
+                  data-translate={`promise.guarantees.${guarantee.key}.desc`}
+                >
                   {guarantee.description}
                 </p>
               </motion.div>
@@ -514,12 +607,18 @@ export default function GlassophitePromiseSection() {
         >
           <div className="grid md:grid-cols-2 gap-6">
             {/* Left side - Standards */}
-            <div className={`p-6 rounded-xl backdrop-blur-sm border ${styles.card}`}>
-              <h3 className={`text-base sm:text-lg font-semibold ${styles.text} mb-4 flex items-center gap-2`}>
+            <div
+              className={`p-6 rounded-xl backdrop-blur-sm border ${styles.card}`}
+            >
+              <h3
+                className={`text-base sm:text-lg font-semibold ${styles.text} mb-4 flex items-center gap-2`}
+              >
                 <Medal className="w-5 h-5 text-[#007C74]" />
-                <span data-translate="promise.standards">Quality Standards</span>
+                <span data-translate="promise.standards">
+                  Quality Standards
+                </span>
               </h3>
-              
+
               <div className="space-y-4">
                 {standards.map((standard, index) => (
                   <motion.div
@@ -534,14 +633,20 @@ export default function GlassophitePromiseSection() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h4 className={`text-xs sm:text-sm font-medium ${styles.text}`}>
+                        <h4
+                          className={`text-xs sm:text-sm font-medium ${styles.text}`}
+                        >
                           {standard.title}
                         </h4>
-                        <span className={`text-[10px] sm:text-xs font-semibold text-[#007C74]`}>
+                        <span
+                          className={`text-[10px] sm:text-xs font-semibold text-[#007C74]`}
+                        >
                           {standard.value}
                         </span>
                       </div>
-                      <p className={`text-[10px] sm:text-xs ${styles.textMutedLighter} mt-1`}>
+                      <p
+                        className={`text-[10px] sm:text-xs ${styles.textMutedLighter} mt-1`}
+                      >
                         {standard.description}
                       </p>
                     </div>
@@ -551,18 +656,40 @@ export default function GlassophitePromiseSection() {
             </div>
 
             {/* Right side - Certifications */}
-            <div className={`p-6 rounded-xl backdrop-blur-sm border ${styles.card}`}>
-              <h3 className={`text-base sm:text-lg font-semibold ${styles.text} mb-4 flex items-center gap-2`}>
+            <div
+              className={`p-6 rounded-xl backdrop-blur-sm border ${styles.card}`}
+            >
+              <h3
+                className={`text-base sm:text-lg font-semibold ${styles.text} mb-4 flex items-center gap-2`}
+              >
                 <Award className="w-5 h-5 text-[#007C74]" />
-                <span data-translate="promise.certifications">Certifications</span>
+                <span data-translate="promise.certifications">
+                  Certifications
+                </span>
               </h3>
-              
+
               <div className="space-y-4">
                 {[
-                  { name: "ISO 12312-1", description: "Eye and face protection standards", icon: Shield },
-                  { name: "CE Certified", description: "European safety standards", icon: CheckCircle },
-                  { name: "ANSI Z80.3", description: "American national standard", icon: Award },
-                  { name: "UV400 Certified", description: "Complete UV protection", icon: Sun },
+                  {
+                    name: "ISO 12312-1",
+                    description: "Eye and face protection standards",
+                    icon: Shield,
+                  },
+                  {
+                    name: "CE Certified",
+                    description: "European safety standards",
+                    icon: CheckCircle,
+                  },
+                  {
+                    name: "ANSI Z80.3",
+                    description: "American national standard",
+                    icon: Award,
+                  },
+                  {
+                    name: "UV400 Certified",
+                    description: "Complete UV protection",
+                    icon: Sun,
+                  },
                 ].map((cert, index) => (
                   <motion.div
                     key={index}
@@ -573,8 +700,16 @@ export default function GlassophitePromiseSection() {
                   >
                     <cert.icon className="w-4 h-4 text-[#007C74]" />
                     <div>
-                      <h4 className={`text-xs sm:text-sm font-medium ${styles.text}`}>{cert.name}</h4>
-                      <p className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`}>{cert.description}</p>
+                      <h4
+                        className={`text-xs sm:text-sm font-medium ${styles.text}`}
+                      >
+                        {cert.name}
+                      </h4>
+                      <p
+                        className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`}
+                      >
+                        {cert.description}
+                      </p>
                     </div>
                   </motion.div>
                 ))}
@@ -595,14 +730,17 @@ export default function GlassophitePromiseSection() {
             { icon: Truck, text: "Free Shipping", key: "shipping" },
             { icon: RefreshCw, text: "30-Day Returns", key: "returns" },
             { icon: Lock, text: "Secure Checkout", key: "secure" },
-          ].map((badge, index) => (
+          ].map((badge) => (
             <motion.div
               key={badge.key}
               whileHover={{ scale: 1.1 }}
               className="flex items-center gap-2"
             >
               <badge.icon className="w-4 h-4 text-[#007C74]" />
-              <span className={`text-xs ${styles.textMutedLighter}`} data-translate={`promise.badges.${badge.key}`}>
+              <span
+                className={`text-xs ${styles.textMutedLighter}`}
+                data-translate={`promise.badges.${badge.key}`}
+              >
                 {badge.text}
               </span>
             </motion.div>

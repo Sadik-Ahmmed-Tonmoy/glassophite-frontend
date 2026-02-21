@@ -5,6 +5,7 @@
     id?: string
     name: string
     email?: string
+    profileImage?: string
     rating: number
     comment: string
     date?: string

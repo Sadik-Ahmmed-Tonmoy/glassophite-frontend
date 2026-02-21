@@ -16,22 +16,22 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
   const variant = product.variants[0]
 
   // Animation variants
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.4,
-        ease: "easeOut",
-      },
-    },
-  }
+  // const cardVariants = {
+  //   hidden: { opacity: 0, y: 20 },
+  //   show: {
+  //     opacity: 1,
+  //     y: 0,
+  //     transition: {
+  //       duration: 0.4,
+  //       ease: "easeOut",
+  //     },
+  //   },
+  // }
 
   return (
     <motion.article
       className="group relative"
-      variants={cardVariants}
+      // variants={cardVariants}
       whileHover={{ y: -5 }}
       transition={{ duration: 0.2 }}
       itemScope

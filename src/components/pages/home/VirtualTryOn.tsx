@@ -4,8 +4,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Webcam from "react-webcam";
-import  FaceMesh  from "@mediapipe/face_mesh";
-import Camera from "@mediapipe/camera_utils";
+import "@mediapipe/face_mesh";
+import "@mediapipe/camera_utils";
 import {
   Camera as CameraIcon,
   CheckCircle,
@@ -20,6 +20,31 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+
+declare global {
+  interface Window {
+    FaceMesh: new (config?: { locateFile?: (path: string, prefix?: string) => string }) => {
+      close(): Promise<void>;
+      onResults(listener: (results: FaceMeshResults) => void | Promise<void>): void;
+      send(inputs: { image: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement }): Promise<void>;
+      setOptions(options: {
+        maxNumFaces?: number;
+        refineLandmarks?: boolean;
+        minDetectionConfidence?: number;
+        minTrackingConfidence?: number;
+      }): void;
+    };
+    Camera: new (
+      video: HTMLVideoElement,
+      options: { onFrame: () => Promise<void> | null; width?: number; height?: number }
+    ) => { start(): Promise<void>; stop(): Promise<void> };
+  }
+}
+
+/** Shape of results from MediaPipe FaceMesh (script attaches to window, no ES export). */
+interface FaceMeshResults {
+  multiFaceLandmarks?: Array<Array<{ x: number; y: number; z?: number }>>;
+}
 
 // Types
 interface GlassesAngles {
@@ -396,8 +421,8 @@ export default function VirtualTryOn() {
         if (cameraRef.current) cameraRef.current.stop();
         if (faceMeshRef.current) faceMeshRef.current.close();
 
-        const faceMesh = new FaceMesh({
-          locateFile: (file) =>
+        const faceMesh = new window.FaceMesh({
+          locateFile: (file: string) =>
             `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
         });
 
@@ -408,7 +433,7 @@ export default function VirtualTryOn() {
           minTrackingConfidence: 0.5,
         });
 
-        faceMesh.onResults(async (results) => {
+        faceMesh.onResults(async (results: FaceMeshResults) => {
           if (!results.multiFaceLandmarks?.length || !canvasRef.current) return;
 
           const landmarks = results.multiFaceLandmarks[0];
@@ -484,7 +509,7 @@ export default function VirtualTryOn() {
         faceMeshRef.current = faceMesh;
 
         if (webcamRef.current?.video) {
-          const camera = new Camera(webcamRef.current.video, {
+          const camera = new window.Camera(webcamRef.current.video, {
             onFrame: async () => {
               if (webcamRef.current?.video) {
                 await faceMesh.send({ image: webcamRef.current.video });

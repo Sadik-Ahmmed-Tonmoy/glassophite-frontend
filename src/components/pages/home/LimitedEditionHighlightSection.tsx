@@ -3,31 +3,35 @@
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
-  Clock,
+  Award,
   Diamond,
   Eye,
   Gem,
   Gift,
-  Sparkles,
   Shield,
-  Award,
-  Zap,
-  Users,
+  Sparkles,
   Timer,
+  Users,
+  Zap,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import Link from "next/link";
 import Image from "next/image";
-import { useRef, useState, useEffect } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 // Demo images using Unsplash (free to use)
 const demoImages = {
   gold: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop",
-  black: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop",
-  tortoise: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=800&auto=format&fit=crop",
-  aviator: "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=800&auto=format&fit=crop",
-  wayfarer: "https://images.unsplash.com/photo-1504006833117-8886a355efbf?w=800&auto=format&fit=crop",
-  sport: "https://images.unsplash.com/photo-1620577439399-3cfbeb6eb3f7?w=800&auto=format&fit=crop",
+  black:
+    "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop",
+  tortoise:
+    "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=800&auto=format&fit=crop",
+  aviator:
+    "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=800&auto=format&fit=crop",
+  wayfarer:
+    "https://images.unsplash.com/photo-1504006833117-8886a355efbf?w=800&auto=format&fit=crop",
+  sport:
+    "https://images.unsplash.com/photo-1620577439399-3cfbeb6eb3f7?w=800&auto=format&fit=crop",
 };
 
 // Demo limited edition products
@@ -39,8 +43,10 @@ const limitedEditionProducts = [
     discountPercent: "30",
     priceAfterDiscount: 2450,
     mainPrice: 3500,
-    shortDescription: "24K Gold-plated limited edition with premium crystal lenses.",
-    longDescription: "The Royal Gold Edition represents the pinnacle of luxury eyewear. Each piece is meticulously handcrafted with 24K gold plating and features precision-cut crystal lenses that offer unparalleled clarity and UV protection. Limited to only 100 pieces worldwide.",
+    shortDescription:
+      "24K Gold-plated limited edition with premium crystal lenses.",
+    longDescription:
+      "The Royal Gold Edition represents the pinnacle of luxury eyewear. Each piece is meticulously handcrafted with 24K gold plating and features precision-cut crystal lenses that offer unparalleled clarity and UV protection. Limited to only 100 pieces worldwide.",
     quantity: 5,
     totalEdition: 100,
     inStock: true,
@@ -64,7 +70,8 @@ const limitedEditionProducts = [
     priceAfterDiscount: 2150,
     mainPrice: 2850,
     shortDescription: "Black diamond dust finish with polarized lenses.",
-    longDescription: "The Onyx Black Diamond edition features a unique black diamond dust finish that catches light beautifully. The polarized lenses provide exceptional clarity while reducing glare, making these perfect for both luxury and performance.",
+    longDescription:
+      "The Onyx Black Diamond edition features a unique black diamond dust finish that catches light beautifully. The polarized lenses provide exceptional clarity while reducing glare, making these perfect for both luxury and performance.",
     quantity: 8,
     totalEdition: 100,
     inStock: true,
@@ -88,7 +95,8 @@ const limitedEditionProducts = [
     priceAfterDiscount: 1850,
     mainPrice: 2300,
     shortDescription: "Handcrafted acetate with vintage tortoise pattern.",
-    longDescription: "Inspired by vintage designs, the Tortoise Shell Legacy edition combines traditional craftsmanship with modern precision. Each frame features unique hand-layered acetate patterns, ensuring no two pieces are exactly alike.",
+    longDescription:
+      "Inspired by vintage designs, the Tortoise Shell Legacy edition combines traditional craftsmanship with modern precision. Each frame features unique hand-layered acetate patterns, ensuring no two pieces are exactly alike.",
     quantity: 12,
     totalEdition: 100,
     inStock: true,
@@ -112,7 +120,8 @@ const limitedEditionProducts = [
     priceAfterDiscount: 3200,
     mainPrice: 4900,
     shortDescription: "Platinum-plated aviator with gradient lenses.",
-    longDescription: "The Aviator Platinum edition reimagines the classic aviator silhouette with premium materials. The platinum plating offers exceptional durability while the gradient lenses provide sophisticated style and superior eye protection.",
+    longDescription:
+      "The Aviator Platinum edition reimagines the classic aviator silhouette with premium materials. The platinum plating offers exceptional durability while the gradient lenses provide sophisticated style and superior eye protection.",
     quantity: 3,
     totalEdition: 100,
     inStock: true,
@@ -167,7 +176,7 @@ export default function LimitedEditionHighlightSection() {
   // Timer effect
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimeLeft((prev) => {
         if (prev.seconds > 0) {
           return { ...prev, seconds: prev.seconds - 1 };
         } else if (prev.minutes > 0) {
@@ -175,7 +184,13 @@ export default function LimitedEditionHighlightSection() {
         } else if (prev.hours > 0) {
           return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
         } else if (prev.days > 0) {
-          return { ...prev, days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
+          return {
+            ...prev,
+            days: prev.days - 1,
+            hours: 23,
+            minutes: 59,
+            seconds: 59,
+          };
         }
         return prev;
       });
@@ -277,7 +292,7 @@ export default function LimitedEditionHighlightSection() {
         {[...Array(20)].map((_, i) => (
           <motion.div
             key={i}
-            className={`absolute w-1 h-1 rounded-full ${isDark ? 'bg-white/20' : 'bg-[#007C74]/20'}`}
+            className={`absolute w-1 h-1 rounded-full ${isDark ? "bg-white/20" : "bg-[#007C74]/20"}`}
             initial={{
               x: Math.random() * 100 + "%",
               y: Math.random() * 100 + "%",
@@ -333,7 +348,8 @@ export default function LimitedEditionHighlightSection() {
             className={`text-sm sm:text-base md:text-lg ${styles.textMuted} max-w-2xl mx-auto px-4`}
             data-translate="limited.description"
           >
-            Handcrafted masterpieces with exclusive designs. Only 100 pieces of each design worldwide.
+            Handcrafted masterpieces with exclusive designs. Only 100 pieces of
+            each design worldwide.
           </p>
 
           {/* Live Viewing Badge */}
@@ -348,14 +364,20 @@ export default function LimitedEditionHighlightSection() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
               </span>
-              <span className={`text-xs ${styles.textMutedLighter}`} data-translate="limited.live">
+              <span
+                className={`text-xs ${styles.textMutedLighter}`}
+                data-translate="limited.live"
+              >
                 247 people viewing
               </span>
             </div>
             <div className="w-px h-3 bg-white/10" />
             <div className="flex items-center gap-2">
               <Users className="w-3 h-3 text-[#007C74]" />
-              <span className={`text-xs ${styles.textMutedLighter}`} data-translate="limited.sold">
+              <span
+                className={`text-xs ${styles.textMutedLighter}`}
+                data-translate="limited.sold"
+              >
                 342 sold today
               </span>
             </div>
@@ -369,14 +391,19 @@ export default function LimitedEditionHighlightSection() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="max-w-3xl mx-auto mb-12"
         >
-          <div className={`p-4 sm:p-6 rounded-2xl backdrop-blur-md ${styles.card} border-2 ${styles.borderGlow}`}>
+          <div
+            className={`p-4 sm:p-6 rounded-2xl backdrop-blur-md ${styles.card} border-2 ${styles.borderGlow}`}
+          >
             <div className="flex items-center justify-center gap-2 mb-4">
               <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-[#007C74]" />
-              <span className={`text-xs sm:text-sm font-medium ${styles.textMuted}`} data-translate="limited.endsIn">
+              <span
+                className={`text-xs sm:text-sm font-medium ${styles.textMuted}`}
+                data-translate="limited.endsIn"
+              >
                 Exclusive Offer Ends In
               </span>
             </div>
-            
+
             <div className="grid grid-cols-4 gap-2 sm:gap-4">
               {[
                 { value: timeLeft.days, label: "Days", key: "days" },
@@ -394,7 +421,10 @@ export default function LimitedEditionHighlightSection() {
                   <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-[#007C74] to-[#3C55A5] bg-clip-text text-transparent">
                     {unit.value.toString().padStart(2, "0")}
                   </div>
-                  <div className={`text-[8px] sm:text-[10px] md:text-xs uppercase tracking-wider ${styles.textMutedLighter}`} data-translate={`limited.time.${unit.key}`}>
+                  <div
+                    className={`text-[8px] sm:text-[10px] md:text-xs uppercase tracking-wider ${styles.textMutedLighter}`}
+                    data-translate={`limited.time.${unit.key}`}
+                  >
                     {unit.label}
                   </div>
                 </motion.div>
@@ -428,18 +458,22 @@ export default function LimitedEditionHighlightSection() {
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 priority
               />
-              
+
               {/* Exclusive Overlay */}
               <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
                 <span className="px-2 sm:px-4 py-1 sm:py-2 bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white text-xs sm:text-sm font-bold rounded-full flex items-center gap-1 sm:gap-2">
                   <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span data-translate="limited.exclusive">Exclusive Edition</span>
+                  <span data-translate="limited.exclusive">
+                    Exclusive Edition
+                  </span>
                 </span>
               </div>
 
               {/* Limited Number Badge */}
               <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4">
-                <span className={`px-2 sm:px-4 py-1 sm:py-2 rounded-full backdrop-blur-md ${styles.card} text-xs sm:text-sm font-bold`}>
+                <span
+                  className={`px-2 sm:px-4 py-1 sm:py-2 rounded-full backdrop-blur-md ${styles.card} text-xs sm:text-sm font-bold`}
+                >
                   #{activeProduct + 1}/100
                 </span>
               </div>
@@ -470,7 +504,9 @@ export default function LimitedEditionHighlightSection() {
               className="space-y-4 sm:space-y-6"
             >
               <div>
-                <h3 className={`text-xl sm:text-2xl lg:text-3xl font-bold ${styles.text} mb-2`}>
+                <h3
+                  className={`text-xl sm:text-2xl lg:text-3xl font-bold ${styles.text} mb-2`}
+                >
                   {limitedEditionProducts[activeProduct].title}
                 </h3>
                 <p className={`text-sm sm:text-base ${styles.textMuted}`}>
@@ -480,26 +516,33 @@ export default function LimitedEditionHighlightSection() {
 
               {/* Premium Features */}
               <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                {limitedEditionProducts[activeProduct].features.map((feature, index) => (
-                  <motion.div
-                    key={index}
-                    whileHover={{ x: 5 }}
-                    className="flex items-center gap-1 sm:gap-2"
-                  >
-                    <div className="p-1 rounded-lg bg-[#007C74]/10">
-                      <Gift className="w-2 h-2 sm:w-3 sm:h-3 text-[#007C74]" />
-                    </div>
-                    <span className={`text-[10px] sm:text-xs ${styles.textMuted}`}>
-                      {feature}
-                    </span>
-                  </motion.div>
-                ))}
+                {limitedEditionProducts[activeProduct].features.map(
+                  (feature, index) => (
+                    <motion.div
+                      key={index}
+                      whileHover={{ x: 5 }}
+                      className="flex items-center gap-1 sm:gap-2"
+                    >
+                      <div className="p-1 rounded-lg bg-[#007C74]/10">
+                        <Gift className="w-2 h-2 sm:w-3 sm:h-3 text-[#007C74]" />
+                      </div>
+                      <span
+                        className={`text-[10px] sm:text-xs ${styles.textMuted}`}
+                      >
+                        {feature}
+                      </span>
+                    </motion.div>
+                  ),
+                )}
               </div>
 
               {/* Stock Level */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className={styles.textMutedLighter} data-translate="limited.remaining">
+                  <span
+                    className={styles.textMutedLighter}
+                    data-translate="limited.remaining"
+                  >
                     Remaining Pieces
                   </span>
                   <span className={`font-bold ${styles.text}`}>
@@ -509,7 +552,9 @@ export default function LimitedEditionHighlightSection() {
                 <div className="w-full h-1.5 sm:h-2 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${(limitedEditionProducts[activeProduct].quantity / 100) * 100}%` }}
+                    animate={{
+                      width: `${(limitedEditionProducts[activeProduct].quantity / 100) * 100}%`,
+                    }}
                     transition={{ duration: 1 }}
                     className="h-full bg-gradient-to-r from-[#007C74] to-[#3C55A5]"
                   />
@@ -519,12 +564,17 @@ export default function LimitedEditionHighlightSection() {
               {/* Price and CTA */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-2 sm:pt-4">
                 <div>
-                  <span className={`text-xs sm:text-sm ${styles.textMutedLighter} line-through`}>
+                  <span
+                    className={`text-xs sm:text-sm ${styles.textMutedLighter} line-through`}
+                  >
                     ৳{limitedEditionProducts[activeProduct].mainPrice}
                   </span>
                   <div className="flex items-center gap-2">
-                    <span className={`text-xl sm:text-2xl lg:text-3xl font-bold ${styles.text}`}>
-                      ৳{limitedEditionProducts[activeProduct].priceAfterDiscount}
+                    <span
+                      className={`text-xl sm:text-2xl lg:text-3xl font-bold ${styles.text}`}
+                    >
+                      ৳
+                      {limitedEditionProducts[activeProduct].priceAfterDiscount}
                     </span>
                     <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-red-500/20 text-red-500 text-xs font-bold rounded-full">
                       -{limitedEditionProducts[activeProduct].discountPercent}%
@@ -532,7 +582,9 @@ export default function LimitedEditionHighlightSection() {
                   </div>
                 </div>
 
-                <Link href={`/product/${limitedEditionProducts[activeProduct].id}`}>
+                <Link
+                  href={`/product/${limitedEditionProducts[activeProduct].id}`}
+                >
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -545,7 +597,9 @@ export default function LimitedEditionHighlightSection() {
               </div>
 
               {/* Authenticity Badge */}
-              <div className={`flex items-center gap-2 pt-2 text-xs ${styles.textMutedLighter}`}>
+              <div
+                className={`flex items-center gap-2 pt-2 text-xs ${styles.textMutedLighter}`}
+              >
                 <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-[#007C74]" />
                 <span data-translate="limited.authenticity">
                   Certificate of Authenticity included
@@ -607,7 +661,11 @@ export default function LimitedEditionHighlightSection() {
                   <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={isInView ? { width: `${(product.quantity / 100) * 100}%` } : {}}
+                      animate={
+                        isInView
+                          ? { width: `${(product.quantity / 100) * 100}%` }
+                          : {}
+                      }
                       transition={{ duration: 1, delay: 1 + index * 0.2 }}
                       className="h-full bg-gradient-to-r from-[#007C74] to-[#3C55A5]"
                     />
@@ -616,15 +674,21 @@ export default function LimitedEditionHighlightSection() {
               </div>
 
               <div className="p-2 sm:p-3 md:p-4">
-                <h4 className={`text-xs sm:text-sm font-semibold ${styles.text} mb-1 line-clamp-1`}>
+                <h4
+                  className={`text-xs sm:text-sm font-semibold ${styles.text} mb-1 line-clamp-1`}
+                >
                   {product.title}
                 </h4>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className={`text-[8px] sm:text-xs ${styles.textMutedLighter} line-through`}>
+                    <span
+                      className={`text-[8px] sm:text-xs ${styles.textMutedLighter} line-through`}
+                    >
                       ৳{product.mainPrice}
                     </span>
-                    <span className={`text-xs sm:text-sm font-bold ${styles.text} ml-1 sm:ml-2`}>
+                    <span
+                      className={`text-xs sm:text-sm font-bold ${styles.text} ml-1 sm:ml-2`}
+                    >
                       ৳{product.priceAfterDiscount}
                     </span>
                   </div>
@@ -655,7 +719,9 @@ export default function LimitedEditionHighlightSection() {
               whileHover={{ x: 5 }}
               className={`inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${styles.textMuted} hover:text-[#007C74] transition-colors`}
             >
-              <span data-translate="limited.viewAll">View All Limited Editions</span>
+              <span data-translate="limited.viewAll">
+                View All Limited Editions
+              </span>
               <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </motion.button>
           </Link>

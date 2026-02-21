@@ -1,36 +1,32 @@
 "use client";
 
+import { mockProducts, reviewsData } from "@/lib/productMockData";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
-  Star,
-  ThumbsUp,
-  MessageCircle,
-  Share2,
-  Quote,
   Award,
-  Shield,
-  Users,
-  Globe,
-  Clock,
-  Sparkles,
   ChevronLeft,
   ChevronRight,
+  Clock,
+  Globe,
+  MessageCircle,
+  Quote,
+  Share2,
+  Shield,
+  Star,
+  ThumbsUp,
+  Users,
   Verified,
-  Camera,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState, useEffect } from "react";
-import { mockProducts, reviewsData } from "@/lib/productMockData";
+import { useEffect, useRef, useState } from "react";
 
 export default function SocialProofSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [activeReview, setActiveReview] = useState(0);
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const [showAllReviews, setShowAllReviews] = useState(false);
 
   const isInView = useInView(containerRef, { once: true, amount: 0.2 });
 
@@ -54,16 +50,18 @@ export default function SocialProofSection() {
 
   // Calculate average ratings
   const averageRating = (
-    reviewsData.reduce((acc, review) => acc + review.rating, 0) / reviewsData.length
+    reviewsData.reduce((acc, review) => acc + review.rating, 0) /
+    reviewsData.length
   ).toFixed(1);
 
   const totalReviews = reviewsData.length;
-  const verifiedReviews = reviewsData.filter(r => r.verified).length;
-  const fiveStarReviews = reviewsData.filter(r => r.rating === 5).length;
+  const verifiedReviews = reviewsData.filter((r) => r.verified).length;
 
   // Get customer images from products
   const customerImages = mockProducts
-    .flatMap(p => p.variants.flatMap(v => v.imgList.map(img => img.image)))
+    .flatMap((p) =>
+      p.variants.flatMap((v) => v.imgList.map((img) => img.image)),
+    )
     .filter((_, index) => index < 8);
 
   const themeStyles = {
@@ -203,7 +201,8 @@ export default function SocialProofSection() {
             className={`text-sm sm:text-base md:text-lg ${styles.textMuted} max-w-2xl mx-auto px-4`}
             data-translate="social.description"
           >
-            Join thousands of satisfied customers who trust Glassophite for premium eyewear.
+            Join thousands of satisfied customers who trust Glassophite for
+            premium eyewear.
           </p>
         </motion.div>
 
@@ -215,11 +214,35 @@ export default function SocialProofSection() {
           className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-12 lg:mb-16"
         >
           {[
-            { icon: Star, value: averageRating, label: "Average Rating", suffix: "/5", key: "rating" },
-            { icon: MessageCircle, value: totalReviews, label: "Verified Reviews", suffix: "+", key: "reviews" },
-            { icon: Users, value: "10k+", label: "Happy Customers", suffix: "", key: "customers" },
-            { icon: Globe, value: "15+", label: "Countries", suffix: "", key: "countries" },
-          ].map((stat, index) => (
+            {
+              icon: Star,
+              value: averageRating,
+              label: "Average Rating",
+              suffix: "/5",
+              key: "rating",
+            },
+            {
+              icon: MessageCircle,
+              value: totalReviews,
+              label: "Verified Reviews",
+              suffix: "+",
+              key: "reviews",
+            },
+            {
+              icon: Users,
+              value: "10k+",
+              label: "Happy Customers",
+              suffix: "",
+              key: "customers",
+            },
+            {
+              icon: Globe,
+              value: "15+",
+              label: "Countries",
+              suffix: "",
+              key: "countries",
+            },
+          ].map((stat) => (
             <motion.div
               key={stat.key}
               whileHover={{ y: -5 }}
@@ -227,14 +250,21 @@ export default function SocialProofSection() {
             >
               <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#007C74] mx-auto mb-2" />
               <div className="flex items-center justify-center gap-1">
-                <span className={`text-xl sm:text-2xl lg:text-3xl font-bold ${styles.text}`}>
+                <span
+                  className={`text-xl sm:text-2xl lg:text-3xl font-bold ${styles.text}`}
+                >
                   {stat.value}
                 </span>
-                <span className={`text-xs sm:text-sm ${styles.textMutedLighter}`}>
+                <span
+                  className={`text-xs sm:text-sm ${styles.textMutedLighter}`}
+                >
                   {stat.suffix}
                 </span>
               </div>
-              <p className={`text-xs sm:text-sm ${styles.textMutedLighter}`} data-translate={`social.stats.${stat.key}`}>
+              <p
+                className={`text-xs sm:text-sm ${styles.textMutedLighter}`}
+                data-translate={`social.stats.${stat.key}`}
+              >
                 {stat.label}
               </p>
             </motion.div>
@@ -248,7 +278,9 @@ export default function SocialProofSection() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="mb-12 lg:mb-16"
         >
-          <div className={`relative p-6 sm:p-8 lg:p-10 rounded-2xl backdrop-blur-md border-2 ${styles.borderGlow} ${styles.card}`}>
+          <div
+            className={`relative p-6 sm:p-8 lg:p-10 rounded-2xl backdrop-blur-md border-2 ${styles.borderGlow} ${styles.card}`}
+          >
             {/* Quote Icon */}
             <Quote className="absolute top-4 right-4 w-8 h-8 sm:w-12 sm:h-12 opacity-10 text-[#007C74]" />
 
@@ -265,14 +297,19 @@ export default function SocialProofSection() {
                   {/* Avatar Placeholder with Initials */}
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] flex items-center justify-center mb-4">
                     <span className="text-xl sm:text-2xl font-bold text-white">
-                      {reviewsData[activeReview].name.split(' ').map(n => n[0]).join('')}
+                      {reviewsData[activeReview].name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </span>
                   </div>
 
-                  <h3 className={`text-lg sm:text-xl font-semibold ${styles.text} mb-1`}>
+                  <h3
+                    className={`text-lg sm:text-xl font-semibold ${styles.text} mb-1`}
+                  >
                     {reviewsData[activeReview].name}
                   </h3>
-                  
+
                   <div className="flex items-center gap-2 mb-2">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
@@ -281,15 +318,20 @@ export default function SocialProofSection() {
                           className={`w-3 h-3 sm:w-4 sm:h-4 ${
                             i < reviewsData[activeReview].rating
                               ? `fill-current ${styles.star}`
-                              : 'text-gray-400'
+                              : "text-gray-400"
                           }`}
                         />
                       ))}
                     </div>
                     {reviewsData[activeReview].verified && (
                       <div className="flex items-center gap-1">
-                        <Verified className={`w-3 h-3 sm:w-4 sm:h-4 ${styles.verified}`} />
-                        <span className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`} data-translate="social.verified">
+                        <Verified
+                          className={`w-3 h-3 sm:w-4 sm:h-4 ${styles.verified}`}
+                        />
+                        <span
+                          className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`}
+                          data-translate="social.verified"
+                        >
                           Verified
                         </span>
                       </div>
@@ -308,56 +350,26 @@ export default function SocialProofSection() {
                         {reviewsData[activeReview].helpful}
                       </span>
                     </div>
-                    {reviewsData[activeReview].images.length > 0 && (
-                      <div className="flex items-center gap-1">
-                        <Camera className="w-3 h-3 sm:w-4 sm:h-4 text-[#007C74]" />
-                        <span className={`text-xs ${styles.textMutedLighter}`}>
-                          {reviewsData[activeReview].images.length}
-                        </span>
-                      </div>
-                    )}
                   </div>
                 </div>
-              </motion.div>
-
-              {/* Review Content */}
-              <motion.div
-                key={`content-${activeReview}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="lg:col-span-2"
-              >
-                <p className={`text-base sm:text-lg lg:text-xl ${styles.textMuted} italic leading-relaxed`}>
-                  "{reviewsData[activeReview].comment}"
-                </p>
-
-                {/* Review Images Preview */}
-                {reviewsData[activeReview].images.length > 0 && (
-                  <div className="flex gap-2 mt-4">
-                    {reviewsData[activeReview].images.map((img, index) => (
-                      <div
-                        key={index}
-                        className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg bg-gradient-to-r from-[#007C74]/20 to-[#3C55A5]/20 flex items-center justify-center"
-                      >
-                        <Camera className="w-4 h-4 sm:w-6 sm:h-6 text-[#007C74]" />
-                      </div>
-                    ))}
-                  </div>
-                )}
               </motion.div>
             </div>
 
             {/* Carousel Controls */}
             <div className="flex items-center justify-center gap-4 mt-6">
               <button
-                onClick={() => setActiveReview((prev) => (prev - 1 + reviewsData.length) % reviewsData.length)}
+                onClick={() =>
+                  setActiveReview(
+                    (prev) =>
+                      (prev - 1 + reviewsData.length) % reviewsData.length,
+                  )
+                }
                 className={`p-2 rounded-full border ${styles.border} hover:bg-[#007C74]/10 transition-colors`}
                 aria-label="Previous review"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              
+
               <div className="flex gap-2">
                 {reviewsData.map((_, index) => (
                   <button
@@ -374,7 +386,9 @@ export default function SocialProofSection() {
               </div>
 
               <button
-                onClick={() => setActiveReview((prev) => (prev + 1) % reviewsData.length)}
+                onClick={() =>
+                  setActiveReview((prev) => (prev + 1) % reviewsData.length)
+                }
                 className={`p-2 rounded-full border ${styles.border} hover:bg-[#007C74]/10 transition-colors`}
                 aria-label="Next review"
               >
@@ -391,10 +405,13 @@ export default function SocialProofSection() {
           transition={{ duration: 0.5, delay: 0.5 }}
           className="mb-12 lg:mb-16"
         >
-          <h3 className={`text-lg sm:text-xl font-semibold ${styles.text} mb-4 text-center`} data-translate="social.gallery">
+          <h3
+            className={`text-lg sm:text-xl font-semibold ${styles.text} mb-4 text-center`}
+            data-translate="social.gallery"
+          >
             Our Community in Glassophite
           </h3>
-          
+
           <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 sm:gap-3">
             {customerImages.map((image, index) => (
               <motion.div
@@ -423,18 +440,29 @@ export default function SocialProofSection() {
           className="grid md:grid-cols-2 gap-6 mb-12"
         >
           {/* Rating Bars */}
-          <div className={`p-6 rounded-xl backdrop-blur-sm border ${styles.card}`}>
-            <h4 className={`text-base sm:text-lg font-semibold ${styles.text} mb-4`} data-translate="social.breakdown">
+          <div
+            className={`p-6 rounded-xl backdrop-blur-sm border ${styles.card}`}
+          >
+            <h4
+              className={`text-base sm:text-lg font-semibold ${styles.text} mb-4`}
+              data-translate="social.breakdown"
+            >
               Rating Breakdown
             </h4>
-            
+
             {[5, 4, 3, 2, 1].map((rating) => {
-              const count = reviewsData.filter(r => r.rating === rating).length;
+              const count = reviewsData.filter(
+                (r) => r.rating === rating,
+              ).length;
               const percentage = (count / totalReviews) * 100;
-              
+
               return (
                 <div key={rating} className="flex items-center gap-2 mb-2">
-                  <span className={`text-xs sm:text-sm ${styles.textMuted} w-8`}>{rating}★</span>
+                  <span
+                    className={`text-xs sm:text-sm ${styles.textMuted} w-8`}
+                  >
+                    {rating}★
+                  </span>
                   <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
@@ -443,24 +471,51 @@ export default function SocialProofSection() {
                       className="h-full bg-gradient-to-r from-[#007C74] to-[#3C55A5]"
                     />
                   </div>
-                  <span className={`text-xs ${styles.textMutedLighter} w-8`}>{count}</span>
+                  <span className={`text-xs ${styles.textMutedLighter} w-8`}>
+                    {count}
+                  </span>
                 </div>
               );
             })}
           </div>
 
           {/* Trust Badges */}
-          <div className={`p-6 rounded-xl backdrop-blur-sm border ${styles.card}`}>
-            <h4 className={`text-base sm:text-lg font-semibold ${styles.text} mb-4`} data-translate="social.trust">
+          <div
+            className={`p-6 rounded-xl backdrop-blur-sm border ${styles.card}`}
+          >
+            <h4
+              className={`text-base sm:text-lg font-semibold ${styles.text} mb-4`}
+              data-translate="social.trust"
+            >
               Trust & Safety
             </h4>
-            
+
             <div className="space-y-4">
               {[
-                { icon: Shield, text: "100% Authentic Products", value: "Verified", key: "authentic" },
-                { icon: Verified, text: "Verified Reviews", value: `${verifiedReviews}/${totalReviews}`, key: "verified" },
-                { icon: Award, text: "Award Winning Service", value: "2024", key: "award" },
-                { icon: Clock, text: "Member Since", value: "2024", key: "member" },
+                {
+                  icon: Shield,
+                  text: "100% Authentic Products",
+                  value: "Verified",
+                  key: "authentic",
+                },
+                {
+                  icon: Verified,
+                  text: "Verified Reviews",
+                  value: `${verifiedReviews}/${totalReviews}`,
+                  key: "verified",
+                },
+                {
+                  icon: Award,
+                  text: "Award Winning Service",
+                  value: "2024",
+                  key: "award",
+                },
+                {
+                  icon: Clock,
+                  text: "Member Since",
+                  value: "2024",
+                  key: "member",
+                },
               ].map((item, index) => (
                 <motion.div
                   key={item.key}
@@ -471,11 +526,18 @@ export default function SocialProofSection() {
                 >
                   <div className="flex items-center gap-2">
                     <item.icon className="w-4 h-4 text-[#007C74]" />
-                    <span className={`text-xs sm:text-sm ${styles.textMuted}`} data-translate={`social.trustItems.${item.key}`}>
+                    <span
+                      className={`text-xs sm:text-sm ${styles.textMuted}`}
+                      data-translate={`social.trustItems.${item.key}`}
+                    >
                       {item.text}
                     </span>
                   </div>
-                  <span className={`text-xs sm:text-sm font-semibold ${styles.text}`}>{item.value}</span>
+                  <span
+                    className={`text-xs sm:text-sm font-semibold ${styles.text}`}
+                  >
+                    {item.value}
+                  </span>
                 </motion.div>
               ))}
             </div>

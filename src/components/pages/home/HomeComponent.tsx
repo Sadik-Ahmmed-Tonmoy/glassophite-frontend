@@ -1,5 +1,6 @@
-"use client"
+"use client";
 
+import { FloatButton } from "@/components/ui/FloatButton/FloatButton";
 import Footer from "@/components/shared/Footer/Footer";
 import BestSellerCarouselSection from "./BestSellerCarouselSection";
 import BrandStatementSection from "./BrandStatementSection";
@@ -12,35 +13,33 @@ import SEOContentSection from "./SEOContentSection";
 import SocialProofSection from "./SocialProofSection";
 import StyleInspirationSection from "./StyleInspirationSection";
 import VirtualTryOn from "./VirtualTryOn";
-import VirtualTryOnSection from "./VirtualTryOnSection";
 import WhyChooseGlassophiteSection from "./WhyChooseGlassophiteSection";
+import Testimonials from "./TestimonialsSection";
 
 const HomeComponent = () => {
-    return (
-        <div>
-                {/* <Banner /> */}
-      <HeroCinematicSection/>
+  return (
+    <div id="top">
+      {/* <Banner /> */}
+      <HeroCinematicSection />
+      <Testimonials />
       <SEOContentSection />
       <VirtualTryOn />
-      <HorizontalScroll/>
+      <HorizontalScroll />
       <GlassophitePromiseSection />
       <StyleInspirationSection />
       <SocialProofSection />
       <LimitedEditionHighlightSection />
-      <BrandStatementSection/>
-      <WhyChooseGlassophiteSection/>
+      <BrandStatementSection />
+      <WhyChooseGlassophiteSection />
       <BestSellerCarouselSection />
-      <FeaturedCollectionSection/>
-      <Footer/>
-
-      {/* <HeroSection/> */}
-      {/* <LoginWithGoogle /> */}
-      {/* <ProductCard product={productMockData} /> */}
-      {/* <ProductCard product={productMockData} /> */}
-      {/* <HorizontalStorySection/> */}
-      
+      <FeaturedCollectionSection />
+      <Footer />
+  <div className="hidden md:block">
+         <FloatButton.BackTop  />
         </div>
-    );
+      {/* <LoginWithGoogle /> */}
+    </div>
+  );
 };
 
 export default HomeComponent;

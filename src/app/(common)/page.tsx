@@ -1,21 +1,4 @@
-import LoginWithGoogle from "@/components/LoginWithGoogle";
-import BestSellerCarouselSection from "@/components/pages/home/BestSellerCarouselSection";
-import BrandStatementSection from "@/components/pages/home/BrandStatementSection";
-import FeaturedCollectionSection from "@/components/pages/home/FeaturedCollectionSection";
-import GlassophitePromiseSection from "@/components/pages/home/GlassophitePromiseSection";
-import HeroCinematicSection from "@/components/pages/home/HeroCinematicSection";
-import HeroSection from "@/components/pages/home/HeroSection";
-import HorizontalScroll from "@/components/pages/home/HorizontalScroll/HorizontalScroll";
-import HorizontalStorySection from "@/components/pages/home/HorizontalStorySection";
-import LimitedEditionHighlightSection from "@/components/pages/home/LimitedEditionHighlightSection";
-import SEOContentSection from "@/components/pages/home/SEOContentSection";
-import SocialProofSection from "@/components/pages/home/SocialProofSection";
-import StyleInspirationSection from "@/components/pages/home/StyleInspirationSection";
-import VirtualTryOnSection from "@/components/pages/home/VirtualTryOnSection";
-import WhyChooseGlassophiteSection from "@/components/pages/home/WhyChooseGlassophiteSection";
-import Footer from "@/components/shared/Footer/Footer";
-import ProductCard from "@/components/ui/ProductCard/ProductCard";
-import { productMockData } from "@/lib/productMockData";
+import HomeComponent from "@/components/pages/home/HomeComponent";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -75,14 +58,14 @@ export const metadata: Metadata = {
     "exclusive eyewear collections",
   ],
 
-    openGraph: {
+  openGraph: {
     title: "Glassophite - Redefining Elegance in Eyewear",
     description:
       "Explore Glassophite's premium eyewear collection, combining luxury, style, and craftsmanship. Designed for those who demand excellence and sophistication, our eyewear is made for those who lead and not follow.",
     url: "https://www.glassophite.com",
     siteName: "Glassophite",
-    type: "website", 
-    locale: "en_US", 
+    type: "website",
+    locale: "en_US",
     images: [
       {
         url: "https://www.glassophite.com/images/og-image.jpg", // Replace with actual image URL
@@ -106,38 +89,17 @@ export const metadata: Metadata = {
       "Elevate your style with Glassophite, where premium materials meet timeless design in luxury sunglasses. Crafted with precision for the modern individual.",
     images: ["https://www.glassophite.com/images/twitter-image.jpg"], // Use a relevant image for Twitter preview
   },
-    appleWebApp: {
+  appleWebApp: {
     capable: true,
     title: "Glassophite",
     statusBarStyle: "black-translucent",
   },
-  
 };
 
 const page = () => {
   return (
     <div className="relative">
-      {/* <Banner /> */}
-      <HeroCinematicSection/>
-      <VirtualTryOnSection/>
-      <SEOContentSection />
-      <GlassophitePromiseSection />
-      <StyleInspirationSection />
-      <SocialProofSection />
-      <LimitedEditionHighlightSection />
-      <BrandStatementSection/>
-      <WhyChooseGlassophiteSection/>
-      <BestSellerCarouselSection />
-      <FeaturedCollectionSection/>
-
-      <HorizontalScroll/>
-      <HeroSection/>
-      <LoginWithGoogle />
-      <ProductCard product={productMockData} />
-      <ProductCard product={productMockData} />
-      <HorizontalStorySection/>
-      <Footer/>
-      
+      <HomeComponent />
     </div>
   );
 };

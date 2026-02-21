@@ -2,36 +2,32 @@
 
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
-  Camera,
-  Scan,
-  Sparkles,
+  AlertCircle,
   ArrowRight,
-  RefreshCw,
+  Camera,
   CheckCircle,
-  Move,
-  Star,
-  Heart,
-  Share2,
+  Clock,
   Download,
+  Eye,
+  Heart,
   Maximize2,
   Minimize2,
+  Move,
+  RefreshCw,
+  Scan,
   Settings,
-  X,
-  AlertCircle,
-  Users,
-  Clock,
-  Zap,
+  Share2,
+  Sparkles,
+  Star,
   Upload,
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-  Eye,
+  Users,
+  X,
+  Zap
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import Link from "next/link";
 import Image from "next/image";
-import { useRef, useState, useEffect, useCallback } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 
 // Mock data interface

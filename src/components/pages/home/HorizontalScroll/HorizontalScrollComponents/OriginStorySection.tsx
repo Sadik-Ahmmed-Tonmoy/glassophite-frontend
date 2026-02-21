@@ -142,17 +142,22 @@ const originData = {
 export default function OriginStorySection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const [activeCraft, setActiveCraft] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // const { scrollYProgress } = useScroll({
+  //   target: containerRef,
+  //   offset: ["start end", "end start"],
+  // });
+
   const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
+  target: mounted ? containerRef : undefined,
+  offset: ["start end", "end start"],
+});
 
   const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 };
   const scale = useSpring(

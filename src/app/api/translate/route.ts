@@ -55,7 +55,7 @@ export async function POST(req: Request) {
       );
 
       const data = await res.json();
-      apiTranslations = data.data.translations.map(
+      apiTranslations = data?.data?.translations?.map(
         (t: any) => t.translatedText
       );
     }

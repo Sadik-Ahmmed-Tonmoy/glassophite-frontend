@@ -3,21 +3,18 @@
 
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import {
-    Award,
-    CheckCircle,
-    Clock,
-    Crown,
-    Eye,
-    Globe,
-    Layers,
-    Maximize2,
-    Pause,
-    Play,
-    Shield,
-    Sparkles,
-    Users,
-    Truck,
-    Package
+  Award,
+  CheckCircle,
+  Clock,
+  Crown,
+  Globe,
+  Layers,
+  Maximize2,
+  Pause,
+  Play,
+  Shield,
+  Truck,
+  Users
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
@@ -205,8 +202,13 @@ export default function ProductShowcaseSection() {
     setMounted(true);
   }, []);
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
+  // const { scrollYProgress } = useScroll({
+  //   target: containerRef,
+  //   offset: ["start end", "end start"],
+  // });
+
+    const { scrollYProgress } = useScroll({
+    target: mounted ? containerRef : undefined,
     offset: ["start end", "end start"],
   });
 

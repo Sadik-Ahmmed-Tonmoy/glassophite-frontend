@@ -3,52 +3,84 @@
 
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import {
-    ArrowRight,
-    Atom,
-    Beaker,
-    Check,
-    Droplets,
-    Eye,
-    Microscope,
-    Scan,
-    Shield,
-    Sun,
-    TestTube,
-    Thermometer,
-    Users,
-    Waves,
-    X,
-    Zap
+  Beaker,
+  Check,
+  Droplets,
+  Eye,
+  Microscope,
+  Scan,
+  Shield,
+  Sun,
+  Thermometer,
+  Waves,
+  X,
+  Zap,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BsSunglasses } from "react-icons/bs";
 
 const innovationData = {
   id: "innovation",
   title: "Lens Technology",
   subtitle: "Crystal Clarity, Tropical Optimized",
-  description: "Our proprietary lens technology is specifically engineered for the unique light conditions of the subcontinent - from bright tropical sun to monsoon haze.",
-  longDescription: "After 18 months of research in partnership with BUET's Optical Engineering department, we developed lens technology that addresses the specific visual needs of Bangladesh and similar tropical regions. Our lenses filter out the intense UV rays while enhancing contrast for hazy conditions, and repel water during monsoon - all while maintaining perfect optical clarity.",
+  description:
+    "Our proprietary lens technology is specifically engineered for the unique light conditions of the subcontinent - from bright tropical sun to monsoon haze.",
+  longDescription:
+    "After 18 months of research in partnership with BUET's Optical Engineering department, we developed lens technology that addresses the specific visual needs of Bangladesh and similar tropical regions. Our lenses filter out the intense UV rays while enhancing contrast for hazy conditions, and repel water during monsoon - all while maintaining perfect optical clarity.",
   icon: Eye,
   color: "#00A693",
   image: "/images/story/lens-lab.jpg",
-  
+
   stats: [
-    { label: "UV Protection", value: "100%", icon: Sun, description: "Blocks UVA/UVB up to 400nm" },
-    { label: "Polarization", value: "99.9%", icon: Waves, description: "Eliminates glare effectively" },
-    { label: "Scratch Resistance", value: "10H", icon: Shield, description: "Hardness rating (pencil hardness)" },
-    { label: "Water Repellency", value: "180°", icon: Droplets, description: "Contact angle for hydrophobic coating" },
-    { label: "Impact Resistance", value: "FDA", icon: Zap, description: "Passes FDA impact testing" },
-    { label: "Research Hours", value: "2,500+", icon: Microscope, description: "In optical engineering" },
+    {
+      label: "UV Protection",
+      value: "100%",
+      icon: Sun,
+      description: "Blocks UVA/UVB up to 400nm",
+    },
+    {
+      label: "Polarization",
+      value: "99.9%",
+      icon: Waves,
+      description: "Eliminates glare effectively",
+    },
+    {
+      label: "Scratch Resistance",
+      value: "10H",
+      icon: Shield,
+      description: "Hardness rating (pencil hardness)",
+    },
+    {
+      label: "Water Repellency",
+      value: "180°",
+      icon: Droplets,
+      description: "Contact angle for hydrophobic coating",
+    },
+    {
+      label: "Impact Resistance",
+      value: "FDA",
+      icon: Zap,
+      description: "Passes FDA impact testing",
+    },
+    {
+      label: "Research Hours",
+      value: "2,500+",
+      icon: Microscope,
+      description: "In optical engineering",
+    },
   ],
 
   lensTypes: [
     {
       name: "Polarized Pro",
-      benefits: ["Glare reduction 99.9%", "Contrast enhancement", "Driving optimized"],
+      benefits: [
+        "Glare reduction 99.9%",
+        "Contrast enhancement",
+        "Driving optimized",
+      ],
       tech: ["Multi-layer polarization", "Anti-reflective coating"],
-     最适合: "Outdoor activities, Driving",
+      最适合: "Outdoor activities, Driving",
     },
     // {
     //   name: "Blue Shield",
@@ -72,7 +104,12 @@ const innovationData = {
 
   testResults: [
     { name: "UV Protection", standard: "UV400", result: "100%", pass: true },
-    { name: "Polarization Efficiency", standard: ">99%", result: "99.9%", pass: true },
+    {
+      name: "Polarization Efficiency",
+      standard: ">99%",
+      result: "99.9%",
+      pass: true,
+    },
     { name: "Scratch Resistance", standard: "8H", result: "10H", pass: true },
     // { name: "Impact Resistance", standard: "FDA", result: "Passed", pass: true },
     // { name: "Optical Distortion", standard: "<0.01D", result: "0.005D", pass: true },
@@ -80,9 +117,21 @@ const innovationData = {
   ],
 
   labEquipment: [
-    { name: "UV Spectrophotometer", purpose: "UV protection measurement", accuracy: "±0.1nm" },
-    { name: "Lensometer", purpose: "Optical power verification", accuracy: "±0.01D" },
-    { name: "Polarization Tester", purpose: "Polarization efficiency", accuracy: "99.9%" },
+    {
+      name: "UV Spectrophotometer",
+      purpose: "UV protection measurement",
+      accuracy: "±0.1nm",
+    },
+    {
+      name: "Lensometer",
+      purpose: "Optical power verification",
+      accuracy: "±0.01D",
+    },
+    {
+      name: "Polarization Tester",
+      purpose: "Polarization efficiency",
+      accuracy: "99.9%",
+    },
     { name: "Impact Tester", purpose: "Ball drop test", force: "16g at 50cm" },
     // { name: "Abrasion Tester", purpose: "Scratch resistance", cycles: "5000" },
   ],
@@ -114,15 +163,30 @@ export default function InnovationLabsSection() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [activeLens, setActiveLens] = useState(0);
-  
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  // const { scrollYProgress } = useScroll({
+  //   target: containerRef,
+  //   offset: ["start end", "end start"],
+  // });
+
+    const { scrollYProgress } = useScroll({
+    target: mounted ? containerRef : undefined,
     offset: ["start end", "end start"],
   });
 
   const springConfig = { stiffness: 100, damping: 30 };
-  const x = useSpring(useTransform(scrollYProgress, [0, 1], [0, -200]), springConfig);
-  const opacity = useSpring(useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]), springConfig);
+  const x = useSpring(
+    useTransform(scrollYProgress, [0, 1], [0, -200]),
+    springConfig,
+  );
+  const opacity = useSpring(
+    useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]),
+    springConfig,
+  );
 
   const themeStyles = {
     dark: {
@@ -144,7 +208,7 @@ export default function InnovationLabsSection() {
       textMutedLighter: "text-neutral-500",
       success: "text-green-600",
       warning: "text-yellow-600",
-    }
+    },
   };
 
   const styles = isDark ? themeStyles.dark : themeStyles.light;
@@ -158,17 +222,20 @@ export default function InnovationLabsSection() {
     >
       {/* Lab Background Pattern */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `linear-gradient(${isDark ? '#00A693' : '#00A693'} 1px, transparent 1px),
-                            linear-gradient(90deg, ${isDark ? '#00A693' : '#00A693'} 1px, transparent 1px)`,
-          backgroundSize: '40px 40px'
-        }} />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `linear-gradient(${isDark ? "#00A693" : "#00A693"} 1px, transparent 1px),
+                            linear-gradient(90deg, ${isDark ? "#00A693" : "#00A693"} 1px, transparent 1px)`,
+            backgroundSize: "40px 40px",
+          }}
+        />
       </div>
 
       {/* Animated Scan Line */}
       <motion.div
         animate={{
-          y: ['-100%', '200%'],
+          y: ["-100%", "200%"],
         }}
         transition={{
           duration: 8,
@@ -197,14 +264,16 @@ export default function InnovationLabsSection() {
             left: `${10 + i * 5}%`,
           }}
         >
-          <BsSunglasses className={`w-6 h-6 ${isDark ? 'text-[#00A693]/20' : 'text-[#00A693]/10'}`} />
+          <BsSunglasses
+            className={`w-6 h-6 ${isDark ? "text-[#00A693]/20" : "text-[#00A693]/10"}`}
+          />
         </motion.div>
       ))}
 
       {/* Main Content */}
       <div className="relative z-10 h-full max-w-7xl mx-auto px-6 py-12 flex flex-col">
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
@@ -225,10 +294,7 @@ export default function InnovationLabsSection() {
         </motion.div>
 
         {/* Stats Bar */}
-        <motion.div 
-          style={{ x }}
-          className="grid grid-cols-6 gap-3 mb-8"
-        >
+        <motion.div style={{ x }} className="grid grid-cols-6 gap-3 mb-8">
           {innovationData.stats.map((stat, index) => (
             <motion.div
               key={index}
@@ -236,8 +302,12 @@ export default function InnovationLabsSection() {
               className={`p-3 rounded-xl ${styles.card} backdrop-blur-sm text-center`}
             >
               <stat.icon className="w-4 h-4 text-[#00A693] mx-auto mb-1" />
-              <span className={`text-sm font-bold ${styles.text}`}>{stat.value}</span>
-              <p className={`text-[10px] ${styles.textMutedLighter}`}>{stat.label}</p>
+              <span className={`text-sm font-bold ${styles.text}`}>
+                {stat.value}
+              </span>
+              <p className={`text-[10px] ${styles.textMutedLighter}`}>
+                {stat.label}
+              </p>
             </motion.div>
           ))}
         </motion.div>
@@ -245,10 +315,14 @@ export default function InnovationLabsSection() {
         {/* Main Grid */}
         <div className="grid lg:grid-cols-3 gap-6 flex-1">
           {/* Lens Types */}
-          <div className={`lg:col-span-1 p-6 rounded-2xl ${styles.card} backdrop-blur-md`}>
+          <div
+            className={`lg:col-span-1 p-6 rounded-2xl ${styles.card} backdrop-blur-md`}
+          >
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <Eye className="w-5 h-5 text-[#00A693]" />
-              <span data-translate="innovation.lensTypes">Lens Technologies</span>
+              <span data-translate="innovation.lensTypes">
+                Lens Technologies
+              </span>
             </h3>
 
             <div className="space-y-3">
@@ -258,20 +332,26 @@ export default function InnovationLabsSection() {
                   whileHover={{ x: 5 }}
                   onClick={() => setActiveLens(index)}
                   className={`p-4 rounded-xl cursor-pointer transition-all ${
-                    activeLens === index 
-                      ? `${styles.card} border-[#00A693]/50 shadow-[0_0_30px_rgba(0,166,147,0.2)]` 
+                    activeLens === index
+                      ? `${styles.card} border-[#00A693]/50 shadow-[0_0_30px_rgba(0,166,147,0.2)]`
                       : styles.card
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className={`font-medium ${styles.text}`}>{lens.name}</h4>
-                    {activeLens === index && <Scan className="w-4 h-4 text-[#00A693]" />}
+                    <h4 className={`font-medium ${styles.text}`}>
+                      {lens.name}
+                    </h4>
+                    {activeLens === index && (
+                      <Scan className="w-4 h-4 text-[#00A693]" />
+                    )}
                   </div>
                   <div className="space-y-2">
                     {lens.benefits.map((benefit, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <Check className="w-3 h-3 text-[#00A693]" />
-                        <span className={`text-xs ${styles.textMutedLighter}`}>{benefit}</span>
+                        <span className={`text-xs ${styles.textMutedLighter}`}>
+                          {benefit}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -282,7 +362,8 @@ export default function InnovationLabsSection() {
                       className="mt-3 pt-3 border-t border-white/10"
                     >
                       <p className={`text-xs ${styles.textMutedLighter}`}>
-                        <span className="font-medium">Best for:</span> {lens.最适合}
+                        <span className="font-medium">Best for:</span>{" "}
+                        {lens.最适合}
                       </p>
                     </motion.div>
                   )}
@@ -292,7 +373,9 @@ export default function InnovationLabsSection() {
           </div>
 
           {/* Test Results */}
-          <div className={`lg:col-span-1 p-6 rounded-2xl ${styles.card} backdrop-blur-md`}>
+          <div
+            className={`lg:col-span-1 p-6 rounded-2xl ${styles.card} backdrop-blur-md`}
+          >
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <Beaker className="w-5 h-5 text-[#00A693]" />
               <span data-translate="innovation.testResults">Test Results</span>
@@ -309,10 +392,14 @@ export default function InnovationLabsSection() {
                 >
                   <div>
                     <p className={`text-sm ${styles.text}`}>{test.name}</p>
-                    <p className={`text-xs ${styles.textMutedLighter}`}>Standard: {test.standard}</p>
+                    <p className={`text-xs ${styles.textMutedLighter}`}>
+                      Standard: {test.standard}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className={`text-sm font-bold ${test.pass ? styles.success : styles.warning}`}>
+                    <p
+                      className={`text-sm font-bold ${test.pass ? styles.success : styles.warning}`}
+                    >
                       {test.result}
                     </p>
                     {test.pass ? (
@@ -337,7 +424,9 @@ export default function InnovationLabsSection() {
           </div>
 
           {/* Lab Equipment & Team */}
-          <div className={`lg:col-span-1 p-6 rounded-2xl ${styles.card} backdrop-blur-md`}>
+          <div
+            className={`lg:col-span-1 p-6 rounded-2xl ${styles.card} backdrop-blur-md`}
+          >
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <Microscope className="w-5 h-5 text-[#00A693]" />
               <span data-translate="innovation.lab">Lab Equipment</span>
@@ -350,15 +439,19 @@ export default function InnovationLabsSection() {
                     <Thermometer className="w-4 h-4 text-[#00A693]" />
                   </div>
                   <div className="flex-1">
-                    <p className={`text-sm font-medium ${styles.text}`}>{equipment.name}</p>
-                    <p className={`text-xs ${styles.textMutedLighter}`}>{equipment.purpose}</p>
-                    <p className={`text-[10px] ${styles.textMutedLighter}`}>Accuracy: {equipment.accuracy}</p>
+                    <p className={`text-sm font-medium ${styles.text}`}>
+                      {equipment.name}
+                    </p>
+                    <p className={`text-xs ${styles.textMutedLighter}`}>
+                      {equipment.purpose}
+                    </p>
+                    <p className={`text-[10px] ${styles.textMutedLighter}`}>
+                      Accuracy: {equipment.accuracy}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
-
-          
           </div>
         </div>
 

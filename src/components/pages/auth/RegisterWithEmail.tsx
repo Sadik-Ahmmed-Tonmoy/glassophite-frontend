@@ -6,14 +6,59 @@ import { FlipWords } from "@/components/ui/flip-words";
 import { LinkPreview } from "@/components/ui/link-preview";
 import MyFormInputAceternity from "@/components/ui/MyForm/MyFormInputAceternity/MyFormInputAceternity";
 import MyFormWrapper from "@/components/ui/MyForm/MyFormWrapper/MyFormWrapper";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { FieldValues } from "react-hook-form";
 import { BsGithub, BsGoogle } from "react-icons/bs";
+import { z } from "zod";
+
+
+const validationSchema = z.object({
+  firstName: z.string(
+    {
+      required_error: "First name is required",
+    } 
+  ).min(1, {
+    message: "First name is required",
+  }),
+
+  lastName: z.string(
+    {
+      required_error: "Last name is required",
+    }
+  ).min(1, "Last name is required"),
+  phone: z.string(
+    {
+      required_error: "Phone number is required",
+    }
+  ).min(1, "Phone number is required"),
+  email: z.string(
+    {
+      required_error: "Email is required",
+    }
+  ).email("Invalid email address"),
+  password: z.string(
+    {
+      required_error: "Password is required",
+    }
+  ).min(8, "Password must be at least 8 characters long"),
+  c_password: z.string(
+    {
+      required_error: "Confirm password is required",
+    }
+  ).min(8, "Confirm password must be at least 8 characters long"),
+  acceptTerms: z.boolean(
+    {
+      required_error: "You must accept the terms and conditions",
+    }
+  ).refine((data) => data, {
+    message: "You must accept the terms and conditions",
+  }),
+});
 
 export function RegisterWithEmail() {
   const handleSubmit = (data: FieldValues, reset: any) => {
-    console.log("Form Data:", data);
-    reset(); // Uncomment this line to reset the form after submission
+    console.log("Form Data:", data, reset);
   };
 
   return (
@@ -39,6 +84,7 @@ export function RegisterWithEmail() {
 
       <MyFormWrapper
         onSubmit={handleSubmit}
+        resolver={zodResolver(validationSchema)}
         className="flex flex-col gap-3 my-8"
       >
         <div className="flex flex-col gap-4 md:gap-0 md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-3">

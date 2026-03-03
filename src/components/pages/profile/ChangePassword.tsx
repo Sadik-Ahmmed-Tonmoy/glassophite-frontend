@@ -1,108 +1,154 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { Eye, EyeOff, Save, Lock } from "lucide-react"
+import type React from "react";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
+import { Eye, EyeOff, Save, Lock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function ChangePassword() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-  })
+  });
 
   const [showPasswords, setShowPasswords] = useState({
     currentPassword: false,
     newPassword: false,
     confirmPassword: false,
-  })
+  });
 
   const [errors, setErrors] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-  })
+  });
+
+  // Theme styles
+  const themeStyles = {
+    dark: {
+      card: "bg-white/5 border-white/10",
+      text: "text-white",
+      textMuted: "text-neutral-300",
+      textMutedLighter: "text-neutral-400",
+      border: "border-white/10",
+      input: "bg-white/5 border-white/10 text-white placeholder:text-neutral-500",
+      label: "text-neutral-300",
+      icon: "text-neutral-400",
+      error: "text-red-400",
+      helper: "text-neutral-500",
+      button: "bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white hover:shadow-lg",
+    },
+    light: {
+      card: "bg-white border-neutral-200",
+      text: "text-gray-900",
+      textMuted: "text-gray-700",
+      textMutedLighter: "text-gray-500",
+      border: "border-gray-200",
+      input: "bg-white border-gray-300 text-gray-900 placeholder:text-gray-400",
+      label: "text-gray-700",
+      icon: "text-gray-500",
+      error: "text-red-600",
+      helper: "text-gray-500",
+      button: "bg-primary text-white hover:bg-primary/90",
+    },
+  };
+
+  const styles = isDark ? themeStyles.dark : themeStyles.light;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Clear errors when typing
     if (errors[name as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }))
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-  }
+  };
 
   const togglePasswordVisibility = (field: keyof typeof showPasswords) => {
     setShowPasswords((prev) => ({
       ...prev,
       [field]: !prev[field],
-    }))
-  }
+    }));
+  };
 
   const validateForm = () => {
-    let isValid = true
-    const newErrors = { ...errors }
+    let isValid = true;
+    const newErrors = { ...errors };
 
-    // Validate current password
     if (!formData.currentPassword) {
-      newErrors.currentPassword = "Current password is required"
-      isValid = false
+      newErrors.currentPassword = "Current password is required";
+      isValid = false;
     }
-
-    // Validate new password
     if (!formData.newPassword) {
-      newErrors.newPassword = "New password is required"
-      isValid = false
+      newErrors.newPassword = "New password is required";
+      isValid = false;
     } else if (formData.newPassword.length < 8) {
-      newErrors.newPassword = "Password must be at least 8 characters"
-      isValid = false
+      newErrors.newPassword = "Password must be at least 8 characters";
+      isValid = false;
     }
-
-    // Validate confirm password
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your new password"
-      isValid = false
+      newErrors.confirmPassword = "Please confirm your new password";
+      isValid = false;
     } else if (formData.newPassword !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
-      isValid = false
+      newErrors.confirmPassword = "Passwords do not match";
+      isValid = false;
     }
 
-    setErrors(newErrors)
-    return isValid
-  }
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
+    e.preventDefault();
     if (validateForm()) {
-      // Here you would typically send the password change request to your backend
-      console.log("Password change request:", formData)
-
-      // Reset form after successful submission
+      console.log("Password change request:", formData);
       setFormData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
-      })
-
-      // Show success message (in a real app, you'd use a toast or notification)
-      alert("Password changed successfully!")
+      });
+      alert("Password changed successfully!");
     }
-  }
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4, ease: "easeOut" as const },
+    },
+  };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className={cn(
+        "rounded-xl border shadow-sm p-6 transition-colors duration-500",
+        styles.card
+      )}
+    >
       <div className="flex items-center mb-6">
-        <Lock size={20} className="text-primary mr-2" />
-        <h2 className="text-lg font-semibold text-gray-800">Change Password</h2>
+        <Lock size={20} className={cn("mr-2", styles.icon)} />
+        <h2 className={cn("text-lg font-semibold", styles.text)} data-translate="profile.changePassword.title">
+          Change Password
+        </h2>
       </div>
 
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
+          {/* Current Password */}
           <div>
-            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="currentPassword" className={cn("block text-sm font-medium mb-1", styles.label)} data-translate="profile.changePassword.current">
               Current Password
             </label>
             <div className="relative">
@@ -112,23 +158,30 @@ export default function ChangePassword() {
                 name="currentPassword"
                 value={formData.currentPassword}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-                  errors.currentPassword ? "border-red-500" : ""
-                }`}
+                className={cn(
+                  "w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors",
+                  styles.input,
+                  errors.currentPassword ? "border-red-500" : styles.border
+                )}
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className={cn("absolute right-3 top-1/2 -translate-y-1/2 transition-colors", styles.icon)}
                 onClick={() => togglePasswordVisibility("currentPassword")}
               >
                 {showPasswords.currentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {errors.currentPassword && <p className="mt-1 text-sm text-red-500">{errors.currentPassword}</p>}
+            {errors.currentPassword && (
+              <p className={cn("mt-1 text-sm", styles.error)} data-translate="profile.changePassword.error.current">
+                {errors.currentPassword}
+              </p>
+            )}
           </div>
 
+          {/* New Password */}
           <div>
-            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="newPassword" className={cn("block text-sm font-medium mb-1", styles.label)} data-translate="profile.changePassword.new">
               New Password
             </label>
             <div className="relative">
@@ -138,26 +191,33 @@ export default function ChangePassword() {
                 name="newPassword"
                 value={formData.newPassword}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-                  errors.newPassword ? "border-red-500" : ""
-                }`}
+                className={cn(
+                  "w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors",
+                  styles.input,
+                  errors.newPassword ? "border-red-500" : styles.border
+                )}
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className={cn("absolute right-3 top-1/2 -translate-y-1/2 transition-colors", styles.icon)}
                 onClick={() => togglePasswordVisibility("newPassword")}
               >
                 {showPasswords.newPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {errors.newPassword && <p className="mt-1 text-sm text-red-500">{errors.newPassword}</p>}
-            <p className="mt-1 text-xs text-gray-500">
+            {errors.newPassword && (
+              <p className={cn("mt-1 text-sm", styles.error)} data-translate="profile.changePassword.error.new">
+                {errors.newPassword}
+              </p>
+            )}
+            <p className={cn("mt-1 text-xs", styles.helper)} data-translate="profile.changePassword.helper">
               Password must be at least 8 characters and include a mix of letters, numbers, and symbols.
             </p>
           </div>
 
+          {/* Confirm Password */}
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="confirmPassword" className={cn("block text-sm font-medium mb-1", styles.label)} data-translate="profile.changePassword.confirm">
               Confirm New Password
             </label>
             <div className="relative">
@@ -167,32 +227,41 @@ export default function ChangePassword() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-                  errors.confirmPassword ? "border-red-500" : ""
-                }`}
+                className={cn(
+                  "w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors",
+                  styles.input,
+                  errors.confirmPassword ? "border-red-500" : styles.border
+                )}
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className={cn("absolute right-3 top-1/2 -translate-y-1/2 transition-colors", styles.icon)}
                 onClick={() => togglePasswordVisibility("confirmPassword")}
               >
                 {showPasswords.confirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {errors.confirmPassword && <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>}
+            {errors.confirmPassword && (
+              <p className={cn("mt-1 text-sm", styles.error)} data-translate="profile.changePassword.error.confirm">
+                {errors.confirmPassword}
+              </p>
+            )}
           </div>
         </div>
 
         <div className="mt-6 flex justify-end">
-          <button
+          <motion.button
             type="submit"
-            className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+            className={cn("inline-flex items-center px-4 py-2 rounded-md transition-colors", styles.button)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            data-translate="profile.changePassword.submit"
           >
             <Save size={16} className="mr-1.5" />
             Update Password
-          </button>
+          </motion.button>
         </div>
       </form>
-    </div>
-  )
+    </motion.div>
+  );
 }

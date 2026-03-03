@@ -1,24 +1,44 @@
-import { cn } from "@/lib/utils";
-import React from "react";
-import { FieldValues, FormProvider, SubmitHandler, useForm } from "react-hook-form";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client';
+import { FormProvider, useForm } from 'react-hook-form';
+import { cn } from '@/lib/utils';
 
-type TFormProps = {
-  children: React.ReactNode;
+const MyFormWrapper = ({
+  onSubmit,
+  className,
+  children,
+  defaultValues,
+  resolver,
+}: {
+  onSubmit: (data: any, reset: () => void) => void;
   className?: string;
-  onSubmit: (data: FieldValues, reset: () => void) => void;
-  // onSubmit: SubmitHandler<FieldValues>;
-};
-const MyFormWrapper = ({ children, onSubmit, className }: TFormProps) => {
-  const methods = useForm<FieldValues>();
+  children: React.ReactNode;
+  defaultValues?: any;
+  resolver?: import('react-hook-form').Resolver<any, any>;
+}) => {
+  const formConfig: Record<string, any> = {};
 
-  const submit: SubmitHandler<FieldValues> = (data) => {
-    onSubmit(data, methods.reset);
+  if (defaultValues) {
+    formConfig['defaultValues'] = defaultValues;
+  }
+
+  if (resolver) {
+    formConfig['resolver'] = resolver;
+  }
+
+  const methods = useForm(formConfig);
+  const { handleSubmit, reset } = methods;
+
+  const submit = (data: any) => {
+    onSubmit(data, reset); // Pass reset function to onSubmit
   };
 
   return (
-    <FormProvider {...methods} >
-      <form onSubmit={methods.handleSubmit(submit)} className={cn("", className)}>{children}</form>
-    </FormProvider>
+      <FormProvider {...methods}>
+        <form className={cn('', className)} onSubmit={handleSubmit(submit)}>
+          {children}
+        </form>
+      </FormProvider>
   );
 };
 

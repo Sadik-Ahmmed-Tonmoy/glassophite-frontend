@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useCart } from "@/hooks/use-cart"
@@ -86,7 +87,8 @@ export default function CheckoutPage() {
   }
 
   // Handle form submissions
-  const handleShippingSubmit = (data: typeof shippingDetails) => {
+  const handleShippingSubmit = (data: any) => {
+    console.log(data);
     setShippingDetails(data)
     nextStep()
   }
@@ -204,7 +206,7 @@ export default function CheckoutPage() {
             <div className="mt-8">
               {currentStep === 1 && (
                 <ShippingForm
-                  initialValues={shippingDetails}
+                  // initialValues={shippingDetails}
                   onSubmit={handleShippingSubmit}
                   shippingMethod={shippingMethod}
                   onShippingMethodChange={setShippingMethod}

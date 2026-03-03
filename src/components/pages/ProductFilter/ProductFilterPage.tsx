@@ -6,6 +6,8 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
 import Head from "next/head"
 import Script from "next/script"
+import { useTheme } from "next-themes"
+import {  SlidersHorizontal, X } from "lucide-react"
 import MobileFilterDrawer from "./mobile-filter-drawer"
 import type { FilterState, SortOption } from "@/types/filter-types"
 import { mockProducts } from "@/lib/productMockData"
@@ -17,6 +19,8 @@ export default function ProductFilterPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+  const { theme } = useTheme()
+  const isDark = theme === "dark"
 
   // Parse initial filters from URL
   const initialFilters: FilterState = {
@@ -79,7 +83,6 @@ export default function ProductFilterPage() {
   useEffect(() => {
     const params = new URLSearchParams()
 
-    // Only add parameters that have values
     if (filters.priceRange[0] > minPrice) params.set("minPrice", filters.priceRange[0].toString())
     if (filters.priceRange[1] < maxPrice) params.set("maxPrice", filters.priceRange[1].toString())
 
@@ -94,7 +97,6 @@ export default function ProductFilterPage() {
     if (currentPage > 1) params.set("page", currentPage.toString())
     if (productsPerPage !== 6) params.set("limit", productsPerPage.toString())
 
-    // Update URL without refreshing the page
     router.push(`${pathname}?${params.toString()}`, { scroll: false })
   }, [filters, sortOption, currentPage, pathname, router, minPrice, maxPrice, productsPerPage])
 
@@ -102,27 +104,22 @@ export default function ProductFilterPage() {
   useEffect(() => {
     setIsLoading(true)
 
-    // Simulate API call delay
     const timer = setTimeout(() => {
       let result = [...mockProducts]
 
-      // Filter by price range
       result = result.filter((product) => {
         const productPrice = product.variants[0].priceAfterDiscount
         return productPrice >= filters.priceRange[0] && productPrice <= filters.priceRange[1]
       })
 
-      // Filter by brand
       if (filters.brands.length > 0) {
         result = result.filter((product) => filters.brands.includes(product.brand || ""))
       }
 
-      // Filter by frame type
       if (filters.frameTypes.length > 0) {
         result = result.filter((product) => filters.frameTypes.includes(product.frameType || ""))
       }
 
-      // Filter by lens type
       if (filters.lensTypes.length > 0) {
         result = result.filter((product) => {
           const productLensTypes = product.lensType ? product.lensType.split(", ") : []
@@ -130,12 +127,10 @@ export default function ProductFilterPage() {
         })
       }
 
-      // Filter by color
       if (filters.colors.length > 0) {
         result = result.filter((product) => product.variants.some((variant) => filters.colors.includes(variant.color)))
       }
 
-      // Filter by rating
       if (filters.ratings.length > 0) {
         result = result.filter((product) => {
           const rating = Math.floor(product.averageRating || 0)
@@ -143,12 +138,10 @@ export default function ProductFilterPage() {
         })
       }
 
-      // Filter by stock
       if (filters.inStock !== null) {
         result = result.filter((product) => product.variants.some((variant) => variant.inStock === filters.inStock))
       }
 
-      // Apply sorting
       switch (sortOption) {
         case "price-low":
           result.sort((a, b) => a.variants[0].priceAfterDiscount - b.variants[0].priceAfterDiscount)
@@ -163,7 +156,6 @@ export default function ProductFilterPage() {
           result.sort((a, b) => Number(b.id) - Number(a.id))
           break
         default:
-          // Featured - could be a custom algorithm, here we'll use rating * reviews
           result.sort(
             (a, b) => (b.averageRating || 0) * (b.totalReviews || 0) - (a.averageRating || 0) * (a.totalReviews || 0),
           )
@@ -176,7 +168,6 @@ export default function ProductFilterPage() {
     return () => clearTimeout(timer)
   }, [filters, sortOption])
 
-  // Handle filter changes
   const handleFilterChange = (filterType: keyof FilterState, value: any) => {
     setFilters((prev) => {
       const newFilters = { ...prev }
@@ -188,10 +179,8 @@ export default function ProductFilterPage() {
       } else if (Array.isArray(newFilters[filterType])) {
         const filterArray = newFilters[filterType] as any[]
         if (filterArray.includes(value)) {
-          // Remove value if already selected
           newFilters[filterType] = filterArray.filter((item) => item !== value) as any
         } else {
-          // Add value if not selected
           newFilters[filterType] = [...filterArray, value] as any
         }
       }
@@ -199,11 +188,9 @@ export default function ProductFilterPage() {
       return newFilters
     })
 
-    // Reset to first page when filters change
     if (currentPage !== 1) setCurrentPage(1)
   }
 
-  // Clear all filters
   const clearAllFilters = () => {
     setFilters({
       priceRange: [minPrice, maxPrice],
@@ -216,12 +203,9 @@ export default function ProductFilterPage() {
     })
     setSortOption("featured")
     setCurrentPage(1)
-
-    // Clear URL parameters
     router.push(pathname, { scroll: false })
   }
 
-  // Remove a single filter
   const removeFilter = (filterType: keyof FilterState, value: any) => {
     setFilters((prev) => {
       const newFilters = { ...prev }
@@ -238,22 +222,18 @@ export default function ProductFilterPage() {
     })
   }
 
-  // Add a handler for changing products per page
   const handleProductsPerPageChange = (limit: number) => {
     setProductsPerPage(limit)
-    setCurrentPage(1) // Reset to first page when changing limit
+    setCurrentPage(1)
   }
 
-  // Pagination logic
   const indexOfLastProduct = currentPage * productsPerPage
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage
   const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct)
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage)
 
-  // Handle page change
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
 
-  // Check if any filters are applied
   const hasActiveFilters = () => {
     return (
       filters.brands.length > 0 ||
@@ -267,7 +247,6 @@ export default function ProductFilterPage() {
     )
   }
 
-  // Get active filter count
   const getActiveFilterCount = () => {
     let count = 0
     count += filters.brands.length
@@ -280,76 +259,36 @@ export default function ProductFilterPage() {
     return count
   }
 
-  // Generate meta title and description based on filters
   const getMetaTitle = () => {
     let title = "Eyewear Collection"
-
-    if (filters.brands.length === 1) {
-      title = `${filters.brands[0]} Eyewear`
-    }
-
-    if (filters.frameTypes.length === 1) {
-      title = `${filters.frameTypes[0]} ${title}`
-    }
-
-    if (filters.lensTypes.length === 1) {
-      title = `${filters.lensTypes[0]} ${title}`
-    }
-
-    if (currentPage > 1) {
-      title += ` - Page ${currentPage}`
-    }
-
+    if (filters.brands.length === 1) title = `${filters.brands[0]} Eyewear`
+    if (filters.frameTypes.length === 1) title = `${filters.frameTypes[0]} ${title}`
+    if (filters.lensTypes.length === 1) title = `${filters.lensTypes[0]} ${title}`
+    if (currentPage > 1) title += ` - Page ${currentPage}`
     return title
   }
 
   const getMetaDescription = () => {
     let description = "Browse our premium collection of eyewear including sunglasses and prescription glasses."
-
     const filterParts = []
-
-    if (filters.brands.length > 0) {
-      filterParts.push(`brands like ${filters.brands.join(", ")}`)
-    }
-
-    if (filters.frameTypes.length > 0) {
-      filterParts.push(`${filters.frameTypes.join(", ")} frames`)
-    }
-
-    if (filters.lensTypes.length > 0) {
-      filterParts.push(`${filters.lensTypes.join(", ")} lenses`)
-    }
-
-    if (filterParts.length > 0) {
-      description = `Discover our selection of eyewear with ${filterParts.join(" and ")}. ${description}`
-    }
-
+    if (filters.brands.length > 0) filterParts.push(`brands like ${filters.brands.join(", ")}`)
+    if (filters.frameTypes.length > 0) filterParts.push(`${filters.frameTypes.join(", ")} frames`)
+    if (filters.lensTypes.length > 0) filterParts.push(`${filters.lensTypes.join(", ")} lenses`)
+    if (filterParts.length > 0) description = `Discover our selection of eyewear with ${filterParts.join(" and ")}. ${description}`
     return description
   }
 
-  // Generate canonical URL
   const getCanonicalUrl = () => {
-    // Base URL - in production, this would be your actual domain
     const baseUrl = "https://yourdomain.com"
-
-    // For SEO, the canonical URL should typically be the unfiltered version
-    // or the first page of filtered results
-    if (!hasActiveFilters() && currentPage === 1) {
-      return `${baseUrl}${pathname}`
-    }
-
-    // If we have filters but we're not on page 1, canonical should point to page 1
+    if (!hasActiveFilters() && currentPage === 1) return `${baseUrl}${pathname}`
     if (hasActiveFilters() && currentPage > 1) {
       const params = new URLSearchParams(searchParams.toString())
       params.delete("page")
       return `${baseUrl}${pathname}?${params.toString()}`
     }
-
-    // Otherwise, use the current URL
     return `${baseUrl}${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`
   }
 
-  // Generate structured data for product listing
   const generateStructuredData = () => {
     const itemListElement = currentProducts.map((product, index) => ({
       "@type": "ListItem",
@@ -359,30 +298,25 @@ export default function ProductFilterPage() {
         name: product.variants[0].title,
         image: product.variants[0].imgList[0].image,
         description: product.variants[0].shortDescription,
-        brand: {
-          "@type": "Brand",
-          name: product.brand,
-        },
+        brand: { "@type": "Brand", name: product.brand },
         offers: {
           "@type": "Offer",
           price: product.variants[0].priceAfterDiscount,
           priceCurrency: "USD",
           availability: product.variants[0].inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
         },
-        aggregateRating: product.averageRating
-          ? {
-              "@type": "AggregateRating",
-              ratingValue: product.averageRating,
-              reviewCount: product.totalReviews,
-            }
-          : undefined,
+        aggregateRating: product.averageRating ? {
+          "@type": "AggregateRating",
+          ratingValue: product.averageRating,
+          reviewCount: product.totalReviews,
+        } : undefined,
       },
     }))
 
     return {
       "@context": "https://schema.org",
       "@type": "ItemList",
-      itemListElement: itemListElement,
+      itemListElement,
       numberOfItems: currentProducts.length,
       itemListOrder: "https://schema.org/ItemListOrderDescending",
     }
@@ -393,7 +327,37 @@ export default function ProductFilterPage() {
   const metaDescription = getMetaDescription()
   const canonicalUrl = getCanonicalUrl()
 
-  // Prepare filter props
+  // Theme styles
+  const themeStyles = {
+    dark: {
+      bg: "bg-black",
+      card: "bg-white/5 border-white/10",
+      cardHover: "hover:bg-white/10",
+      text: "text-white",
+      textMuted: "text-neutral-300",
+      textMutedLighter: "text-neutral-400",
+      border: "border-white/10",
+      gradient: "from-[#007C74] to-[#3C55A5]",
+      button: "bg-white/10 hover:bg-white/20 text-white",
+      activeFilter: "bg-[#007C74]/20 text-[#007C74] border-[#007C74]/30",
+    },
+    light: {
+      bg: "bg-neutral-50",
+      card: "bg-white border-neutral-200",
+      cardHover: "hover:bg-neutral-50",
+      text: "text-neutral-900",
+      textMuted: "text-neutral-600",
+      textMutedLighter: "text-neutral-500",
+      border: "border-neutral-200",
+      gradient: "from-[#007C74] to-[#3C55A5]",
+      button: "bg-neutral-200 hover:bg-neutral-300 text-neutral-900",
+      activeFilter: "bg-[#007C74]/10 text-[#007C74] border-[#007C74]/30",
+    },
+  }
+
+  const styles = isDark ? themeStyles.dark : themeStyles.light
+
+  // Filter props
   const filterProps = {
     filters,
     allBrands,
@@ -408,7 +372,7 @@ export default function ProductFilterPage() {
     hasActiveFilters: hasActiveFilters(),
   }
 
-  // Prepare product props
+  // Product props
   const productProps = {
     products: currentProducts,
     filteredProducts,
@@ -428,10 +392,8 @@ export default function ProductFilterPage() {
     setMobileFiltersOpen,
   }
 
-  // Prepare breadcrumb props
-  const breadcrumbProps = {
-    filters,
-  }
+  // Breadcrumb props
+  const breadcrumbProps = { filters }
 
   return (
     <>
@@ -440,29 +402,58 @@ export default function ProductFilterPage() {
         <meta name="description" content={metaDescription} />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={canonicalUrl} />
-
-        {/* Open Graph tags for social sharing */}
         <meta property="og:title" content={metaTitle} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="/og-image.jpg" />
-
-        {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={metaTitle} />
         <meta name="twitter:description" content={metaDescription} />
         <meta name="twitter:image" content="/twitter-image.jpg" />
       </Head>
 
-      {/* Structured data for SEO */}
       <Script
         id="structured-data"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <motion.div className="bg-white" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className={`min-h-screen transition-colors duration-500 ${styles.bg}`}
+      >
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `radial-gradient(circle at 2px 2px, ${isDark ? "#007C74" : "#007C74"} 1px, transparent 0)`,
+              backgroundSize: "40px 40px",
+            }}
+          />
+        </div>
+
+        {/* Floating Orbs */}
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.1, 0.2, 0.1],
+          }}
+          transition={{ duration: 8, repeat: Infinity }}
+          className="fixed top-20 left-20 w-96 h-96 bg-[#007C74]/10 rounded-full blur-[120px] -z-10"
+        />
+        <motion.div
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.1, 0.15, 0.1],
+          }}
+          transition={{ duration: 10, repeat: Infinity }}
+          className="fixed bottom-20 right-20 w-[500px] h-[500px] bg-[#3C55A5]/10 rounded-full blur-[150px] -z-10"
+        />
+
         {/* Mobile filter drawer */}
         <AnimatePresence>
           {mobileFiltersOpen && (
@@ -480,25 +471,168 @@ export default function ProductFilterPage() {
           )}
         </AnimatePresence>
 
-        <main className="container">
-          <div className="flex items-baseline justify-between border-b border-gray-200 pb-6 pt-10">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">{metaTitle}</h1>
+        <main className="container relative z-10 lg:mt-28">
+          {/* Header with title and mobile filter button */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6 pt-10" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <h1 className={`text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight ${styles.text}`}>
+                {metaTitle}
+              </h1>
+              <p className={`text-sm ${styles.textMutedLighter} mt-1`} data-translate="filter.results">
+                {filteredProducts.length} products found
+              </p>
+            </motion.div>
+
+            {/* Mobile filter toggle */}
+            <motion.button
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              onClick={() => setMobileFiltersOpen(true)}
+              className={`lg:hidden flex items-center gap-2 px-4 py-2 rounded-full border backdrop-blur-sm ${styles.card} ${styles.cardHover} transition-colors`}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              <span className="text-sm" data-translate="filter.filter">Filters</span>
+              {getActiveFilterCount() > 0 && (
+                <span className="px-2 py-0.5 text-xs bg-[#007C74] text-white rounded-full">
+                  {getActiveFilterCount()}
+                </span>
+              )}
+            </motion.button>
           </div>
 
-          {/* Breadcrumb component */}
-          <Breadcrumb {...breadcrumbProps} />
+          {/* Breadcrumb */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="lg:py-4"
+          >
+            <Breadcrumb {...breadcrumbProps} />
+          </motion.div>
 
-          <section aria-labelledby="products-heading" className="pb-24 pt-6">
+          {/* Active filters bar (for desktop) */}
+          {hasActiveFilters() && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="flex lg:hidden flex-wrap items-center gap-2 py-4"
+            >
+              <span className={`text-sm ${styles.textMutedLighter}`} data-translate="filter.active">
+                Active filters:
+              </span>
+              {filters.brands.map((brand) => (
+                <button
+                  key={brand}
+                  onClick={() => removeFilter("brands", brand)}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
+                >
+                  {brand}
+                  <X className="w-3 h-3" />
+                </button>
+              ))}
+              {filters.frameTypes.map((type) => (
+                <button
+                  key={type}
+                  onClick={() => removeFilter("frameTypes", type)}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
+                >
+                  {type}
+                  <X className="w-3 h-3" />
+                </button>
+              ))}
+              {filters.lensTypes.map((type) => (
+                <button
+                  key={type}
+                  onClick={() => removeFilter("lensTypes", type)}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
+                >
+                  {type}
+                  <X className="w-3 h-3" />
+                </button>
+              ))}
+              {filters.colors.map((color) => {
+                const colorObj = allColors.find((c: any) => c.color === color)
+                return (
+                  <button
+                    key={color}
+                    onClick={() => removeFilter("colors", color)}
+                    className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
+                  >
+                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+                    {colorObj?.title || color}
+                    <X className="w-3 h-3" />
+                  </button>
+                )
+              })}
+              {filters.ratings.map((rating) => (
+                <button
+                  key={rating}
+                  onClick={() => removeFilter("ratings", rating)}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
+                >
+                  {rating}★
+                  <X className="w-3 h-3" />
+                </button>
+              ))}
+              {filters.inStock !== null && (
+                <button
+                  onClick={() => removeFilter("inStock", null)}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
+                >
+                  {filters.inStock ? "In Stock" : "Out of Stock"}
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+              {(filters.priceRange[0] > minPrice || filters.priceRange[1] < maxPrice) && (
+                <button
+                  onClick={() => removeFilter("priceRange", null)}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
+                >
+                  ৳{filters.priceRange[0]} - ৳{filters.priceRange[1]}
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+              <button
+                onClick={clearAllFilters}
+                className={`text-xs underline ${styles.textMutedLighter} hover:text-[#007C74] transition-colors`}
+                data-translate="filter.clearAll"
+              >
+                Clear all
+              </button>
+            </motion.div>
+          )}
+
+          <section aria-labelledby="products-heading" className="pb-24 lg:pt-6">
             <h2 id="products-heading" className="sr-only">
               Products
             </h2>
 
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
-              {/* Left side - Filter section */}
-              <FilterSection {...filterProps} />
+              {/* Left side - Filter section (desktop) */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+                className="hidden lg:block"
+              >
+                <FilterSection {...filterProps} />
+              </motion.div>
 
               {/* Right side - Product section */}
-              <ProductSection {...productProps} />
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.7 }}
+                className="lg:col-span-3"
+              >
+                <ProductSection {...productProps} />
+              </motion.div>
             </div>
           </section>
         </main>
@@ -506,4 +640,3 @@ export default function ProductFilterPage() {
     </>
   )
 }
-

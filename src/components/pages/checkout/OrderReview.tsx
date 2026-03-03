@@ -1,9 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
+import { motion } from "framer-motion"
+import { useTheme } from "next-themes"
 import { ArrowLeft, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import Link from "next/link"
+import { cn } from "@/lib/utils"
 import type { CartItem } from "@/hooks/use-cart"
 
 interface OrderReviewProps {
@@ -47,6 +51,47 @@ export default function OrderReview({
   onPlaceOrder,
   isSubmitting,
 }: OrderReviewProps) {
+  const { theme } = useTheme()
+  const isDark = theme === "dark"
+
+  // Theme styles
+  const themeStyles = {
+    dark: {
+      bg: "bg-black",
+      card: "bg-white/5 border-white/10",
+      cardHover: "hover:bg-white/10",
+      text: "text-white",
+      textMuted: "text-neutral-300",
+      textMutedLighter: "text-neutral-400",
+      border: "border-white/10",
+      borderHover: "hover:border-white/20",
+      buttonOutline: "border-white/20 text-white hover:bg-white/10",
+      buttonPrimary: "bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white hover:shadow-lg",
+      infoBg: "bg-white/5 border-white/10",
+      itemBg: "bg-white/5",
+      discountText: "text-green-400",
+      link: "text-[#007C74] hover:text-[#00A693]",
+    },
+    light: {
+      bg: "bg-white",
+      card: "bg-white border-neutral-200",
+      cardHover: "hover:bg-neutral-50",
+      text: "text-neutral-900",
+      textMuted: "text-neutral-600",
+      textMutedLighter: "text-neutral-500",
+      border: "border-neutral-200",
+      borderHover: "hover:border-neutral-300",
+      buttonOutline: "border-neutral-300 text-neutral-700 hover:bg-neutral-100",
+      buttonPrimary: "bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white hover:shadow-lg",
+      infoBg: "bg-gray-50 border-gray-200",
+      itemBg: "bg-white",
+      discountText: "text-green-600",
+      link: "text-[#007C74] hover:text-[#00A693]",
+    },
+  }
+
+  const styles = isDark ? themeStyles.dark : themeStyles.light
+
   // Format credit card number for display
   const formatCardNumber = (cardNumber: string) => {
     if (!cardNumber) return ""
@@ -82,17 +127,49 @@ export default function OrderReview({
     }
   }
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05, delayChildren: 0.1 },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { y: 10, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: "spring" as const, stiffness: 100, damping: 15 },
+    },
+  }
+
   return (
-    <div className="bg-white rounded-lg border p-6">
-      <h2 className="text-xl font-semibold mb-6">Review Your Order</h2>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className={`rounded-xl border ${styles.card} backdrop-blur-sm p-6 transition-colors duration-500`}
+    >
+      <h2 className={`text-xl font-semibold ${styles.text} mb-6`} data-translate="review.title">
+        Review Your Order
+      </h2>
 
       {/* Order Items */}
-      <div className="mb-8">
-        <h3 className="text-lg font-medium mb-4">Items in Your Order</h3>
+      <motion.div variants={itemVariants} className="mb-8">
+        <h3 className={`text-lg font-medium ${styles.text} mb-4`} data-translate="review.itemsTitle">
+          Items in Your Order
+        </h3>
         <div className="space-y-4">
-          {items.map((item) => (
-            <div key={item.id} className="flex items-center border-b pb-4">
-              <div className="relative h-16 w-16 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
+          {items.map((item, idx) => (
+            <motion.div
+              key={item.id}
+              variants={itemVariants}
+              custom={idx}
+              className={`flex items-center border-b ${styles.border} pb-4`}
+            >
+              <div className={`relative h-16 w-16 flex-shrink-0 rounded-md overflow-hidden ${styles.infoBg}`}>
                 <Image
                   src={item.image || "/placeholder.svg?height=64&width=64"}
                   alt={item.name}
@@ -101,140 +178,165 @@ export default function OrderReview({
                 />
               </div>
               <div className="ml-4 flex-1">
-                <h4 className="text-sm font-medium">{item.name}</h4>
-                <p className="text-xs text-gray-500">
-                  {item.colorName && `Color: ${item.colorName}`}
-                  {item.size && ` • Size: ${item.size}`}
-                  {` • Qty: ${item.quantity}`}
+                <h4 className={`text-sm font-medium ${styles.text}`}>{item.name}</h4>
+                <p className={`text-xs ${styles.textMutedLighter}`}>
+                  {item.colorName && <span data-translate="review.color">Color:</span>} {item.colorName}
+                  {item.size && <span> • <span data-translate="review.size">Size:</span> {item.size}</span>}
+                  {` • <span data-translate="review.qty">Qty:</span> ${item.quantity}`}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-medium">
+                <p className={`text-sm font-medium ${styles.text}`}>
                   ${((item.discountPrice || item.price) * item.quantity).toFixed(2)}
                 </p>
                 {item.discountPrice && (
-                  <p className="text-xs text-gray-500 line-through">${(item.price * item.quantity).toFixed(2)}</p>
+                  <p className={`text-xs ${styles.textMutedLighter} line-through`}>
+                    ${(item.price * item.quantity).toFixed(2)}
+                  </p>
                 )}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Shipping Information */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium">Shipping Information</h3>
-        </div>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="font-medium">
+      <motion.div variants={itemVariants} className="mb-8">
+        <h3 className={`text-lg font-medium ${styles.text} mb-4`} data-translate="review.shippingTitle">
+          Shipping Information
+        </h3>
+        <div className={`p-4 rounded-lg border ${styles.infoBg}`}>
+          <p className={`font-medium ${styles.text}`}>
             {shippingDetails.firstName} {shippingDetails.lastName}
           </p>
-          <p>{shippingDetails.address}</p>
-          <p>
+          <p className={styles.textMuted}>{shippingDetails.address}</p>
+          <p className={styles.textMuted}>
             {shippingDetails.city}, {shippingDetails.state} {shippingDetails.zipCode}
           </p>
-          <p>{shippingDetails.country}</p>
-          <p className="mt-2">{shippingDetails.email}</p>
-          <p>{shippingDetails.phone}</p>
-          <p className="mt-2 text-sm text-gray-600">Shipping Method: {getShippingMethodLabel()}</p>
+          <p className={styles.textMuted}>{shippingDetails.country}</p>
+          <p className={`mt-2 ${styles.textMuted}`}>{shippingDetails.email}</p>
+          <p className={styles.textMuted}>{shippingDetails.phone}</p>
+          <p className={`mt-2 text-sm ${styles.textMuted}`}>
+            <span data-translate="review.shippingMethod">Shipping Method:</span> {getShippingMethodLabel()}
+          </p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Payment Information */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium">Payment Information</h3>
-        </div>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="font-medium">{getPaymentMethodLabel()}</p>
+      <motion.div variants={itemVariants} className="mb-8">
+        <h3 className={`text-lg font-medium ${styles.text} mb-4`} data-translate="review.paymentTitle">
+          Payment Information
+        </h3>
+        <div className={`p-4 rounded-lg border ${styles.infoBg}`}>
+          <p className={`font-medium ${styles.text}`}>{getPaymentMethodLabel()}</p>
           {paymentMethod === "credit-card" && paymentDetails.cardNumber && (
             <>
-              <p>{formatCardNumber(paymentDetails.cardNumber)}</p>
-              <p>Expires: {paymentDetails.expiryDate}</p>
+              <p className={styles.textMuted}>{formatCardNumber(paymentDetails.cardNumber)}</p>
+              <p className={styles.textMuted}>
+                <span data-translate="review.expires">Expires:</span> {paymentDetails.expiryDate}
+              </p>
             </>
           )}
           {paymentMethod === "paypal" && (
-            <p className="text-sm text-gray-600">You will be redirected to PayPal after placing your order.</p>
+            <p className={`text-sm ${styles.textMuted}`} data-translate="review.paypalNote">
+              You will be redirected to PayPal after placing your order.
+            </p>
           )}
           {paymentMethod === "bank-transfer" && (
-            <p className="text-sm text-gray-600">Bank details will be sent to your email after placing your order.</p>
+            <p className={`text-sm ${styles.textMuted}`} data-translate="review.bankNote">
+              Bank details will be sent to your email after placing your order.
+            </p>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Order Summary */}
-      <div className="mb-8">
-        <h3 className="text-lg font-medium mb-4">Order Summary</h3>
-        <div className="bg-gray-50 p-4 rounded-lg">
+      <motion.div variants={itemVariants} className="mb-8">
+        <h3 className={`text-lg font-medium ${styles.text} mb-4`} data-translate="review.summaryTitle">
+          Order Summary
+        </h3>
+        <div className={`p-4 rounded-lg border ${styles.infoBg}`}>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-gray-600">Subtotal</span>
-              <span>${subtotal.toFixed(2)}</span>
+              <span className={styles.textMuted} data-translate="review.subtotal">Subtotal</span>
+              <span className={styles.text}>${subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Shipping</span>
-              <span>${shipping.toFixed(2)}</span>
+              <span className={styles.textMuted} data-translate="review.shipping">Shipping</span>
+              <span className={styles.text}>${shipping.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Tax</span>
-              <span>${tax.toFixed(2)}</span>
+              <span className={styles.textMuted} data-translate="review.tax">Tax</span>
+              <span className={styles.text}>${tax.toFixed(2)}</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between">
-                <span className="text-gray-600">Discount</span>
-                <span className="text-green-600">-${discount.toFixed(2)}</span>
+                <span className={styles.textMuted} data-translate="review.discount">Discount</span>
+                <span className={styles.discountText}>-${discount.toFixed(2)}</span>
               </div>
             )}
-            <div className="border-t pt-2 mt-2">
+            <div className={`border-t ${styles.border} pt-2 mt-2`}>
               <div className="flex justify-between font-medium">
-                <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span className={styles.text} data-translate="review.total">Total</span>
+                <span className={styles.text}>${total.toFixed(2)}</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Terms and Conditions */}
-      <div className="mb-8">
+      <motion.div variants={itemVariants} className="mb-8">
         <div className="flex items-start">
           <input
             id="terms"
             type="checkbox"
-            className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary mt-1"
+            className={cn(
+              "h-4 w-4 rounded focus:ring-[#007C74] transition-colors",
+              isDark ? "bg-white/5 border-white/30" : "border-gray-300 bg-white"
+            )}
           />
-          <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-            I agree to the{" "}
-            <a href="#" className="text-primary hover:underline">
+          <label htmlFor="terms" className={`ml-2 block text-sm ${styles.textMuted}`}>
+            <span data-translate="review.agree">I agree to the</span>{" "}
+            <Link href="/terms" className={styles.link} data-translate="review.terms">
               Terms and Conditions
-            </a>{" "}
-            and{" "}
-            <a href="#" className="text-primary hover:underline">
+            </Link>{" "}
+            <span data-translate="review.and">and</span>{" "}
+            <Link href="/privacy" className={styles.link} data-translate="review.privacy">
               Privacy Policy
-            </a>
+            </Link>
           </label>
         </div>
-      </div>
+      </motion.div>
 
       {/* Navigation Buttons */}
-      <div className="flex flex-col sm:flex-row sm:justify-between space-y-4 sm:space-y-0">
-        <Button type="button" variant="outline" onClick={onBack} className="flex items-center" disabled={isSubmitting}>
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:justify-between space-y-4 sm:space-y-0">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onBack}
+          className={cn("flex items-center", styles.buttonOutline)}
+          disabled={isSubmitting}
+        >
           <ArrowLeft size={16} className="mr-2" />
-          Back to Payment
+          <span data-translate="review.back">Back to Payment</span>
         </Button>
 
-        <Button onClick={onPlaceOrder} className="bg-primary hover:bg-primary/90" disabled={isSubmitting}>
+        <Button
+          onClick={onPlaceOrder}
+          className={styles.buttonPrimary}
+          disabled={isSubmitting}
+        >
           {isSubmitting ? (
             <>
               <Loader2 size={16} className="mr-2 animate-spin" />
-              Processing...
+              <span data-translate="review.processing">Processing...</span>
             </>
           ) : (
-            "Place Order"
+            <span data-translate="review.placeOrder">Place Order</span>
           )}
         </Button>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

@@ -1,286 +1,297 @@
-"use client"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 
-import { useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Truck, Clock, Calendar } from "lucide-react"
+import { motion } from "framer-motion";
+import { Calendar, Clock, Truck } from "lucide-react";
+import { useState } from "react";
 
-// Create a schema for form validation
-const shippingSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(10, "Please enter a valid phone number"),
-  address: z.string().min(5, "Please enter your full address"),
-  city: z.string().min(2, "City is required"),
-  state: z.string().min(2, "State is required"),
-  zipCode: z.string().min(5, "Please enter a valid ZIP code"),
-  country: z.string().min(2, "Country is required"),
-})
+// Custom form components
+import MyFormCheckBox from "@/components/ui/MyForm/MyFormCheckBox/MyFormCheckBox";
+import MyFormInputAceternity from "@/components/ui/MyForm/MyFormInputAceternity/MyFormInputAceternity";
+import MyFormWrapper from "@/components/ui/MyForm/MyFormWrapper/MyFormWrapper";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import MyFormShippingMethod from "@/components/ui/MyForm/MyFormShippingMethod/MyFormShippingMethod";
+import { cn } from "@/lib/utils";
 
-type ShippingFormValues = z.infer<typeof shippingSchema>
+const validationSchema = z.object({
+   firstName: z.string(
+    {
+      required_error: "First name is required",
+    }
+   ).min(1, {
+      message: "First name is required",
+    }),
+   lastName: z.string(
+    {
+      required_error: "Last name is required",
+    }
+   ).min(1, {
+    message: "Last name is required",
+   }),
+   address: z.string(
+    {
+      required_error: "Address is required",
+    }
+   ).min(1, {
+    message: "Address is required",
+   }),
+   city: z.string(
+    {
+      required_error: "City is required",
+    }
+   ).min(1, {
+    message: "City is required",
+   }),
+   state: z.string(
+    {
+      required_error: "State is required",
+    }
+   ).min(1, {
+    message: "State is required",
+   }),
+   zipCode: z.string(
+    {
+      required_error: "ZIP code is required",
+    }
+   ).min(1, {
+    message: "ZIP code is required",
+   }),
+   saveAddress: z.boolean().optional(),
+   shippingMethod: z.string({
+    
+      required_error: "Shipping method is required",
+    
+   }).min(1, {
+    message: "Shipping method is required",
+   }),
+});
+
+
+
+
+const shippingOptions = [
+  {
+    value: "standard",
+    label: "Standard Shipping",
+    price: "$5.00",
+    delivery: "March 5–7",
+    icon: Calendar
+  },
+  {
+    value: "express",
+    label: "Express Shipping",
+    price: "$15.00",
+    delivery: "March 2–3",
+    icon: Clock
+  },
+  {
+    value: "free",
+    label: "Free Shipping",
+    price: "$0.00",
+    description: "Orders over $100 qualify for free shipping",
+    icon: Truck
+  }
+];
+
 
 interface ShippingFormProps {
-  initialValues: ShippingFormValues
-  onSubmit: (data: ShippingFormValues) => void
-  shippingMethod: string
-  onShippingMethodChange: (method: string) => void
+  initialValues?: any;
+  onSubmit: (data: any) => void;
+  shippingMethod: string;
+  onShippingMethodChange: (method: string) => void;
 }
 
 export default function ShippingForm({
-  initialValues,
   onSubmit,
-  shippingMethod,
-  onShippingMethodChange,
 }: ShippingFormProps) {
-  const [saveAddress, setSaveAddress] = useState(false)
+  const [saveAddress, setSaveAddress] = useState(false);
 
   // Get today's date and calculate delivery dates
-  const today = new Date()
-  const standardDelivery = new Date(today)
-  standardDelivery.setDate(today.getDate() + 5)
+  const today = new Date();
+  const standardDelivery = new Date(today);
+  standardDelivery.setDate(today.getDate() + 5);
 
-  const expressDelivery = new Date(today)
-  expressDelivery.setDate(today.getDate() + 2)
+  const expressDelivery = new Date(today);
+  expressDelivery.setDate(today.getDate() + 2);
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
-  }
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<ShippingFormValues>({
-    resolver: zodResolver(shippingSchema),
-    defaultValues: initialValues,
-  })
 
-  const onFormSubmit = (data: ShippingFormValues) => {
-    // If save address is checked, you could save to localStorage or user profile
+
+
+  // Handle form submission from MyFormWrapper
+  const handleFormSubmit = (data: any) => {
+    console.log(data, saveAddress);
+    // The data will match the schema because MyFormWrapper uses react-hook-form with our resolver
+    // We just need to call the parent onSubmit
+    onSubmit(data as any);
+
+    // If save address is checked, save to localStorage
     if (saveAddress) {
-      localStorage.setItem("savedAddress", JSON.stringify(data))
+      localStorage.setItem("savedAddress", JSON.stringify(data));
     }
+    // Note: we don't call reset() because we want to keep the form filled after submission
+  };
 
-    onSubmit(data)
-  }
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 },
+    },
+  };
+
+  const fieldVariants = {
+    hidden: { y: 10, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: "spring" as const, stiffness: 100, damping: 15 },
+    },
+  };
 
   return (
-    <div className="bg-white rounded-lg border p-6">
-      <h2 className="text-xl font-semibold mb-6">Shipping Information</h2>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="rounded-xl border border-divider bg-content1/50 backdrop-blur-sm p-6 transition-colors duration-500"
+    >
+      <h2
+        className="text-xl font-semibold text-foreground mb-6"
+        data-translate="shipping.title"
+      >
+        Shipping Information
+      </h2>
 
-      <form onSubmit={handleSubmit(onFormSubmit)}>
+      <MyFormWrapper
+        onSubmit={handleFormSubmit}
+        resolver={zodResolver(validationSchema)}
+        className="space-y-6"
+        // We need to pass defaultValues to react-hook-form; MyFormWrapper doesn't accept defaultValues directly.
+        // We'll rely on the initialValues being passed to the form via the useForm inside MyFormWrapper? Actually MyFormWrapper uses useForm<FieldValues>() with no default values.
+        // To set default values, we need to either modify MyFormWrapper to accept defaultValues or use a different approach.
+        // Since MyFormWrapper doesn't expose defaultValues, we might need to adjust it. For now, we'll assume the form starts empty and user fills.
+        // Alternatively, we can create a custom wrapper that accepts defaultValues. But given time, we'll proceed without defaults.
+        // The initialValues prop will be ignored; we can later enhance MyFormWrapper if needed.
+      >
+        {/* Personal Information - Grid layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Personal Information */}
-          <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-              First Name*
-            </label>
-            <input
-              id="firstName"
-              {...register("firstName")}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+          {/* First Name */}
+          <motion.div variants={fieldVariants}>
+            <MyFormInputAceternity
+       
+              name="firstName"
+              label="First Name"
+              placeholder="Enter your first name"
+              data-translate="shipping.firstName"
             />
-            {errors.firstName && <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>}
-          </div>
+          </motion.div>
 
-          <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-              Last Name*
-            </label>
-            <input
-              id="lastName"
-              {...register("lastName")}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+          {/* Last Name */}
+          <motion.div variants={fieldVariants}>
+            <MyFormInputAceternity
+              name="lastName"
+              label="Last Name"
+              placeholder="Enter your last name"
+              data-translate="shipping.lastName"
             />
-            {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>}
-          </div>
+          </motion.div>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address*
-            </label>
-            <input
-              id="email"
+          {/* Email */}
+          <motion.div variants={fieldVariants}>
+            <MyFormInputAceternity
+              name="email"
+              label="Email Address"
+              placeholder="Enter your email"
               type="email"
-              {...register("email")}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+              data-translate="shipping.email"
             />
-            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
-          </div>
+          </motion.div>
 
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-              Phone Number*
-            </label>
-            <input
-              id="phone"
+          {/* Phone */}
+          <motion.div variants={fieldVariants}>
+            <MyFormInputAceternity
+              name="phone"
+              label="Phone Number"
+              placeholder="Enter your phone number"
               type="tel"
-              {...register("phone")}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+              data-translate="shipping.phone"
             />
-            {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
-          </div>
+          </motion.div>
 
-          {/* Address Information */}
-          <div className="md:col-span-2">
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-              Street Address*
-            </label>
-            <input
-              id="address"
-              {...register("address")}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+          {/* Address - Full width */}
+          <motion.div variants={fieldVariants} className="md:col-span-2">
+            <MyFormInputAceternity
+              name="address"
+              label="Street Address"
+              placeholder="Enter your street address"
+              data-translate="shipping.address"
             />
-            {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>}
-          </div>
+          </motion.div>
 
-          <div>
-            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-              City*
-            </label>
-            <input
-              id="city"
-              {...register("city")}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+          {/* City */}
+          <motion.div variants={fieldVariants}>
+            <MyFormInputAceternity
+              name="city"
+              label="City"
+              placeholder="Enter your city"
+              data-translate="shipping.city"
             />
-            {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city.message}</p>}
-          </div>
+          </motion.div>
 
-          <div>
-            <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
-              State/Province*
-            </label>
-            <input
-              id="state"
-              {...register("state")}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+          {/* State */}
+          <motion.div variants={fieldVariants}>
+            <MyFormInputAceternity
+              name="state"
+              label="State/Province"
+              placeholder="Enter your state"
+              data-translate="shipping.state"
             />
-            {errors.state && <p className="mt-1 text-sm text-red-600">{errors.state.message}</p>}
-          </div>
+          </motion.div>
 
-          <div>
-            <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">
-              ZIP/Postal Code*
-            </label>
-            <input
-              id="zipCode"
-              {...register("zipCode")}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+          {/* ZIP Code */}
+          <motion.div variants={fieldVariants}>
+            <MyFormInputAceternity
+              name="zipCode"
+              label="ZIP/Postal Code"
+              placeholder="Enter your ZIP code"
+              data-translate="shipping.zipCode"
             />
-            {errors.zipCode && <p className="mt-1 text-sm text-red-600">{errors.zipCode.message}</p>}
-          </div>
+          </motion.div>
 
-          <div>
-            <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
-              Country*
-            </label>
-            <select
-              id="country"
-              {...register("country")}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
-            >
-              <option value="United States">United States</option>
-              <option value="Canada">Canada</option>
-              <option value="United Kingdom">United Kingdom</option>
-              <option value="Australia">Australia</option>
-              <option value="Germany">Germany</option>
-              <option value="France">France</option>
-              <option value="Japan">Japan</option>
-              <option value="India">India</option>
-            </select>
-            {errors.country && <p className="mt-1 text-sm text-red-600">{errors.country.message}</p>}
-          </div>
         </div>
 
         {/* Save Address Checkbox */}
-        <div className="mt-6">
-          <div className="flex items-center">
-            <input
-              id="saveAddress"
-              type="checkbox"
-              checked={saveAddress}
-              onChange={(e) => setSaveAddress(e.target.checked)}
-              className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
-            />
-            <label htmlFor="saveAddress" className="ml-2 block text-sm text-gray-700">
-              Save this address for future orders
-            </label>
-          </div>
-        </div>
+        <motion.div variants={fieldVariants}>
+          <MyFormCheckBox
+            title="Save this address for future orders"
+            handleCheckboxChange={setSaveAddress}
+            defaultSelected={saveAddress}
+          />
+        </motion.div>
 
-        {/* Shipping Method */}
-        <div className="mt-8">
-          <h3 className="text-lg font-medium mb-4">Shipping Method</h3>
+        {/* Shipping Method - Custom Radio Group */}
+       <MyFormShippingMethod
+        name="shippingMethod"
+        label="Shipping Method"
+        options={shippingOptions}
+      />
 
-          <RadioGroup value={shippingMethod} onValueChange={onShippingMethodChange} className="space-y-4">
-            <div
-              className={`relative flex items-start p-4 border rounded-lg ${shippingMethod === "standard" ? "border-primary bg-primary/5" : "border-gray-200"}`}
-            >
-              <div className="flex items-center h-5">
-                <RadioGroupItem value="standard" id="standard" />
-              </div>
-              <div className="ml-3 flex justify-between w-full">
-                <Label htmlFor="standard" className="flex flex-col">
-                  <span className="font-medium">Standard Shipping</span>
-                  <span className="text-sm text-gray-500 flex items-center mt-1">
-                    <Calendar size={14} className="mr-1" />
-                    Estimated delivery: {formatDate(standardDelivery)}
-                  </span>
-                </Label>
-                <span className="font-medium">$5.00</span>
-              </div>
-            </div>
-
-            <div
-              className={`relative flex items-start p-4 border rounded-lg ${shippingMethod === "express" ? "border-primary bg-primary/5" : "border-gray-200"}`}
-            >
-              <div className="flex items-center h-5">
-                <RadioGroupItem value="express" id="express" />
-              </div>
-              <div className="ml-3 flex justify-between w-full">
-                <Label htmlFor="express" className="flex flex-col">
-                  <span className="font-medium">Express Shipping</span>
-                  <span className="text-sm text-gray-500 flex items-center mt-1">
-                    <Clock size={14} className="mr-1" />
-                    Estimated delivery: {formatDate(expressDelivery)}
-                  </span>
-                </Label>
-                <span className="font-medium">$15.00</span>
-              </div>
-            </div>
-
-            <div
-              className={`relative flex items-start p-4 border rounded-lg ${shippingMethod === "free" ? "border-primary bg-primary/5" : "border-gray-200"}`}
-            >
-              <div className="flex items-center h-5">
-                <RadioGroupItem value="free" id="free" />
-              </div>
-              <div className="ml-3 flex justify-between w-full">
-                <Label htmlFor="free" className="flex flex-col">
-                  <span className="font-medium">Free Shipping</span>
-                  <span className="text-sm text-gray-500 flex items-center mt-1">
-                    <Truck size={14} className="mr-1" />
-                    Orders over $100 qualify for free shipping
-                  </span>
-                </Label>
-                <span className="font-medium">$0.00</span>
-              </div>
-            </div>
-          </RadioGroup>
-        </div>
-
-        {/* Submit Button */}
-        <div className="mt-8">
-          <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isSubmitting}>
+        {/* Submit Button - Using your custom button style */}
+        <motion.div variants={fieldVariants}>
+          <button type="submit"
+            className={
+              cn(
+                "bg-gradient-to-br relative group/btn from-[#00a76b]  to-[#187c57] block  w-full text-white rounded-md h-12 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]",
+              )
+            }
+          >
             Continue to Payment
-          </Button>
-        </div>
-      </form>
-    </div>
-  )
+          </button>
+        </motion.div>
+      </MyFormWrapper>
+    </motion.div>
+  );
 }

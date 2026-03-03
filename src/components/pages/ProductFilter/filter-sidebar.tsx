@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
-import { motion } from "framer-motion"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
+import { motion } from "framer-motion"
+import { useTheme } from "next-themes"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Star } from "lucide-react"
 import type { FilterState } from "@/types/filter-types"
-// import { renderStars } from "@/lib/utils"
 import PriceRangeSlider from "./price-range-slider"
 
 interface FilterSidebarProps {
@@ -28,11 +29,75 @@ export default function FilterSidebar({
   maxPrice,
   handleFilterChange,
 }: FilterSidebarProps) {
+  const { theme } = useTheme()
+  const isDark = theme === "dark"
+
+  // Theme styles
+  const themeStyles = {
+    dark: {
+      text: "text-white",
+      textMuted: "text-neutral-300",
+      textMutedLighter: "text-neutral-400",
+      border: "border-white/10",
+      accordionTrigger: "text-neutral-300 hover:text-white data-[state=open]:text-white",
+      label: "text-neutral-300",
+      checkbox: "border-white/30 bg-white/5 checked:bg-[#007C74] checked:border-[#007C74]",
+      star: "text-yellow-400",
+    },
+    light: {
+      text: "text-neutral-900",
+      textMuted: "text-neutral-600",
+      textMutedLighter: "text-neutral-500",
+      border: "border-neutral-200",
+      accordionTrigger: "text-neutral-600 hover:text-neutral-900 data-[state=open]:text-neutral-900",
+      label: "text-neutral-600",
+      checkbox: "border-neutral-300 bg-white checked:bg-[#007C74] checked:border-[#007C74]",
+      star: "text-yellow-500",
+    },
+  }
+
+  const styles = isDark ? themeStyles.dark : themeStyles.light
+
+  // Render stars for rating
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex items-center">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`w-4 h-4 ${
+              star <= rating ? `fill-current ${styles.star}` : "text-gray-300 dark:text-gray-600"
+            }`}
+          />
+        ))}
+        <span className={`ml-1 text-xs ${styles.textMutedLighter}`}>& Up</span>
+      </div>
+    )
+  }
+
+  // Animation variants for list items
+  const itemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: (i: number) => ({
+      opacity: 1,
+      x: 0,
+      transition: { delay: i * 0.05, duration: 0.3 },
+    }),
+  }
+
   return (
-    <div className="space-y-4">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-4"
+    >
       <Accordion type="multiple" defaultValue={["price", "brand", "frame", "lens", "color", "rating", "availability"]}>
-        <AccordionItem value="price">
-          <AccordionTrigger className="text-sm font-medium text-gray-900">Price Range</AccordionTrigger>
+        {/* Price Range */}
+        <AccordionItem value="price" className={styles.border}>
+          <AccordionTrigger className={`text-sm font-medium ${styles.accordionTrigger}`} data-translate="filter.priceRange">
+            Price Range
+          </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4">
               <PriceRangeSlider
@@ -46,15 +111,22 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="brand">
-          <AccordionTrigger className="text-sm font-medium text-gray-900">Brand</AccordionTrigger>
+        {/* Brand */}
+        <AccordionItem value="brand" className={styles.border}>
+          <AccordionTrigger className={`text-sm font-medium ${styles.accordionTrigger}`} data-translate="filter.brand">
+            Brand
+          </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4 space-y-4">
-              {allBrands.map((brand) => (
+              {allBrands.map((brand, index) => (
                 <motion.div
                   key={brand}
+                  custom={index}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
                   className="flex items-center"
-                  whileHover={{ scale: 1.0 }}
+                  whileHover={{ scale: 1.02 , translateX : 5}}
                   whileTap={{ scale: 0.98 }}
                 >
                   <input
@@ -63,9 +135,9 @@ export default function FilterSidebar({
                     type="checkbox"
                     checked={filters.brands.includes(brand)}
                     onChange={() => handleFilterChange("brands", brand)}
-                    className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74] cursor-pointer"
+                    className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
                   />
-                  <label htmlFor={`brand-${brand}`} className="ml-3 text-sm text-gray-600 cursor-pointer">
+                  <label htmlFor={`brand-${brand}`} className={`ml-3 text-sm ${styles.label} cursor-pointer`}>
                     {brand}
                   </label>
                 </motion.div>
@@ -74,15 +146,22 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="frame">
-          <AccordionTrigger className="text-sm font-medium text-gray-900">Frame Type</AccordionTrigger>
+        {/* Frame Type */}
+        <AccordionItem value="frame" className={styles.border}>
+          <AccordionTrigger className={`text-sm font-medium ${styles.accordionTrigger}`} data-translate="filter.frameType">
+            Frame Type
+          </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4 space-y-4">
-              {allFrameTypes.map((frameType) => (
+              {allFrameTypes.map((frameType, index) => (
                 <motion.div
                   key={frameType}
+                  custom={index}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
                   className="flex items-center"
-                  whileHover={{ scale: 1.0 }}
+                  whileHover={{ scale: 1.02 , translateX : 5}}
                   whileTap={{ scale: 0.98 }}
                 >
                   <input
@@ -91,9 +170,9 @@ export default function FilterSidebar({
                     type="checkbox"
                     checked={filters.frameTypes.includes(frameType)}
                     onChange={() => handleFilterChange("frameTypes", frameType)}
-                    className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74] cursor-pointer"
+                    className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
                   />
-                  <label htmlFor={`frame-${frameType}`} className="ml-3 text-sm text-gray-600 cursor-pointer">
+                  <label htmlFor={`frame-${frameType}`} className={`ml-3 text-sm ${styles.label} cursor-pointer`}>
                     {frameType}
                   </label>
                 </motion.div>
@@ -102,15 +181,22 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="lens">
-          <AccordionTrigger className="text-sm font-medium text-gray-900">Lens Type</AccordionTrigger>
+        {/* Lens Type */}
+        <AccordionItem value="lens" className={styles.border}>
+          <AccordionTrigger className={`text-sm font-medium ${styles.accordionTrigger}`} data-translate="filter.lensType">
+            Lens Type
+          </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4 space-y-4">
-              {allLensTypes.map((lensType) => (
+              {allLensTypes.map((lensType, index) => (
                 <motion.div
                   key={lensType}
+                  custom={index}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
                   className="flex items-center"
-                  whileHover={{ scale: 1.0 }}
+                  whileHover={{ scale: 1.02 , translateX : 5}}
                   whileTap={{ scale: 0.98 }}
                 >
                   <input
@@ -119,9 +205,9 @@ export default function FilterSidebar({
                     type="checkbox"
                     checked={filters.lensTypes.includes(lensType)}
                     onChange={() => handleFilterChange("lensTypes", lensType)}
-                    className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74] cursor-pointer"
+                    className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
                   />
-                  <label htmlFor={`lens-${lensType}`} className="ml-3 text-sm text-gray-600 cursor-pointer">
+                  <label htmlFor={`lens-${lensType}`} className={`ml-3 text-sm ${styles.label} cursor-pointer`}>
                     {lensType}
                   </label>
                 </motion.div>
@@ -130,15 +216,22 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="color">
-          <AccordionTrigger className="text-sm font-medium text-gray-900">Color</AccordionTrigger>
+        {/* Color */}
+        <AccordionItem value="color" className={styles.border}>
+          <AccordionTrigger className={`text-sm font-medium ${styles.accordionTrigger}`} data-translate="filter.color">
+            Color
+          </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4 space-y-4">
-              {allColors.map((colorObj) => (
+              {allColors.map((colorObj, index) => (
                 <motion.div
                   key={colorObj.color}
+                  custom={index}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
                   className="flex items-center"
-                  whileHover={{ scale: 1.0 }}
+                  whileHover={{ scale: 1.02 , translateX : 5}}
                   whileTap={{ scale: 0.98 }}
                 >
                   <input
@@ -147,9 +240,12 @@ export default function FilterSidebar({
                     type="checkbox"
                     checked={filters.colors.includes(colorObj.color)}
                     onChange={() => handleFilterChange("colors", colorObj.color)}
-                    className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74] cursor-pointer"
+                    className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
                   />
-                  <label htmlFor={`color-${colorObj.color}`} className="ml-3 flex items-center text-sm text-gray-600 cursor-pointer">
+                  <label
+                    htmlFor={`color-${colorObj.color}`}
+                    className={`ml-3 flex items-center text-sm ${styles.label} cursor-pointer`}
+                  >
                     <span
                       className="mr-2 inline-block h-4 w-4 rounded-full border"
                       style={{ backgroundColor: colorObj.color }}
@@ -162,15 +258,22 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="rating">
-          <AccordionTrigger className="text-sm font-medium text-gray-900">Rating</AccordionTrigger>
+        {/* Rating */}
+        <AccordionItem value="rating" className={styles.border}>
+          <AccordionTrigger className={`text-sm font-medium ${styles.accordionTrigger}`} data-translate="filter.rating">
+            Rating
+          </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4 space-y-4">
-              {[5, 4, 3, 2, 1].map((rating) => (
+              {[5, 4, 3, 2, 1].map((rating, index) => (
                 <motion.div
                   key={rating}
+                  custom={index}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
                   className="flex items-center"
-                  whileHover={{ scale: 1.0 }}
+                  whileHover={{ scale: 1.02, translateX : 5 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <input
@@ -179,11 +282,10 @@ export default function FilterSidebar({
                     type="checkbox"
                     checked={filters.ratings.includes(rating)}
                     onChange={() => handleFilterChange("ratings", rating)}
-                    className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74] cursor-pointer"
+                    className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
                   />
-                  <label htmlFor={`rating-${rating}`} className="ml-3 flex items-center text-sm text-gray-600 cursor-pointer">
-                    {/* {renderStars(rating)} <span className="ml-1">& Up</span> */}
-                    <p className="text-red-500">starrrrr</p>
+                  <label htmlFor={`rating-${rating}`} className={`ml-3 flex items-center text-sm cursor-pointer`}>
+                    {renderStars(rating)}
                   </label>
                 </motion.div>
               ))}
@@ -191,20 +293,31 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="availability">
-          <AccordionTrigger className="text-sm font-medium text-gray-900">Availability</AccordionTrigger>
+        {/* Availability */}
+        <AccordionItem value="availability" className={styles.border}>
+          <AccordionTrigger className={`text-sm font-medium ${styles.accordionTrigger}`} data-translate="filter.availability">
+            Availability
+          </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4">
-              <motion.div className="flex items-center" whileHover={{ scale: 1.0 }} whileTap={{ scale: 0.98 }}>
+              <motion.div
+                className="flex items-center"
+                whileHover={{ scale: 1.02, translateX : 5 }}
+                whileTap={{ scale: 0.98 }}
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                custom={0}
+              >
                 <input
                   id="in-stock"
                   name="in-stock"
                   type="checkbox"
                   checked={filters.inStock === true}
                   onChange={() => handleFilterChange("inStock", filters.inStock === true ? null : true)}
-                  className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74] cursor-pointer"
+                  className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
                 />
-                <label htmlFor="in-stock" className="ml-3 text-sm text-gray-600 cursor-pointer">
+                <label htmlFor="in-stock" className={`ml-3 text-sm ${styles.label} cursor-pointer`} data-translate="filter.inStock">
                   In Stock
                 </label>
               </motion.div>
@@ -212,7 +325,6 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-    </div>
+    </motion.div>
   )
 }
-

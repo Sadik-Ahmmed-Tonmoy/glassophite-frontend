@@ -4,7 +4,6 @@ import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
   Award,
   BatteryCharging,
-  Diamond,
   Eye,
   Feather,
   Gem,
@@ -12,17 +11,13 @@ import {
   Heart,
   Leaf,
   Microscope,
-  Shield,
   Sparkles,
-  Star,
   Sun,
   Thermometer,
-  Users,
   Zap,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRef, useState } from "react";
-import CountUp from "react-countup";
 
 export default function WhyChooseGlassophiteSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -79,7 +74,8 @@ export default function WhyChooseGlassophiteSection() {
     {
       icon: Eye,
       title: "Crystal Clarity",
-      description: "Premium polarized lenses with 99.9% UV protection for unmatched visual experience.",
+      description:
+        "Premium polarized lenses with 99.9% UV protection for unmatched visual experience.",
       stats: "99.9% UV",
       color: "#007C74",
       gradient: "from-[#007C74] to-[#00A693]",
@@ -87,7 +83,8 @@ export default function WhyChooseGlassophiteSection() {
     {
       icon: Gem,
       title: "Premium Materials",
-      description: "Handcrafted using titanium, acetate, and gold-plated metals for lasting durability.",
+      description:
+        "Handcrafted using titanium, acetate, and gold-plated metals for lasting durability.",
       stats: "100% Premium",
       color: "#3C55A5",
       gradient: "from-[#3C55A5] to-[#5B7FD9]",
@@ -95,7 +92,8 @@ export default function WhyChooseGlassophiteSection() {
     {
       icon: Award,
       title: "Swiss Precision",
-      description: "Engineered with Swiss optical technology for perfect lens curvature and clarity.",
+      description:
+        "Engineered with Swiss optical technology for perfect lens curvature and clarity.",
       stats: "Swiss Tech",
       color: "#00A693",
       gradient: "from-[#00A693] to-[#007C74]",
@@ -103,7 +101,8 @@ export default function WhyChooseGlassophiteSection() {
     {
       icon: Feather,
       title: "Lightweight Comfort",
-      description: "Ultra-light frames designed for all-day comfort without pressure points.",
+      description:
+        "Ultra-light frames designed for all-day comfort without pressure points.",
       stats: "< 20g",
       color: "#8B5CF6",
       gradient: "from-[#8B5CF6] to-[#6D28D9]",
@@ -115,12 +114,14 @@ export default function WhyChooseGlassophiteSection() {
     {
       icon: Sun,
       title: "UV400 Protection",
-      description: "Blocks 100% of harmful UVA and UVB rays up to 400 nanometers.",
+      description:
+        "Blocks 100% of harmful UVA and UVB rays up to 400 nanometers.",
     },
     {
       icon: Microscope,
       title: "Anti-Reflective",
-      description: "Multi-layer coating eliminates glare for crystal clear vision.",
+      description:
+        "Multi-layer coating eliminates glare for crystal clear vision.",
     },
     {
       icon: Thermometer,
@@ -139,26 +140,20 @@ export default function WhyChooseGlassophiteSection() {
     {
       icon: Leaf,
       title: "Eco-Friendly Materials",
-      description: "Sustainable acetate and recycled metals in our premium frames.",
+      description:
+        "Sustainable acetate and recycled metals in our premium frames.",
     },
     {
       icon: Heart,
       title: "Ethical Manufacturing",
-      description: "Fair trade practices and artisan craftsmanship in Bangladesh.",
+      description:
+        "Fair trade practices and artisan craftsmanship in Bangladesh.",
     },
     {
       icon: Globe2,
       title: "Carbon Neutral",
       description: "Offsetting our carbon footprint through reforestation.",
     },
-  ];
-
-  // Brand stats
-  const brandStats = [
-    { value: 50, suffix: "+", label: "Design Awards", icon: Star },
-    { value: 100, suffix: "K+", label: "Happy Customers", icon: Users },
-    { value: 15, suffix: " Years", label: "Craftsmanship", icon: Diamond },
-    { value: 100, suffix: "%", label: "Quality Assured", icon: Shield },
   ];
 
   return (
@@ -204,7 +199,7 @@ export default function WhyChooseGlassophiteSection() {
         {[...Array(30)].map((_, i) => (
           <motion.div
             key={i}
-            className={`absolute w-1 h-1 ${isDark ? 'bg-[#007C74]/30' : 'bg-[#007C74]/20'} rounded-full`}
+            className={`absolute w-1 h-1 ${isDark ? "bg-[#007C74]/30" : "bg-[#007C74]/20"} rounded-full`}
             initial={{
               x: Math.random() * 100 + "%",
               y: Math.random() * 100 + "%",
@@ -260,7 +255,8 @@ export default function WhyChooseGlassophiteSection() {
             className={`text-sm sm:text-base md:text-lg ${styles.textMuted} max-w-2xl mx-auto`}
             data-translate="why.description"
           >
-            Discover what makes Glassophite the preferred choice for discerning individuals who demand nothing but the best.
+            Discover what makes Glassophite the preferred choice for discerning
+            individuals who demand nothing but the best.
           </p>
         </motion.div>
 
@@ -275,12 +271,13 @@ export default function WhyChooseGlassophiteSection() {
               onHoverStart={() => setActiveFeature(index)}
               onHoverEnd={() => setActiveFeature(null)}
               whileHover={{ scale: 1.05 }}
-              className="group relative"
+              className="group relative h-full"
             >
               <div
-                className={`relative p-6 rounded-2xl backdrop-blur-sm border ${styles.card} transition-all duration-300 overflow-hidden`}
+                className={`relative p-6 h-full rounded-2xl backdrop-blur-sm border ${styles.card} transition-all duration-300 overflow-hidden`}
                 style={{
-                  borderColor: activeFeature === index ? feature.color : undefined,
+                  borderColor:
+                    activeFeature === index ? feature.color : undefined,
                 }}
               >
                 {/* Animated Background Gradient */}
@@ -323,36 +320,6 @@ export default function WhyChooseGlassophiteSection() {
             </motion.div>
           ))}
         </div>
-
-        {/* Stats Counter Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.7 }}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-16 lg:mb-20"
-        >
-          {brandStats.map((stat, index) => (
-            <motion.div
-              key={index}
-              whileHover={{ scale: 1.05 }}
-              className={`p-6 rounded-2xl backdrop-blur-sm border ${styles.card} text-center`}
-            >
-              <stat.icon className={`w-6 h-6 mx-auto mb-3 text-[#007C74]`} />
-              <div className={`text-2xl md:text-3xl font-bold ${styles.text} mb-1`}>
-                <CountUp
-                  end={stat.value}
-                  duration={2.5}
-                  suffix={stat.suffix}
-                  enableScrollSpy
-                  scrollSpyOnce
-                />
-              </div>
-              <p className={`text-xs md:text-sm ${styles.textMutedLighter}`}>
-                {stat.label}
-              </p>
-            </motion.div>
-          ))}
-        </motion.div>
 
         {/* Technology & Sustainability */}
         <div className="grid lg:grid-cols-2 gap-6 md:gap-8">

@@ -2,7 +2,9 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { FilterState } from "@/types/filter-types"
+import { useTheme } from "next-themes"
+import { Star, X } from "lucide-react"
+import type { FilterState } from "@/types/filter-types"
 
 interface ActiveFiltersProps {
   filters: FilterState
@@ -12,117 +14,184 @@ interface ActiveFiltersProps {
   removeFilter: (filterType: keyof FilterState, value: any) => void
 }
 
-export default function ActiveFilters({ filters, allColors, minPrice, maxPrice, removeFilter }: ActiveFiltersProps) {
+export default function ActiveFilters({
+  filters,
+  allColors,
+  minPrice,
+  maxPrice,
+  removeFilter,
+}: ActiveFiltersProps) {
+  const { theme } = useTheme()
+  const isDark = theme === "dark"
+
+  // Theme styles
+  const themeStyles = {
+    dark: {
+      containerBg: "bg-[#007C74]/20",
+      border: "border-[#007C74]/30",
+      text: "text-white",
+      textMuted: "text-neutral-300",
+      textMutedLighter: "text-neutral-400",
+      chipBg: "bg-[#007C74]/20",
+      chipBorder: "border-[#007C74]/30",
+      chipText: "text-[#007C74]",
+      removeButton: "text-[#007C74] hover:bg-[#007C74]/30",
+      starFilled: "text-yellow-400",
+      starEmpty: "text-gray-600",
+    },
+    light: {
+      containerBg: "bg-[#007C74]/5",
+      border: "border-[#007C74]/20",
+      text: "text-neutral-900",
+      textMuted: "text-neutral-600",
+      textMutedLighter: "text-neutral-500",
+      chipBg: "bg-[#007C74]/10",
+      chipBorder: "border-[#007C74]/20",
+      chipText: "text-[#007C74]",
+      removeButton: "text-[#007C74] hover:bg-[#007C74]/10",
+      starFilled: "text-yellow-500",
+      starEmpty: "text-gray-300",
+    },
+  }
+
+  const styles = isDark ? themeStyles.dark : themeStyles.light
+
   const formatPriceRange = (range: [number, number]) => {
-    return `$${range[0]} - $${range[1]}`
+    return `৳${range[0].toLocaleString()} - ৳${range[1].toLocaleString()}`
+  }
+
+  const renderStars = (rating: number) => {
+    return (
+      <span className="flex items-center gap-0.5">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`w-3 h-3 ${
+              star <= rating
+                ? `fill-current ${styles.starFilled}`
+                : styles.starEmpty
+            }`}
+          />
+        ))}
+        <span className={`ml-1 text-xs ${styles.textMutedLighter}`}>& Up</span>
+      </span>
+    )
   }
 
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-medium text-gray-900 mb-2">Active Filters</h3>
+      <h3 className={`text-sm font-medium ${styles.text} mb-2`} data-translate="filter.activeFilters">
+        Active Filters
+      </h3>
       <div className="flex flex-wrap gap-2">
         <AnimatePresence>
+          {/* Price Range */}
           {(filters.priceRange[0] > minPrice || filters.priceRange[1] < maxPrice) && (
             <motion.div
-              className="inline-flex items-center rounded-full border border-[#007C74]/20 bg-[#007C74]/10 py-1.5 pl-3 pr-2 text-sm font-medium text-[#007C74]"
+              className={`inline-flex items-center rounded-full border ${styles.chipBorder} ${styles.chipBg} py-1.5 pl-3 pr-2 text-sm font-medium ${styles.chipText}`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2 }}
               layout
             >
-              <span>Price: {formatPriceRange(filters.priceRange)}</span>
+              <span>
+                <span className="sr-only" data-translate="filter.price">Price:</span>
+                {formatPriceRange(filters.priceRange)}
+              </span>
               <button
                 type="button"
-                className="ml-1 inline-flex h-4 w-4 flex-shrink-0 rounded-full p-1 text-[#007C74] hover:bg-[#007C74]/20 hover:text-[#007C74]"
+                className={`ml-1 inline-flex h-6 w-6 flex-shrink-0 rounded-full p-1 ${styles.removeButton} transition-colors`}
                 onClick={() => removeFilter("priceRange", null)}
+                aria-label="Remove price filter"
               >
-                <span className="sr-only">Remove price filter</span>
-                <svg className="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                  <path strokeLinecap="round" strokeWidth="1.5" d="M1 1l6 6m0-6L1 7" />
-                </svg>
+                <X className="h-4 w-4" />
               </button>
             </motion.div>
           )}
 
+          {/* Brands */}
           {filters.brands.map((brand) => (
             <motion.div
-              key={brand}
-              className="inline-flex items-center rounded-full border border-[#007C74]/20 bg-[#007C74]/10 py-1.5 pl-3 pr-2 text-sm font-medium text-[#007C74]"
+              key={`brand-${brand}`}
+              className={`inline-flex items-center rounded-full border ${styles.chipBorder} ${styles.chipBg} py-1.5 pl-3 pr-2 text-sm font-medium ${styles.chipText}`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2 }}
               layout
             >
-              <span>Brand: {brand}</span>
+              <span>
+                <span className="sr-only" data-translate="filter.brand">Brand:</span> {brand}
+              </span>
               <button
                 type="button"
-                className="ml-1 inline-flex h-4 w-4 flex-shrink-0 rounded-full p-1 text-[#007C74] hover:bg-[#007C74]/20 hover:text-[#007C74]"
+                className={`ml-1 inline-flex h-6 w-6 flex-shrink-0 rounded-full p-1 ${styles.removeButton} transition-colors`}
                 onClick={() => removeFilter("brands", brand)}
+                aria-label="Remove brand filter"
               >
-                <span className="sr-only">Remove brand filter</span>
-                <svg className="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                  <path strokeLinecap="round" strokeWidth="1.5" d="M1 1l6 6m0-6L1 7" />
-                </svg>
+                <X className="h-4 w-4" />
               </button>
             </motion.div>
           ))}
 
+          {/* Frame Types */}
           {filters.frameTypes.map((frameType) => (
             <motion.div
-              key={frameType}
-              className="inline-flex items-center rounded-full border border-[#007C74]/20 bg-[#007C74]/10 py-1.5 pl-3 pr-2 text-sm font-medium text-[#007C74]"
+              key={`frame-${frameType}`}
+              className={`inline-flex items-center rounded-full border ${styles.chipBorder} ${styles.chipBg} py-1.5 pl-3 pr-2 text-sm font-medium ${styles.chipText}`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2 }}
               layout
             >
-              <span>Frame: {frameType}</span>
+              <span>
+                <span className="sr-only" data-translate="filter.frameType">Frame:</span> {frameType}
+              </span>
               <button
                 type="button"
-                className="ml-1 inline-flex h-4 w-4 flex-shrink-0 rounded-full p-1 text-[#007C74] hover:bg-[#007C74]/20 hover:text-[#007C74]"
+                className={`ml-1 inline-flex h-6 w-6 flex-shrink-0 rounded-full p-1 ${styles.removeButton} transition-colors`}
                 onClick={() => removeFilter("frameTypes", frameType)}
+                aria-label="Remove frame type filter"
               >
-                <span className="sr-only">Remove frame type filter</span>
-                <svg className="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                  <path strokeLinecap="round" strokeWidth="1.5" d="M1 1l6 6m0-6L1 7" />
-                </svg>
+                <X className="h-4 w-4" />
               </button>
             </motion.div>
           ))}
 
+          {/* Lens Types */}
           {filters.lensTypes.map((lensType) => (
             <motion.div
-              key={lensType}
-              className="inline-flex items-center rounded-full border border-[#007C74]/20 bg-[#007C74]/10 py-1.5 pl-3 pr-2 text-sm font-medium text-[#007C74]"
+              key={`lens-${lensType}`}
+              className={`inline-flex items-center rounded-full border ${styles.chipBorder} ${styles.chipBg} py-1.5 pl-3 pr-2 text-sm font-medium ${styles.chipText}`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2 }}
               layout
             >
-              <span>Lens: {lensType}</span>
+              <span>
+                <span className="sr-only" data-translate="filter.lensType">Lens:</span> {lensType}
+              </span>
               <button
                 type="button"
-                className="ml-1 inline-flex h-4 w-4 flex-shrink-0 rounded-full p-1 text-[#007C74] hover:bg-[#007C74]/20 hover:text-[#007C74]"
+                className={`ml-1 inline-flex h-6 w-6 flex-shrink-0 rounded-full p-1 ${styles.removeButton} transition-colors`}
                 onClick={() => removeFilter("lensTypes", lensType)}
+                aria-label="Remove lens type filter"
               >
-                <span className="sr-only">Remove lens type filter</span>
-                <svg className="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                  <path strokeLinecap="round" strokeWidth="1.5" d="M1 1l6 6m0-6L1 7" />
-                </svg>
+                <X className="h-4 w-4" />
               </button>
             </motion.div>
           ))}
 
+          {/* Colors */}
           {filters.colors.map((color) => {
             const colorObj = allColors.find((c) => c.color === color)
             return (
               <motion.div
-                key={color}
-                className="inline-flex items-center rounded-full border border-[#007C74]/20 bg-[#007C74]/10 py-1.5 pl-3 pr-2 text-sm font-medium text-[#007C74]"
+                key={`color-${color}`}
+                className={`inline-flex items-center rounded-full border ${styles.chipBorder} ${styles.chipBg} py-1.5 pl-3 pr-2 text-sm font-medium ${styles.chipText}`}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
@@ -130,71 +199,71 @@ export default function ActiveFilters({ filters, allColors, minPrice, maxPrice, 
                 layout
               >
                 <span className="flex items-center">
-                  Color:
+                  <span className="sr-only" data-translate="filter.color">Color:</span>
                   <span
-                    className="mx-1 inline-block h-3 w-3 rounded-full border"
+                    className="mr-1 inline-block h-4 w-4 rounded-full border border-white/20"
                     style={{ backgroundColor: color }}
-                  ></span>
-                  {colorObj?.title}
+                  />
+                  {colorObj?.title || color}
                 </span>
                 <button
                   type="button"
-                  className="ml-1 inline-flex h-4 w-4 flex-shrink-0 rounded-full p-1 text-[#007C74] hover:bg-[#007C74]/20 hover:text-[#007C74]"
+                  className={`ml-1 inline-flex h-6 w-6 flex-shrink-0 rounded-full p-1 ${styles.removeButton} transition-colors`}
                   onClick={() => removeFilter("colors", color)}
+                  aria-label="Remove color filter"
                 >
-                  <span className="sr-only">Remove color filter</span>
-                  <svg className="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                    <path strokeLinecap="round" strokeWidth="1.5" d="M1 1l6 6m0-6L1 7" />
-                  </svg>
+                  <X className="h-4 w-4" />
                 </button>
               </motion.div>
             )
           })}
 
+          {/* Ratings */}
           {filters.ratings.map((rating) => (
             <motion.div
-              key={rating}
-              className="inline-flex items-center rounded-full border border-[#007C74]/20 bg-[#007C74]/10 py-1.5 pl-3 pr-2 text-sm font-medium text-[#007C74]"
+              key={`rating-${rating}`}
+              className={`inline-flex items-center rounded-full border ${styles.chipBorder} ${styles.chipBg} py-1.5 pl-3 pr-2 text-sm font-medium ${styles.chipText}`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2 }}
               layout
             >
-              {/* <span className="flex items-center">Rating: {renderStars(rating)} & Up</span> */}
-              <p className="text-red-500">STarrrrrrrr</p>
+              <span className="flex items-center">
+                <span className="sr-only" data-translate="filter.rating">Rating:</span>
+                {renderStars(rating)}
+              </span>
               <button
                 type="button"
-                className="ml-1 inline-flex h-4 w-4 flex-shrink-0 rounded-full p-1 text-[#007C74] hover:bg-[#007C74]/20 hover:text-[#007C74]"
+                className={`ml-1 inline-flex h-6 w-6 flex-shrink-0 rounded-full p-1 ${styles.removeButton} transition-colors`}
                 onClick={() => removeFilter("ratings", rating)}
+                aria-label="Remove rating filter"
               >
-                <span className="sr-only">Remove rating filter</span>
-                <svg className="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                  <path strokeLinecap="round" strokeWidth="1.5" d="M1 1l6 6m0-6L1 7" />
-                </svg>
+                <X className="h-4 w-4" />
               </button>
             </motion.div>
           ))}
 
+          {/* Availability */}
           {filters.inStock !== null && (
             <motion.div
-              className="inline-flex items-center rounded-full border border-[#007C74]/20 bg-[#007C74]/10 py-1.5 pl-3 pr-2 text-sm font-medium text-[#007C74]"
+              className={`inline-flex items-center rounded-full border ${styles.chipBorder} ${styles.chipBg} py-1.5 pl-3 pr-2 text-sm font-medium ${styles.chipText}`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2 }}
               layout
             >
-              <span>Availability: In Stock</span>
+              <span>
+                <span className="sr-only" data-translate="filter.availability">Availability:</span> In Stock
+              </span>
               <button
                 type="button"
-                className="ml-1 inline-flex h-4 w-4 flex-shrink-0 rounded-full p-1 text-[#007C74] hover:bg-[#007C74]/20 hover:text-[#007C74]"
+                className={`ml-1 inline-flex h-6 w-6 flex-shrink-0 rounded-full p-1 ${styles.removeButton} transition-colors`}
                 onClick={() => removeFilter("inStock", null)}
+                aria-label="Remove availability filter"
               >
-                <span className="sr-only">Remove availability filter</span>
-                <svg className="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                  <path strokeLinecap="round" strokeWidth="1.5" d="M1 1l6 6m0-6L1 7" />
-                </svg>
+                <X className="h-4 w-4" />
               </button>
             </motion.div>
           )}
@@ -203,4 +272,3 @@ export default function ActiveFilters({ filters, allColors, minPrice, maxPrice, 
     </div>
   )
 }
-

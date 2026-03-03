@@ -1,5 +1,10 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
+import { Star } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Badge } from "@nextui-org/react";
 
 import AddToCartButton from "@/components/ui/buttons/AddToCartButton/AddToCartButton";
 import { MyButton } from "@/components/ui/buttons/MyButton/MyButton";
@@ -15,41 +20,78 @@ import {
 } from "@/lib/productMockData";
 import { cn } from "@/lib/utils";
 import { TProduct } from "@/types/types";
-import { Star } from "lucide-react";
-import { useEffect, useState } from "react";
 import ImageSlider from "./ImageSlider";
 import ProductReview from "./ProductReview";
 import SimilarProducts from "./SimilarProducts/SimilarProducts";
 import VariantSelector from "./VariantSelector";
-import { Badge } from "@nextui-org/react";
 
 interface ProductDetailsProps {
   product: TProduct;
 }
 
 export default function ProductDetails({ product }: ProductDetailsProps) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const { items } = useCart();
-  const selectedItemFormCart = items.find((item) => item.id == product.id);
-  console.log(selectedItemFormCart, items, product.id);
+  const selectedItemFromCart = items.find((item) => item.id == product.id);
 
   const [selectedVariantId, setSelectedVariantId] = useState<string>(
     product.variants[0]?.id || ""
   );
   const [quantity, setQuantity] = useState(1);
+
+  // Theme styles
+  const themeStyles = {
+    dark: {
+      text: "text-white",
+      textMuted: "text-neutral-300",
+      textMutedLighter: "text-neutral-400",
+      border: "border-white/10",
+      bg: "bg-black",
+      card: "bg-white/5 border-white/10",
+      cardHover: "hover:bg-white/10",
+      badgeSuccess: "border-green-500 text-green-500",
+      badgeWarning: "border-yellow-500 text-yellow-500",
+      badgeDanger: "border-red-500 text-red-500",
+      badgeDefault: "border-white/20 text-white",
+      tabActive: "data-[state=active]:bg-[#007C74] data-[state=active]:text-white",
+      tabInactive: "text-neutral-400 hover:text-white",
+      starFilled: "text-yellow-400 fill-yellow-400",
+      starEmpty: "text-gray-600",
+    },
+    light: {
+      text: "text-neutral-900",
+      textMuted: "text-neutral-600",
+      textMutedLighter: "text-neutral-500",
+      border: "border-neutral-200",
+      bg: "bg-white",
+      card: "bg-white border-neutral-200",
+      cardHover: "hover:bg-neutral-50",
+      badgeSuccess: "border-green-600 text-green-600",
+      badgeWarning: "border-yellow-600 text-yellow-600",
+      badgeDanger: "border-red-600 text-red-600",
+      badgeDefault: "border-neutral-300 text-neutral-700",
+      tabActive: "data-[state=active]:bg-[#007C74] data-[state=active]:text-white",
+      tabInactive: "text-neutral-500 hover:text-neutral-900",
+      starFilled: "text-yellow-500 fill-yellow-500",
+      starEmpty: "text-gray-300",
+    },
+  };
+
+  const styles = isDark ? themeStyles.dark : themeStyles.light;
+
   useEffect(() => {
-    if (selectedItemFormCart) {
-      setQuantity(selectedItemFormCart.quantity);
+    if (selectedItemFromCart) {
+      setQuantity(selectedItemFromCart.quantity);
     } else {
       setQuantity(1);
     }
-  }, [selectedItemFormCart]);
+  }, [selectedItemFromCart]);
 
-  // Find the selected variant
   const selectedVariant =
     product.variants.find((variant) => variant.id === selectedVariantId) ||
     product.variants[0];
 
-  // Reset quantity when variant changes
   useEffect(() => {
     setQuantity(1);
   }, [selectedVariantId]);
@@ -64,51 +106,73 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     }
   };
 
-  // const handleQuantityChange = (newQuantity: number) => {
-  //   console.log(newQuantity, selectedVariant.quantity);
-  //   if (newQuantity < 1) return;
-  //   if (newQuantity > selectedVariant.quantity) return;
-  //   updateItemQuantity(selectedVariant.id, newQuantity);
-  // };
-
   const increaseQuantity = () => {
     if (selectedVariant && quantity < selectedVariant.quantity) {
       setQuantity(quantity + 1);
     }
   };
 
-  // Calculate average rating
-  // const avgRating = product.reviews.length > 0 ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length : 0;
-
   if (!product || !selectedVariant) {
-    return <div className="p-8 text-center">Product not found</div>;
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className={`p-8 text-center ${styles.textMuted}`}
+        data-translate="product.notFound"
+      >
+        Product not found
+      </motion.div>
+    );
   }
 
   return (
-    <div className="space-y-12">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-12"
+    >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="relative lg:col-span-5">
+        {/* Image Slider */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="relative lg:col-span-5"
+        >
           <ImageSlider
             images={selectedVariant.imgList}
             inStock={selectedVariant.inStock}
           />
-        </div>
+        </motion.div>
 
-        <div className="space-y-6 lg:col-span-7">
+        {/* Product Info */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="space-y-6 lg:col-span-7"
+        >
+          {/* Title and Stock Badge */}
           <div>
             <div className="flex justify-between items-start">
-              <h1 className="text-3xl font-bold">{selectedVariant.title}</h1>
+              <h1 className={`text-2xl sm:text-3xl font-bold ${styles.text}`}>
+                {selectedVariant.title}
+              </h1>
               {!selectedVariant.inStock ? (
                 <Badge
-                  // variant="destructive"
-                  className="text-sm text-red-500 border-red-500"
+                  className={`text-sm border ${styles.badgeDanger}`}
+                  data-translate="product.outOfStock"
                 >
                   Out of Stock
                 </Badge>
               ) : (
                 <Badge
-                  // variant="outline"
-                  className="text-sm border-green-500 text-green-600"
+                  className={`text-sm border ${
+                    selectedVariant.quantity <= 5
+                      ? styles.badgeWarning
+                      : styles.badgeSuccess
+                  }`}
                 >
                   {selectedVariant.quantity <= 5
                     ? `Only ${selectedVariant.quantity} left!`
@@ -116,42 +180,44 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 </Badge>
               )}
             </div>
-            <p className="text-gray-500 mt-2">
+            <p className={`${styles.textMuted} mt-2`}>
               {selectedVariant.shortDescription}
             </p>
 
-            <div className="flex items-center mt-4 space-x-2">
+            {/* Rating and SKU */}
+            <div className="flex items-center mt-4 space-x-2 flex-wrap gap-2">
               {product.averageRating && (
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
                       className={`h-4 w-4 ${
-                        i < Math.round(product?.averageRating ?? 0)
-                          ? "text-yellow-400 fill-yellow-400"
-                          : "text-gray-300"
+                        i < Math.round(product.averageRating ?? 0)
+                          ? styles.starFilled
+                          : styles.starEmpty
                       }`}
                     />
                   ))}
-                  <span className="ml-2 text-sm text-gray-500">
-                    ({product?.averageRating} reviews)
+                  <span className={`ml-2 text-sm ${styles.textMutedLighter}`}>
+                    ({product.averageRating} reviews)
                   </span>
                 </div>
               )}
-              <span className="text-sm text-gray-500">
+              <span className={`text-sm ${styles.textMutedLighter}`}>
                 SKU: {selectedVariant.productCode}
               </span>
             </div>
           </div>
 
+          {/* Price */}
           <div className="flex items-center space-x-4">
             {selectedVariant.priceAfterDiscount && selectedVariant.mainPrice ? (
               <>
-                <span className="text-2xl font-bold text-green-600">
-                  ${selectedVariant.priceAfterDiscount}
+                <span className="text-2xl font-bold text-green-600 dark:text-green-500">
+                  ৳{selectedVariant.priceAfterDiscount}
                 </span>
-                <span className="text-gray-500 line-through">
-                  ${selectedVariant.mainPrice}
+                <span className={`text-lg line-through ${styles.textMutedLighter}`}>
+                  ৳{selectedVariant.mainPrice}
                 </span>
                 {selectedVariant.discountPercent && (
                   <Badge className="bg-green-500 hover:bg-green-600">
@@ -160,22 +226,28 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 )}
               </>
             ) : (
-              <span className="text-2xl font-bold">Price not available</span>
+              <span className={`text-2xl font-bold ${styles.text}`}>
+                Price not available
+              </span>
             )}
           </div>
 
+          {/* Variant Selector */}
           <VariantSelector
             variants={product.variants}
             selectedVariantId={selectedVariantId}
             onSelectVariant={handleVariantChange}
           />
 
+          {/* Quantity and Add to Cart */}
           <div>
-            <div className="flex flex-col xs:flex-row sm:items-center gap-4 ">
+            <div className="flex flex-col xs:flex-row sm:items-center gap-4">
+              {/* Quantity Selector */}
               <div
                 className={cn(
                   "flex items-center border rounded-md w-fit",
-                  selectedVariant.inStock ? "flex" : "hidden"
+                  selectedVariant.inStock ? "flex" : "hidden",
+                  styles.border
                 )}
               >
                 <MyButton
@@ -183,10 +255,13 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   size="icon"
                   onClick={decreaseQuantity}
                   disabled={!selectedVariant.inStock || quantity <= 1}
+                  className={styles.text}
                 >
                   -
                 </MyButton>
-                <span className="w-10 text-center">{quantity}</span>
+                <span className={`w-10 text-center ${styles.text}`}>
+                  {quantity}
+                </span>
                 <MyButton
                   variant="ghost"
                   size="icon"
@@ -195,64 +270,31 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     !selectedVariant.inStock ||
                     quantity >= selectedVariant.quantity
                   }
+                  className={styles.text}
                 >
                   +
                 </MyButton>
               </div>
 
-              {/* <div className="flex items-center border rounded-md py-[9px]">
-                <button
-                  onClick={() =>
-                    handleQuantityChange(
-                      (selectedItemFormCart?.quantity ?? 1) - 1
-                    )
-                  }
-                  disabled={
-                    !selectedItemFormCart || selectedItemFormCart.quantity <= 1
-                  }
-                  className="px-2 py-1 text-gray-500 hover:text-gray-700 disabled:opacity-50"
-                  aria-label="Decrease quantity"
-                >
-                  <Minus size={14} />
-                </button>
-                <span className="w-8 text-center text-sm">
-                  {selectedItemFormCart?.quantity}
-                </span>
-                <button
-                  onClick={() =>
-                    handleQuantityChange(
-                      (selectedItemFormCart?.quantity ?? 0) + 1
-                    )
-                  }
-                  // disabled={item.quantity >= selectedVariant.maxQuantity}
-                  className="px-2 py-1 text-gray-500 hover:text-gray-700 disabled:opacity-50"
-                  aria-label="Increase quantity"
-                >
-                  <Plus size={14} />
-                </button>
-              </div> */}
-
+              {/* Action Buttons */}
               <div className="flex-1 flex items-center space-x-2 sm:space-x-4">
                 {!selectedVariant.inStock ? (
-                  // <MyButton className="flex-1 bg-amber-500 hover:bg-amber-600">Request Stock</MyButton>
                   <RequestStockButton />
                 ) : (
-                  // <MyButton className="flex-1 bg-green-600 hover:bg-green-700">Add to Cart</MyButton>
-                  // <AddToCartButton />
                   <AddToCartButton
                     product={{
-                      id: selectedVariant?.id.toString() || "",
-                      title: selectedVariant?.title || "",
+                      id: selectedVariant.id.toString(),
+                      title: selectedVariant.title,
                       brand: product.brand,
                       size: product.dimensions,
-                      color: selectedVariant?.color,
-                      colorName: selectedVariant?.title?.split(" ").pop() || "",
-                      price: selectedVariant?.mainPrice || 0,
-                      priceAfterDiscount: selectedVariant?.priceAfterDiscount,
-                      inStock: selectedVariant?.inStock || false,
-                      quantity: selectedVariant?.quantity || 0,
+                      color: selectedVariant.color,
+                      colorName: selectedVariant.title?.split(" ").pop() || "",
+                      price: selectedVariant.mainPrice || 0,
+                      priceAfterDiscount: selectedVariant.priceAfterDiscount,
+                      inStock: selectedVariant.inStock,
+                      quantity: selectedVariant.quantity,
                       img:
-                        selectedVariant?.imgList &&
+                        selectedVariant.imgList &&
                         selectedVariant.imgList.length > 0
                           ? selectedVariant.imgList[0].image
                           : undefined,
@@ -265,86 +307,97 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             </div>
           </div>
 
-          <Separator />
+          <Separator className={styles.border} />
 
+          {/* Tabs */}
           <Tabs defaultValue="specifications">
-            <TabsList className="grid grid-cols-2">
-              <TabsTrigger value="specifications">Specifications</TabsTrigger>
-              <TabsTrigger value="description">Description</TabsTrigger>
-              {/* <TabsTrigger value="reviews">Reviews</TabsTrigger> */}
+            <TabsList className={`grid grid-cols-2 ${styles.border}`}>
+              <TabsTrigger
+                value="specifications"
+                className={cn(styles.tabInactive, styles.tabActive)}
+                data-translate="product.specifications"
+              >
+                Specifications
+              </TabsTrigger>
+              <TabsTrigger
+                value="description"
+                className={cn(styles.tabInactive, styles.tabActive)}
+                data-translate="product.description"
+              >
+                Description
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="description" className="mt-4">
-              <p>{product.longDescription}</p>
+              <p className={styles.textMuted}>{product.longDescription}</p>
             </TabsContent>
 
             <TabsContent value="specifications" className="mt-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <div>
-                    <span className="font-semibold">Brand:</span>{" "}
-                    {product.brand}
+                    <span className={`font-semibold ${styles.text}`} data-translate="product.brand">Brand:</span>{" "}
+                    <span className={styles.textMuted}>{product.brand}</span>
                   </div>
                   <div>
-                    <span className="font-semibold">Material:</span>{" "}
-                    {product.material}
+                    <span className={`font-semibold ${styles.text}`} data-translate="product.material">Material:</span>{" "}
+                    <span className={styles.textMuted}>{product.material}</span>
                   </div>
                   <div>
-                    <span className="font-semibold">Dimensions:</span>{" "}
-                    {product.dimensions}
+                    <span className={`font-semibold ${styles.text}`} data-translate="product.dimensions">Dimensions:</span>{" "}
+                    <span className={styles.textMuted}>{product.dimensions}</span>
                   </div>
                   <div>
-                    <span className="font-semibold">Weight:</span>{" "}
-                    {product.weight}
+                    <span className={`font-semibold ${styles.text}`} data-translate="product.weight">Weight:</span>{" "}
+                    <span className={styles.textMuted}>{product.weight}</span>
                   </div>
                   <div>
-                    <span className="font-semibold">Frame Type:</span>{" "}
-                    {product.frameType}
+                    <span className={`font-semibold ${styles.text}`} data-translate="product.frameType">Frame Type:</span>{" "}
+                    <span className={styles.textMuted}>{product.frameType}</span>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div>
-                    <span className="font-semibold">Lens Type:</span>{" "}
-                    {product.lensType}
+                    <span className={`font-semibold ${styles.text}`} data-translate="product.lensType">Lens Type:</span>{" "}
+                    <span className={styles.textMuted}>{product.lensType}</span>
                   </div>
                   <div>
-                    <span className="font-semibold">Warranty:</span>{" "}
-                    {product.warranty}
+                    <span className={`font-semibold ${styles.text}`} data-translate="product.warranty">Warranty:</span>{" "}
+                    <span className={styles.textMuted}>{product.warranty}</span>
                   </div>
                   <div>
-                    <span className="font-semibold">Country of Origin:</span>{" "}
-                    {product.countryOfOrigin}
+                    <span className={`font-semibold ${styles.text}`} data-translate="product.countryOfOrigin">Country of Origin:</span>{" "}
+                    <span className={styles.textMuted}>{product.countryOfOrigin}</span>
                   </div>
                   <div>
-                    <span className="font-semibold">Target Audience:</span>{" "}
-                    {product.targetAudience}
+                    <span className={`font-semibold ${styles.text}`} data-translate="product.targetAudience">Target Audience:</span>{" "}
+                    <span className={styles.textMuted}>{product.targetAudience}</span>
                   </div>
                   <div>
-                    <span className="font-semibold">Shipping:</span>{" "}
-                    {product.shippingInfo}
+                    <span className={`font-semibold ${styles.text}`} data-translate="product.shippingInfo">Shipping:</span>{" "}
+                    <span className={styles.textMuted}>{product.shippingInfo}</span>
                   </div>
                 </div>
               </div>
               <div className="mt-4">
-                <span className="font-semibold">Care Instructions:</span>{" "}
-                {product.careInstructions}
+                <span className={`font-semibold ${styles.text}`} data-translate="product.careInstructions">Care Instructions:</span>{" "}
+                <span className={styles.textMuted}>{product.careInstructions}</span>
               </div>
             </TabsContent>
-
-            {/* <TabsContent value="reviews" className="mt-4">
-              <ReviewSlider reviews={product.reviews} />
-            </TabsContent> */}
           </Tabs>
-        </div>
+        </motion.div>
       </div>
+
+      {/* Similar Products */}
       <SimilarProducts
         allProducts={mockProducts}
         currentProduct={productMockData}
       />
+
       {/* Reviews Section */}
       <div className="mt-8 md:mt-16">
         <ProductReview productId={product.id} initialReviews={reviewsData} />
       </div>
-    </div>
+    </motion.div>
   );
 }

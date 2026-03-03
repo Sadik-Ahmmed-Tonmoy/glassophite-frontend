@@ -13,6 +13,23 @@ import { FieldValues } from "react-hook-form";
 import { BsGithub, BsGoogle } from "react-icons/bs";
 import Button from "@/components/ui/buttons/Button/Button";
 import BottomGradient from "@/components/ui/BottomGradient";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+
+const validationSchema = z.object({
+  email: z
+    .string({
+      required_error: "Email is required",
+    })
+    .email("Invalid email address"),
+
+    password: z
+    .string({
+      required_error: "Password is required",
+    })
+    .min(8, "Password must be at least 8 characters long"),
+});
 
 export function LoginWithEmail() {
   const [checked, setChecked] = React.useState(false);
@@ -44,6 +61,7 @@ export function LoginWithEmail() {
 
       <MyFormWrapper
         onSubmit={handleSubmit}
+        resolver={zodResolver(validationSchema)}
         className="flex flex-col gap-3 my-8"
       >
         <div className="flex flex-col gap-6 mb-4">

@@ -63,7 +63,7 @@ export default function GlassophitePromiseSection() {
   // Promise categories
   const promiseCategories = [
     { id: "quality", name: "Quality", icon: Medal },
-    { id: "service", name: "Service", icon: Headphones },
+    // { id: "service", name: "Service", icon: Headphones },
     { id: "sustainability", name: "Sustainability", icon: Leaf },
     { id: "innovation", name: "Innovation", icon: Microscope },
   ];
@@ -72,7 +72,7 @@ export default function GlassophitePromiseSection() {
   const promises = [
     {
       id: "lifetime",
-      title: "Lifetime Warranty",
+      title: "Warranty",
       description:
         "Every pair of Glassophite sunglasses comes with our comprehensive lifetime warranty against manufacturing defects.",
       longDescription:

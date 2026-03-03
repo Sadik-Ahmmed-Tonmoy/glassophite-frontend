@@ -1,20 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { ChevronDown, ChevronUp, Tag } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import type { CartItem } from "@/hooks/use-cart"
+import { Button } from "@/components/ui/button";
+import type { CartItem } from "@/hooks/use-cart";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown, ChevronUp, Tag } from "lucide-react";
+import { useTheme } from "next-themes";
+import Image from "next/image";
+import { useState } from "react";
 
 interface CheckoutSummaryProps {
-  items: CartItem[]
-  subtotal: number
-  shipping: number
-  tax: number
-  discount: number
-  total: number
-  couponCode: string
-  onApplyCoupon: (code: string) => void
+  items: CartItem[];
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  discount: number;
+  total: number;
+  couponCode: string;
+  onApplyCoupon: (code: string) => void;
 }
 
 export default function CheckoutSummary({
@@ -27,165 +29,364 @@ export default function CheckoutSummary({
   couponCode,
   onApplyCoupon,
 }: CheckoutSummaryProps) {
-  const [isItemsExpanded, setIsItemsExpanded] = useState(false)
-  const [couponInput, setCouponInput] = useState("")
-  const [isCouponExpanded, setIsCouponExpanded] = useState(false)
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const [isItemsExpanded, setIsItemsExpanded] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
+  const [isCouponExpanded, setIsCouponExpanded] = useState(false);
+
+  // Theme styles
+  const themeStyles = {
+    dark: {
+      bg: "bg-black",
+      card: "bg-white/5 border-white/10",
+      cardHover: "hover:bg-white/10",
+      text: "text-white",
+      textMuted: "text-neutral-300",
+      textMutedLighter: "text-neutral-400",
+      border: "border-white/10",
+      borderHover: "hover:border-white/20",
+      input:
+        "bg-white/5 border-white/10 text-white placeholder:text-neutral-500",
+      label: "text-neutral-300",
+      buttonPrimary:
+        "bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white hover:shadow-lg",
+      buttonOutline: "border-white/20 text-white hover:bg-white/10",
+      couponApplied: "bg-green-500/20 border-green-500/30 text-green-500",
+      couponText: "text-green-400",
+      infoBg: "bg-white/5",
+      footerBg: "bg-white/5 border-white/10",
+      icon: "text-neutral-400",
+      successIcon: "text-green-400",
+      discountText: "text-green-400",
+    },
+    light: {
+      bg: "bg-white",
+      card: "bg-white border-neutral-200",
+      cardHover: "hover:bg-neutral-50",
+      text: "text-neutral-900",
+      textMuted: "text-neutral-600",
+      textMutedLighter: "text-neutral-500",
+      border: "border-neutral-200",
+      borderHover: "hover:border-neutral-300",
+      input:
+        "bg-white border-neutral-300 text-neutral-900 placeholder:text-neutral-400",
+      label: "text-neutral-700",
+      buttonPrimary:
+        "bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white hover:shadow-lg",
+      buttonOutline: "border-neutral-300 text-neutral-700 hover:bg-neutral-100",
+      couponApplied: "bg-green-50 border-green-200 text-green-800",
+      couponText: "text-green-600",
+      infoBg: "bg-gray-50",
+      footerBg: "bg-gray-50 border-gray-200",
+      icon: "text-gray-400",
+      successIcon: "text-green-600",
+      discountText: "text-green-600",
+    },
+  };
+
+  const styles = isDark ? themeStyles.dark : themeStyles.light;
 
   const handleApplyCoupon = () => {
     if (couponInput.trim()) {
-      onApplyCoupon(couponInput)
-      setCouponInput("")
-      setIsCouponExpanded(false)
+      onApplyCoupon(couponInput);
+      setCouponInput("");
+      setIsCouponExpanded(false);
     }
-  }
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { type: "spring" as const, stiffness: 100, damping: 15 },
+    },
+  };
+
+  const expandVariants = {
+    hidden: { opacity: 0, height: 0, overflow: "hidden" },
+    visible: {
+      opacity: 1,
+      height: "auto",
+      transition: { duration: 0.3, ease: "easeInOut" as const },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: (i: number) => ({
+      opacity: 1,
+      x: 0,
+      transition: { delay: i * 0.05, type: "spring" as const, stiffness: 100 },
+    }),
+  };
 
   return (
-    <div className="bg-white rounded-lg border shadow-sm sticky top-4">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className={`rounded-xl border ${styles.card} backdrop-blur-sm shadow-sm sticky top-4 transition-colors duration-500`}
+    >
       <div className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+        <h2
+          className={`text-xl font-semibold ${styles.text} mb-4`}
+          data-translate="checkout.summaryTitle"
+        >
+          Order Summary
+        </h2>
 
         {/* Items Summary */}
         <div className="mb-6">
           <button
-            className="flex items-center justify-between w-full text-left mb-3"
+            className={`flex items-center justify-between w-full text-left mb-3 ${styles.textMuted} hover:${styles.text} transition-colors`}
             onClick={() => setIsItemsExpanded(!isItemsExpanded)}
           >
-            <span className="font-medium">Items ({items.length})</span>
+            <span className="font-medium" data-translate="checkout.itemsCount">
+              Items ({items.length})
+            </span>
             {isItemsExpanded ? (
-              <ChevronUp size={18} className="text-gray-500" />
+              <ChevronUp size={18} className={styles.icon} />
             ) : (
-              <ChevronDown size={18} className="text-gray-500" />
+              <ChevronDown size={18} className={styles.icon} />
             )}
           </button>
 
-          {isItemsExpanded && (
-            <div className="space-y-4 mt-3 max-h-60 overflow-y-auto pr-2">
-              {items.map((item) => (
-                <div key={item.id} className="flex items-center">
-                  <div className="relative h-12 w-12 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
-                    <Image
-                      src={item.image || "/placeholder.svg?height=48&width=48"}
-                      alt={item.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="ml-3 flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
-                    <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                  </div>
-                  <div className="text-sm font-medium text-gray-900">
-                    ${((item.discountPrice || item.price) * item.quantity).toFixed(2)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <AnimatePresence>
+            {isItemsExpanded && (
+              <motion.div
+                variants={expandVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                className="space-y-4 mt-3 max-h-60 overflow-y-auto pr-2"
+              >
+                {items.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    custom={index}
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    className="flex items-center"
+                  >
+                    <div
+                      className={`relative h-12 w-12 flex-shrink-0 rounded-md overflow-hidden ${styles.infoBg}`}
+                    >
+                      <Image
+                        src={
+                          item.image || "/placeholder.svg?height=48&width=48"
+                        }
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="ml-3 flex-1 min-w-0">
+                      <p
+                        className={`text-sm font-medium ${styles.text} truncate`}
+                      >
+                        {item.name}
+                      </p>
+                      <p className={`text-xs ${styles.textMutedLighter}`}>
+                        <span data-translate="checkout.qty">Qty</span>:{" "}
+                        {item.quantity}
+                      </p>
+                    </div>
+                    <div className={`text-sm font-medium ${styles.text}`}>
+                      $
+                      {(
+                        (item.discountPrice || item.price) * item.quantity
+                      ).toFixed(2)}
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Coupon Code */}
         <div className="mb-6">
           {couponCode ? (
-            <div className="bg-green-50 p-3 rounded-lg">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`p-3 rounded-lg border ${styles.couponApplied}`}
+            >
               <div className="flex items-center">
-                <Tag size={16} className="text-green-600 mr-2" />
+                <Tag size={16} className={`mr-2 ${styles.successIcon}`} />
                 <div>
-                  <p className="text-sm font-medium text-green-800">Coupon Applied</p>
-                  <p className="text-xs text-green-600">&quot;{couponCode}&quot; - 10% off your order</p>
+                  <p
+                    className={`text-sm font-medium ${styles.text}`}
+                    data-translate="checkout.couponApplied"
+                  >
+                    Coupon Applied
+                  </p>
+                  <p className={`text-xs ${styles.couponText}`}>
+                    &quot;{couponCode}&quot; - 10% off your order
+                  </p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ) : (
             <div>
               <button
                 onClick={() => setIsCouponExpanded(!isCouponExpanded)}
-                className="flex items-center justify-between w-full p-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                className={`flex items-center justify-between w-full p-2 text-left hover:${styles.cardHover} rounded-lg transition-colors ${styles.textMuted}`}
               >
-                <div className="flex items-center text-primary">
+                <div className="flex items-center text-[#007C74]">
                   <Tag size={16} className="mr-2" />
-                  <span className="text-sm font-medium">Apply Coupon</span>
+                  <span
+                    className="text-sm font-medium"
+                    data-translate="checkout.applyCoupon"
+                  >
+                    Apply Coupon
+                  </span>
                 </div>
                 {isCouponExpanded ? (
-                  <ChevronUp size={18} className="text-gray-400" />
+                  <ChevronUp size={18} className={styles.icon} />
                 ) : (
-                  <ChevronDown size={18} className="text-gray-400" />
+                  <ChevronDown size={18} className={styles.icon} />
                 )}
               </button>
 
-              {isCouponExpanded && (
-                <div className="mt-3">
-                  <div className="flex space-x-2">
-                    <input
-                      type="text"
-                      value={couponInput}
-                      onChange={(e) => setCouponInput(e.target.value)}
-                      placeholder="Enter coupon code"
-                      className="flex-1 px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    />
-                    <Button
-                      onClick={handleApplyCoupon}
-                      className="bg-primary hover:bg-primary/90"
-                      disabled={!couponInput.trim()}
+              <AnimatePresence>
+                {isCouponExpanded && (
+                  <motion.div
+                    variants={expandVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    className="mt-3"
+                  >
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value)}
+                        placeholder="Enter coupon code"
+                        className={`flex-1 px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#007C74]/50 transition-colors ${styles.input} ${styles.border}`}
+                        data-translate="checkout.couponPlaceholder"
+                      />
+                      <Button
+                        onClick={handleApplyCoupon}
+                        className={styles.buttonPrimary}
+                        disabled={!couponInput.trim()}
+                        data-translate="checkout.apply"
+                      >
+                        Apply
+                      </Button>
+                    </div>
+                    <p
+                      className={`text-xs ${styles.textMutedLighter} mt-2`}
+                      data-translate="checkout.couponHint"
                     >
-                      Apply
-                    </Button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">Try &quot;SAVE10&quot; for 10% off your order</p>
-                </div>
-              )}
+                      Try &quot;SAVE10&quot; for 10% off your order
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
         </div>
 
         {/* Price Breakdown */}
-        <div className="space-y-2 text-sm border-t pt-4">
+        <div className={`space-y-2 text-sm border-t ${styles.border} pt-4`}>
           <div className="flex justify-between">
-            <span className="text-gray-600">Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span
+              className={styles.textMuted}
+              data-translate="checkout.subtotal"
+            >
+              Subtotal
+            </span>
+            <span className={styles.text}>${subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Shipping</span>
-            <span>${shipping.toFixed(2)}</span>
+            <span
+              className={styles.textMuted}
+              data-translate="checkout.shipping"
+            >
+              Shipping
+            </span>
+            <span className={styles.text}>${shipping.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Tax</span>
-            <span>${tax.toFixed(2)}</span>
+            <span className={styles.textMuted} data-translate="checkout.tax">
+              Tax
+            </span>
+            <span className={styles.text}>${tax.toFixed(2)}</span>
           </div>
           {discount > 0 && (
             <div className="flex justify-between">
-              <span className="text-gray-600">Discount</span>
-              <span className="text-green-600">-${discount.toFixed(2)}</span>
+              <span
+                className={styles.textMuted}
+                data-translate="checkout.discount"
+              >
+                Discount
+              </span>
+              <span className={styles.discountText}>
+                -${discount.toFixed(2)}
+              </span>
             </div>
           )}
-          <div className="border-t pt-2 mt-2">
+          <div className={`border-t ${styles.border} pt-2 mt-2`}>
             <div className="flex justify-between font-medium">
-              <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span className={styles.text} data-translate="checkout.total">
+                Total
+              </span>
+              <span className={styles.text}>${total.toFixed(2)}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-gray-50 p-6 rounded-b-lg">
-        <p className="text-xs text-gray-500 mb-4">
-          By placing your order, you agree to our Terms of Service and Privacy Policy. Your payment information is
-          processed securely.
+      <div className={`p-6 rounded-b-lg border-t ${styles.footerBg}`}>
+        <p
+          className={`text-xs ${styles.textMutedLighter} mb-4`}
+          data-translate="checkout.terms"
+        >
+          By placing your order, you agree to our Terms of Service and Privacy
+          Policy. Your payment information is processed securely.
         </p>
         <div className="flex items-center justify-center space-x-2">
           <div className="w-8 h-5 relative">
-            <Image src="/placeholder.svg?height=20&width=32" alt="Visa" fill className="object-contain" />
+            <Image
+              src="/placeholder.svg?height=20&width=32"
+              alt="Visa"
+              fill
+              className="object-contain"
+            />
           </div>
           <div className="w-8 h-5 relative">
-            <Image src="/placeholder.svg?height=20&width=32" alt="Mastercard" fill className="object-contain" />
+            <Image
+              src="/placeholder.svg?height=20&width=32"
+              alt="Mastercard"
+              fill
+              className="object-contain"
+            />
           </div>
           <div className="w-8 h-5 relative">
-            <Image src="/placeholder.svg?height=20&width=32" alt="Amex" fill className="object-contain" />
+            <Image
+              src="/placeholder.svg?height=20&width=32"
+              alt="Amex"
+              fill
+              className="object-contain"
+            />
           </div>
           <div className="w-8 h-5 relative">
-            <Image src="/placeholder.svg?height=20&width=32" alt="PayPal" fill className="object-contain" />
+            <Image
+              src="/placeholder.svg?height=20&width=32"
+              alt="PayPal"
+              fill
+              className="object-contain"
+            />
           </div>
         </div>
       </div>
-    </div>
-  )
+    </motion.div>
+  );
 }

@@ -1,25 +1,37 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 "use client";
 
 import ProductCard from "@/components/ui/ProductCard/ProductCard";
 import { mockProducts } from "@/lib/productMockData";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import {
-  ArrowRight,
-  Award,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ArrowRight, Award, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay, FreeMode } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 
+
 // Import Swiper styles
+// @ts-ignore
 import "swiper/css";
+// @ts-ignore
 import "swiper/css/navigation";
+// @ts-ignore
 import "swiper/css/free-mode";
+
+// Hook to detect large screen (lg breakpoint 1024px)
+function useLargeScreen() {
+  const [isLarge, setIsLarge] = useState(false);
+  useEffect(() => {
+    const check = () => setIsLarge(window.innerWidth >= 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isLarge;
+}
 
 export default function BestSellerCarouselSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -28,6 +40,8 @@ export default function BestSellerCarouselSection() {
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const isLarge = useLargeScreen();
 
   const isInView = useInView(containerRef, { once: true, amount: 0.2 });
 
@@ -75,8 +89,7 @@ export default function BestSellerCarouselSection() {
       accentGlow: "shadow-[0_0_30px_rgba(0,124,116,0.15)]",
       gradient: "from-[#007C74] to-[#3C55A5]",
       overlay: "from-white/80 via-white/50 to-transparent",
-      navButton:
-        "bg-white/70 border-neutral-200 hover:bg-white text-neutral-900",
+      navButton: "bg-white/70 border-neutral-200 hover:bg-white text-neutral-900",
     },
   };
 
@@ -101,6 +114,17 @@ export default function BestSellerCarouselSection() {
     swiperInstance?.slideNext();
   };
 
+  const toggleAutoplay = () => {
+    if (swiperInstance) {
+      if (isPlaying) {
+        swiperInstance.autoplay.stop();
+      } else {
+        swiperInstance.autoplay.start();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
   return (
     <motion.section
       ref={containerRef}
@@ -119,23 +143,31 @@ export default function BestSellerCarouselSection() {
         />
       </div>
 
-      {/* Floating Orbs */}
+      {/* Floating Orbs - with conditional animation */}
       <motion.div
         style={{ y: y1 }}
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.1, 0.2, 0.1],
-        }}
+        animate={
+          isLarge
+            ? {
+                scale: [1, 1.2, 1],
+                opacity: [0.1, 0.2, 0.1],
+              }
+            : {}
+        }
         transition={{ duration: 8, repeat: Infinity }}
         className="absolute top-20 left-20 w-72 h-72 bg-[#007C74]/10 rounded-full blur-[100px]"
       />
 
       <motion.div
         style={{ y: y2 }}
-        animate={{
-          scale: [1.2, 1, 1.2],
-          opacity: [0.1, 0.15, 0.1],
-        }}
+        animate={
+          isLarge
+            ? {
+                scale: [1.2, 1, 1.2],
+                opacity: [0.1, 0.15, 0.1],
+              }
+            : {}
+        }
         transition={{ duration: 10, repeat: Infinity }}
         className="absolute bottom-20 right-20 w-96 h-96 bg-[#3C55A5]/10 rounded-full blur-[120px]"
       />
@@ -146,7 +178,7 @@ export default function BestSellerCarouselSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8 "
+          className="text-center mb-8"
         >
           {/* Badge */}
           <motion.div
@@ -180,46 +212,21 @@ export default function BestSellerCarouselSection() {
             Join thousands of satisfied customers who trust Glassophite for
             premium quality and timeless style.
           </p>
-
-          {/* Stats Pills */}
-          {/* <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 mt-6 md:mt-8">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.4, delay: 0.3 }}
-              className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full backdrop-blur-sm border ${styles.card}`}
-            >
-              <TrendingUp className="w-3 h-3 md:w-4 md:h-4 text-[#007C74]" />
-              <span className={`text-xs md:text-sm ${styles.textMuted}`}>
-                10K+ Happy Customers
-              </span>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.4, delay: 0.4 }}
-              className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full backdrop-blur-sm border ${styles.card}`}
-            >
-              <Gem className="w-3 h-3 md:w-4 md:h-4 text-[#007C74]" />
-              <span className={`text-xs md:text-sm ${styles.textMuted}`}>
-                95% Repeat Purchase Rate
-              </span>
-            </motion.div>
-          </div> */}
         </motion.div>
 
         {/* Carousel Container */}
         <div className="relative group">
-          {/* Navigation Buttons - Hidden on mobile, shown on hover on desktop */}
+          {/* Navigation Buttons - with enhanced animations on large screens */}
           <motion.button
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: isBeginning ? 0.5 : 1, x: 0 } : {}}
             onClick={goPrev}
-            // disabled={isBeginning}
             className={`absolute -left-2 md:-left-4 lg:-left-12 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 rounded-full backdrop-blur-sm border transition-all duration-300 ${
               styles.navButton
             } ${"opacity-0 group-hover:opacity-100 cursor-pointer"} hidden sm:block`}
             aria-label="Previous slide"
+            whileHover={isLarge ? { scale: 1.1 } : {}}
+            whileTap={isLarge ? { scale: 0.9 } : {}}
           >
             <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
           </motion.button>
@@ -228,14 +235,33 @@ export default function BestSellerCarouselSection() {
             initial={{ opacity: 0, x: 20 }}
             animate={isInView ? { opacity: isEnd ? 0.5 : 1, x: 0 } : {}}
             onClick={goNext}
-            // disabled={isEnd}
             className={`absolute -right-2 md:-right-4 lg:-right-12 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 rounded-full backdrop-blur-sm border transition-all duration-300 ${
               styles.navButton
             } ${"opacity-0 group-hover:opacity-100 cursor-pointer"} hidden sm:block`}
             aria-label="Next slide"
+            whileHover={isLarge ? { scale: 1.1 } : {}}
+            whileTap={isLarge ? { scale: 0.9 } : {}}
           >
             <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
           </motion.button>
+
+          {/* Autoplay Control - only on large screens */}
+          {isLarge && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
+              onClick={toggleAutoplay}
+              className="absolute bottom-1/2 left-1/2 -translate-x-1/2 translate-y-20 z-20 p-2 rounded-full backdrop-blur-sm border bg-white/10 border-white/20 hover:bg-white/20 transition-all duration-300 text-white hidden lg:flex items-center gap-1"
+              aria-label={isPlaying ? "Pause autoplay" : "Start autoplay"}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              <span className="text-xs font-medium">
+                {isPlaying ? "Pause" : "Play"}
+              </span>
+            </motion.button>
+          )}
 
           {/* Swiper Carousel */}
           <Swiper
@@ -284,9 +310,13 @@ export default function BestSellerCarouselSection() {
           >
             {bestSellers.map((product) => (
               <SwiperSlide key={product.id} className="!h-auto">
-                <div className="h-full">
+                <motion.div
+                  className="h-full"
+                  whileHover={isLarge ? { scale: 1.03, y: -5 } : {}}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   <ProductCard product={product} />
-                </div>
+                </motion.div>
               </SwiperSlide>
             ))}
           </Swiper>
@@ -341,8 +371,8 @@ export default function BestSellerCarouselSection() {
         >
           <Link href="/shop?sort=rating">
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={isLarge ? { scale: 1.05 } : {}}
+              whileTap={isLarge ? { scale: 0.95 } : {}}
               className="group px-6 md:px-8 py-2.5 md:py-3 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white font-medium inline-flex items-center gap-2 text-sm md:text-base"
             >
               <span data-translate="bestseller.viewAll">
@@ -365,7 +395,11 @@ export default function BestSellerCarouselSection() {
             { number: "95%", text: "Satisfaction Rate", key: "satisfaction" },
             { number: "50K+", text: "Products Sold", key: "sold" },
           ].map((item, i) => (
-            <div key={i} className="text-center">
+            <motion.div
+              key={i}
+              className="text-center"
+              whileHover={isLarge ? { y: -3 } : {}}
+            >
               <div
                 className={`text-base md:text-lg lg:text-xl font-bold ${styles.text}`}
               >
@@ -377,7 +411,7 @@ export default function BestSellerCarouselSection() {
               >
                 {item.text}
               </div>
-            </div>
+            </motion.div>
           ))}
         </motion.div>
       </div>

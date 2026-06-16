@@ -18,16 +18,16 @@ const HomeComponent = () => {
     <div id="top">
       {/* <Banner /> */}
       <HeroCinematicSection />
-      <WhyChooseGlassophiteSection />
+      <BrandStatementSection />
+      {/* <WhyChooseGlassophiteSection /> */}
       <BestSellerCarouselSection />
       <FeaturedCollectionSection />
       <Testimonials />
-      <VirtualTryOn />
+      {/* <VirtualTryOn /> */}
       {/* <StyleInspirationSection /> */}
       <LimitedEditionHighlightSection />
       {/* <SocialProofSection /> */}
       <GlassophitePromiseSection />
-      <BrandStatementSection />
       <HorizontalScroll />
       <SEOContentSection />
       <div className="hidden md:block">

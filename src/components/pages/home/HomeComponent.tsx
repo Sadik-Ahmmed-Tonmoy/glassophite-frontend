@@ -10,8 +10,6 @@ import HorizontalScroll from "./HorizontalScroll/HorizontalScroll";
 import LimitedEditionHighlightSection from "./LimitedEditionHighlightSection";
 import SEOContentSection from "./SEOContentSection";
 import Testimonials from "./TestimonialsSection";
-import VirtualTryOn from "./VirtualTryOn";
-import WhyChooseGlassophiteSection from "./WhyChooseGlassophiteSection";
 
 const HomeComponent = () => {
   return (

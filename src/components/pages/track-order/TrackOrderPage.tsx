@@ -1,0 +1,394 @@
+"use client";
+
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Package, 
+  Search, 
+  Truck, 
+  CheckCircle, 
+  MapPin, 
+  Calendar,
+  FileText,
+  User,
+  ShieldCheck
+} from "lucide-react";
+import { toast } from "sonner";
+import MyFormWrapper from "@/components/ui/MyForm/MyFormWrapper/MyFormWrapper";
+import MyFormInputAceternity from "@/components/ui/MyForm/MyFormInputAceternity/MyFormInputAceternity";
+
+interface Step {
+  title: string;
+  translateTitleKey: string;
+  description: string;
+  translateDescKey: string;
+  date: string;
+}
+
+interface SimulatedOrder {
+  orderId: string;
+  email: string;
+  status: "placed" | "processing" | "transit" | "delivered";
+  statusText: string;
+  estimatedDelivery: string;
+  shippingAddress: string;
+  item: string;
+  price: string;
+  steps: Step[];
+}
+
+// Predefined mock databases of orders for simulation
+const simulatedDb: Record<string, SimulatedOrder> = {
+  "GP-10001": {
+    orderId: "GP-10001",
+    email: "test@example.com",
+    status: "delivered",
+    statusText: "Delivered",
+    estimatedDelivery: "June 28, 2026",
+    shippingAddress: "House 45, Road 11, Banani, Dhaka",
+    item: "Aero Titanium Aviators (Gold / Green Polarized)",
+    price: "৳ 8,500",
+    steps: [
+      { title: "Order Placed", translateTitleKey: "track.step1_title", description: "Your order was successfully received.", translateDescKey: "track.step1_desc", date: "June 25, 2026 - 10:15 AM" },
+      { title: "Processing & Assembly", translateTitleKey: "track.step2_title", description: "Lenses custom cut and frame quality-inspected.", translateDescKey: "track.step2_desc", date: "June 26, 2026 - 11:30 AM" },
+      { title: "In Transit", translateTitleKey: "track.step3_title", description: "Handed over to Glassophite Premium Courier.", translateDescKey: "track.step3_desc", date: "June 27, 2026 - 09:00 AM" },
+      { title: "Delivered", translateTitleKey: "track.step4_title", description: "Package signed and received by recipient.", translateDescKey: "track.step4_desc", date: "June 28, 2026 - 03:45 PM" },
+    ],
+  },
+  "GP-10002": {
+    orderId: "GP-10002",
+    email: "test@example.com",
+    status: "transit",
+    statusText: "In Transit",
+    estimatedDelivery: "July 01, 2026",
+    shippingAddress: "Apt 4B, Concord Tower, Gulshan-2, Dhaka",
+    item: "Monarch Acetate Square (Tortoise / Brown Lenses)",
+    price: "৳ 6,200",
+    steps: [
+      { title: "Order Placed", translateTitleKey: "track.step1_title", description: "Your order was successfully received.", translateDescKey: "track.step1_desc", date: "June 27, 2026 - 02:40 PM" },
+      { title: "Processing & Assembly", translateTitleKey: "track.step2_title", description: "Lenses custom cut and frame quality-inspected.", translateDescKey: "track.step2_desc", date: "June 28, 2026 - 10:00 AM" },
+      { title: "In Transit", translateTitleKey: "track.step3_title", description: "Dispatched from warehouse via courier.", translateDescKey: "track.step3_desc", date: "June 29, 2026 - 08:30 AM" },
+      { title: "Delivered", translateTitleKey: "track.step4_title", description: "Courier on route to destination.", translateDescKey: "track.step4_desc_pending", date: "Pending Delivery" },
+    ],
+  },
+  "GP-10003": {
+    orderId: "GP-10003",
+    email: "test@example.com",
+    status: "processing",
+    statusText: "Processing & Assembly",
+    estimatedDelivery: "July 03, 2026",
+    shippingAddress: "Block D, Sugandha R/A, Cox's Bazar",
+    item: "Classic Clubmaster (Black / Silver Gradient)",
+    price: "৳ 7,800",
+    steps: [
+      { title: "Order Placed", translateTitleKey: "track.step1_title", description: "Your order was successfully received.", translateDescKey: "track.step1_desc", date: "June 28, 2026 - 09:12 PM" },
+      { title: "Processing & Assembly", translateTitleKey: "track.step2_title", description: "Our lab technicians are mounting lenses to the frames.", translateDescKey: "track.step2_desc_active", date: "In Progress" },
+      { title: "In Transit", translateTitleKey: "track.step3_title", description: "Awaiting dispatch.", translateDescKey: "track.step3_desc_pending", date: "Awaiting Shipment" },
+      { title: "Delivered", translateTitleKey: "track.step4_title", description: "Pending dispatch.", translateDescKey: "track.step4_desc_pending", date: "Pending Delivery" },
+    ],
+  },
+};
+
+export default function TrackOrderPage() {
+  const [trackedOrder, setTrackedOrder] = useState<SimulatedOrder | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
+
+  const defaultValues = {
+    orderId: "",
+    email: "",
+  };
+
+  const handleFormSubmit = (data: { orderId: string; email: string }, reset: () => void) => {
+    const formattedId = data.orderId.trim().toUpperCase();
+    
+    // Regular validation check
+    if (!formattedId.startsWith("GP-") || formattedId.length < 5) {
+      toast.error("Invalid Order ID Format", {
+        description: "Please enter a valid order ID starting with GP- followed by digits (e.g. GP-10002).",
+      });
+      return;
+    }
+
+    setHasSearched(true);
+
+    // Look up in mock DB
+    const foundOrder = simulatedDb[formattedId];
+    if (foundOrder) {
+      setTrackedOrder(foundOrder);
+      toast.success("Order Located", {
+        description: `Order ${formattedId} tracking data updated.`,
+      });
+      reset();
+    } else {
+      // Simulate generic 'placed' order for any other valid format so user can explore
+      const generatedOrder: SimulatedOrder = {
+        orderId: formattedId,
+        email: data.email,
+        status: "placed",
+        statusText: "Order Placed",
+        estimatedDelivery: "July 05, 2026",
+        shippingAddress: "Provided shipping address",
+        item: "Glassophite Luxury Sunglasses (Polarized UV400)",
+        price: "৳ 7,500",
+        steps: [
+          { title: "Order Placed", translateTitleKey: "track.step1_title", description: "Your order was successfully received.", translateDescKey: "track.step1_desc", date: "Just Now" },
+          { title: "Processing & Assembly", translateTitleKey: "track.step2_title", description: "Awaiting quality inspection.", translateDescKey: "track.step2_desc_pending", date: "Awaiting Production" },
+          { title: "In Transit", translateTitleKey: "track.step3_title", description: "Awaiting dispatch.", translateDescKey: "track.step3_desc_pending", date: "Awaiting Shipment" },
+          { title: "Delivered", translateTitleKey: "track.step4_title", description: "Pending dispatch.", translateDescKey: "track.step4_desc_pending", date: "Pending Delivery" },
+        ],
+      };
+      setTrackedOrder(generatedOrder);
+      toast.success("Order Located (Simulation Mode)");
+      reset();
+    }
+  };
+
+  const getStatusIndex = (status: string) => {
+    switch (status) {
+      case "placed": return 0;
+      case "processing": return 1;
+      case "transit": return 2;
+      case "delivered": return 3;
+      default: return 0;
+    }
+  };
+
+  return (
+    <div className="w-full min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-[#0a0a0a] dark:via-neutral-900 dark:to-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-500 py-12">
+      <div className="container mx-auto px-4 md:px-6 space-y-12">
+        
+        {/* Header */}
+        <div className="text-center max-w-3xl mx-auto space-y-4 pt-8">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-[#007C74] via-[#00A693] to-[#3C55A5] bg-clip-text text-transparent">
+            <span data-translate="track.title">Track Your Order</span>
+          </h1>
+          <p className="text-neutral-600 dark:text-neutral-400 font-medium max-w-xl mx-auto" data-translate="track.subtitle">
+            Enter your 5-digit Order ID (e.g., GP-10001, GP-10002, GP-10003) and billing email address to check the current delivery progress.
+          </p>
+        </div>
+
+        {/* Form panel */}
+        <div className="max-w-xl mx-auto">
+          <div className="glass-panel p-6 rounded-2xl relative overflow-hidden shadow-lg border border-[#007C74]/20">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#007C74]/15 to-transparent blur-2xl rounded-full" />
+            <MyFormWrapper
+              onSubmit={handleFormSubmit}
+              defaultValues={defaultValues}
+              className="space-y-4 relative z-10"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <MyFormInputAceternity
+                  name="orderId"
+                  label="Order ID"
+                  placeholder="GP-10002"
+                  required
+                />
+                <MyFormInputAceternity
+                  name="email"
+                  label="Billing Email"
+                  placeholder="test@example.com"
+                  type="email"
+                  required
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-[#007C74] hover:bg-[#006059] text-white font-bold rounded-lg shadow-lg hover:shadow-[#007c74]/20 transition-all duration-300 flex items-center justify-center gap-2 group cursor-pointer"
+                >
+                  <span data-translate="track.search_btn">Track Progress</span>
+                  <Search className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                </button>
+              </div>
+            </MyFormWrapper>
+          </div>
+        </div>
+
+        {/* Tracking Results Animation */}
+        <div className="max-w-3xl mx-auto">
+          <AnimatePresence mode="wait">
+            {!hasSearched && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="text-center py-12 glass-panel rounded-2xl space-y-4"
+              >
+                <div className="p-4 bg-neutral-100 dark:bg-neutral-800 rounded-full w-fit mx-auto text-neutral-400 dark:text-neutral-500">
+                  <Package className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white" data-translate="track.empty_title">Awaiting Search</h3>
+                <p className="text-sm text-neutral-500 max-w-sm mx-auto" data-translate="track.empty_desc">
+                  Provide your details above to pull current assembly, inspection, and dispatch metrics.
+                </p>
+              </motion.div>
+            )}
+
+            {hasSearched && trackedOrder && (
+              <motion.div
+                key={trackedOrder.orderId}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+                className="space-y-6"
+              >
+                {/* Meta details banner */}
+                <div className="glass-panel p-6 rounded-2xl grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-[#007C74]">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs uppercase font-extrabold text-neutral-400" data-translate="track.meta_id">Order Number</h4>
+                      <p className="text-base font-bold text-neutral-900 dark:text-white">{trackedOrder.orderId}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-[#007C74]">
+                      <Calendar className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs uppercase font-extrabold text-neutral-400" data-translate="track.meta_est">Est. Arrival</h4>
+                      <p className="text-base font-bold text-neutral-900 dark:text-white">{trackedOrder.estimatedDelivery}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-[#007C74]">
+                      <Truck className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs uppercase font-extrabold text-neutral-400" data-translate="track.meta_status">Current Status</h4>
+                      <p className="text-base font-bold text-[#00a76b]">{trackedOrder.statusText}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progress Stepper Section */}
+                <div className="glass-panel p-8 rounded-2xl">
+                  <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-8" data-translate="track.timeline_title">Package Journey Timeline</h3>
+
+                  {/* Horizontal / Vertical Stepper */}
+                  <div className="relative flex flex-col md:flex-row justify-between items-start gap-8 md:gap-4 pl-6 md:pl-0">
+                    
+                    {/* Background Progress bar line (only on desktop) */}
+                    <div className="absolute top-5 left-[12%] right-[12%] h-[2px] bg-neutral-200 dark:bg-neutral-800 hidden md:block z-0">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#00a76b] to-[#007C74] transition-all duration-500" 
+                        style={{
+                          width: `${(getStatusIndex(trackedOrder.status) / 3) * 100}%`
+                        }}
+                      />
+                    </div>
+
+                    {/* Background line (only on mobile) */}
+                    <div className="absolute top-6 bottom-6 left-[18px] w-[2px] bg-neutral-200 dark:bg-neutral-800 block md:hidden z-0">
+                      <div 
+                        className="w-full bg-[#00a76b] transition-all duration-500" 
+                        style={{
+                          height: `${(getStatusIndex(trackedOrder.status) / 3) * 100}%`
+                        }}
+                      />
+                    </div>
+
+                    {/* Stepper items */}
+                    {trackedOrder.steps.map((step, idx) => {
+                      const isActive = getStatusIndex(trackedOrder.status) === idx;
+                      const isCompleted = getStatusIndex(trackedOrder.status) >= idx;
+                      
+                      return (
+                        <div key={idx} className="relative z-10 flex flex-row md:flex-col items-start md:items-center text-left md:text-center w-full gap-4 md:gap-2">
+                          
+                          {/* Circle Dot wrapper */}
+                          <div className="flex justify-center items-center">
+                            {isCompleted ? (
+                              <motion.div 
+                                initial={{ scale: 0.8 }}
+                                animate={{ scale: 1 }}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${
+                                  isActive ? "bg-[#007C74] shadow-[0_0_15px_rgba(0,124,116,0.5)] border-2 border-white dark:border-black" : "bg-[#00a76b]"
+                                }`}
+                              >
+                                {isActive ? (
+                                  <div className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
+                                ) : (
+                                  <CheckCircle className="w-5 h-5" />
+                                )}
+                              </motion.div>
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-800 border-2 border-neutral-300 dark:border-neutral-700 flex items-center justify-center text-neutral-400 dark:text-neutral-600">
+                                {idx + 1}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Details texts */}
+                          <div className="space-y-1 mt-0 md:mt-2">
+                            <h4 className={`font-bold text-sm ${isCompleted ? "text-neutral-900 dark:text-white" : "text-neutral-400 dark:text-neutral-600"}`} data-translate={step.translateTitleKey}>
+                              {step.title}
+                            </h4>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-[150px] mx-auto hidden md:block" data-translate={step.translateDescKey}>
+                              {step.description}
+                            </p>
+                            <p className="text-[10px] font-semibold text-[#007C74] dark:text-[#00A693]">
+                              {step.date}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                  </div>
+                </div>
+
+                {/* Additional Package Details info */}
+                <div className="glass-panel p-6 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                      <User className="w-4 h-4 text-[#007C74]" />
+                      <span data-translate="track.recipient_title">Recipient Information</span>
+                    </h3>
+                    <div className="space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
+                      <div>
+                        <span className="font-semibold" data-translate="track.recipient_addr_lbl">Delivery Address:</span>
+                        <p className="mt-1 flex items-start gap-2">
+                          <MapPin className="w-4 h-4 text-neutral-400 flex-shrink-0 mt-0.5" />
+                          <span>{trackedOrder.shippingAddress}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-[#007C74]" />
+                      <span data-translate="track.items_title">Items in Shipment</span>
+                    </h3>
+                    <div className="p-4 bg-neutral-100/50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3">
+                      <div className="flex justify-between items-start gap-4 text-sm">
+                        <div>
+                          <p className="font-bold text-neutral-900 dark:text-white">{trackedOrder.item}</p>
+                          <p className="text-xs text-neutral-500 mt-0.5">Quantity: 1</p>
+                        </div>
+                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">{trackedOrder.price}</span>
+                      </div>
+                      <div className="h-[1px] bg-neutral-200 dark:bg-neutral-800" />
+                      <div className="flex justify-between items-center text-xs text-neutral-500">
+                        <span data-translate="track.shipping_method">Shipping Method:</span>
+                        <span className="font-semibold text-[#007C74]">Glassophite Premium courier</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+      </div>
+    </div>
+  );
+}

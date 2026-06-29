@@ -13,10 +13,10 @@ import { Star } from "lucide-react"
 
 interface ProductCardProps {
   product: TProduct
-  index: number
+  index?: number
 }
 
-export default function ProductCard({ product, index }: ProductCardProps) {
+export default function ProductCard({ product }: ProductCardProps) {
   // Calculate average rating
   const avgRating =
     product.reviews.length > 0
@@ -24,7 +24,7 @@ export default function ProductCard({ product, index }: ProductCardProps) {
       : 0
 
   return (
-    <Link href={`/products/${index}`}>
+    <Link href={`/product/${product.id}`}>
       <Card className="h-full overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
         <div className="relative h-64 w-full overflow-hidden">
           <Image

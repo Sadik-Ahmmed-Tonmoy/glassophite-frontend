@@ -2,6 +2,12 @@ import ChangePassword from "@/components/pages/profile/ChangePassword";
 import DeleteAccount from "@/components/pages/profile/DeleteAccount";
 import ProfileHeader from "@/components/pages/profile/ProfileHeader";
 import SecuritySettings from "@/components/pages/profile/SecuritySettings";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Account Settings",
+  robots: "noindex, nofollow",
+};
 
 
 export default function AccountSettingsPage() {

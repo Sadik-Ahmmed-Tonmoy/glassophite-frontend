@@ -1,14 +1,18 @@
 import HomeComponent from "@/components/pages/home/HomeComponent";
-import { Metadata } from "next";
+import { Metadata, Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#007C74",
+};
 
 export const metadata: Metadata = {
   title:
     "Glassophite - Elegance in Every Frame. | Luxury Sunglasses for Trendsetters",
   description:
-    "Glassophite offers a curated collection of luxury sunglasses, designed with precision and a commitment to timeless style. Each pair is crafted with the finest materials, seamlessly blending sophistication, durability, and modern flair. Born in Bangladesh, Glassophite represents a new wave of fashion for the discerning trendsetter. Our eyewear empowers confidence and adds a touch of elegance to every moment, whether in the bustling streets of Dhaka or the serene coasts of Cox’s Bazar. Discover eyewear that not only enhances your style but also defines your personality.",
-  viewport: "width=device-width, initial-scale=1.0",
+    "Glassophite is a statement of modern sophistication and refined luxury, crafted exclusively for the discerning eyes of Bangladeshi trendsetters. Born from a passion for style, precision, and identity, Glassophite stands at the intersection of premium craftsmanship and contemporary fashion. Whether you're in Dhaka’s bustling streets or the coastlines of Cox’s Bazar, Glassophite adds that extra layer of polish to your personality.",
   robots: "index, follow",
-  themeColor: "#007C74",
   keywords: [
     "luxury sunglasses",
     "premium eyewear",

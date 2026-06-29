@@ -1,12 +1,9 @@
-import Footer from "@/components/shared/Footer/Footer";
-
 import { ReactNode } from "react";
 
 const layout = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="relative">
-      <div className="">{children}</div>
-      <Footer />
+    <div className="w-full min-h-screen bg-neutral-50 dark:bg-[#080808]">
+      {children}
     </div>
   );
 };

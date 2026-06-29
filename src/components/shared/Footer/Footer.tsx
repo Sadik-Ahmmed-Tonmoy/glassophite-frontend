@@ -15,6 +15,9 @@ import {
   ChevronRight,
   Sparkles,
 } from "lucide-react";
+import { z } from "zod";
+import { toast } from "sonner";
+
 
 // Hook to detect large screen (lg breakpoint 1024px)
 function useLargeScreen() {
@@ -84,6 +87,26 @@ export default function Footer() {
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.1 });
   const isLarge = useLargeScreen();
+
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    const emailSchema = z.string().email("Please enter a valid email address.");
+    const result = emailSchema.safeParse(email);
+    if (!result.success) {
+      const errorMsg = result.error.errors[0].message;
+      setEmailError(errorMsg);
+      toast.error(errorMsg);
+    } else {
+      setEmailError(null);
+      toast.success("Subscribed Successfully!", {
+        description: "You have been added to our newsletter list.",
+      });
+      setEmail("");
+    }
+  };
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -196,7 +219,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className={`text-sm ${styles.textMuted} max-w-sm`} data-translate="footer.tagline">
-              Redefining vision with premium sunglasses crafted for the discerning individual.
+              A statement of modern sophistication and refined luxury, crafted exclusively for the discerning eyes of Bangladeshi trendsetters.
             </p>
             <div className="space-y-2 text-sm">
               <motion.div
@@ -222,8 +245,8 @@ export default function Footer() {
                 whileHover={isLarge ? { x: 5 } : {}}
               >
                 <Mail size={16} className={styles.textMutedLighter} />
-                <a href="mailto:support@glassophite.com" className={`${styles.textMuted} ${styles.hover} transition-colors`}>
-                  support@glassophite.com
+                <a href="mailto:support.glassophite@gmail.com" className={`${styles.textMuted} ${styles.hover} transition-colors`}>
+                  support.glassophite@gmail.com
                 </a>
               </motion.div>
             </div>
@@ -265,16 +288,25 @@ export default function Footer() {
             <p className={`text-xs ${styles.textMutedLighter} mb-3`} data-translate="footer.newsletter.desc">
               Get the latest updates on new arrivals and exclusive offers.
             </p>
-            <form className="flex flex-col sm:flex-row gap-2" onSubmit={(e) => e.preventDefault()}>
-              <input
-                type="email"
-                placeholder="Your email"
-                className={`px-4 py-2 rounded-md text-sm ${styles.inputBg} focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all`}
-                data-translate="footer.newsletter.placeholder"
-              />
+            <form className="flex flex-col sm:flex-row gap-2 items-start" onSubmit={handleSubscribe} noValidate>
+              <div className="flex flex-col w-full sm:w-auto">
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={`px-4 py-2 rounded-md text-sm ${styles.inputBg} focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all w-full`}
+                  data-translate="footer.newsletter.placeholder"
+                />
+                {emailError && (
+                  <span className="text-red-500 text-xs mt-1 block">
+                    {emailError}
+                  </span>
+                )}
+              </div>
               <motion.button
                 type="submit"
-                className={`px-6 py-2 rounded-md text-sm font-medium ${styles.button} transition-all`}
+                className={`px-6 py-2 rounded-md text-sm font-medium ${styles.button} transition-all w-full sm:w-auto`}
                 whileHover={isLarge ? { scale: 1.05 } : {}}
                 whileTap={isLarge ? { scale: 0.95 } : {}}
                 data-translate="footer.newsletter.subscribe"

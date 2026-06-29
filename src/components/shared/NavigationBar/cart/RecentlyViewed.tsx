@@ -43,7 +43,7 @@ export default function RecentlyViewed() {
               {recentlyViewed.map((item) => (
                 <Link
                   key={item.id}
-                  href={`/products/${item.id}`}
+                  href={`/product/${item.id}`}
                   className="group relative rounded-md overflow-hidden bg-gray-100 aspect-square"
                 >
                   <Image

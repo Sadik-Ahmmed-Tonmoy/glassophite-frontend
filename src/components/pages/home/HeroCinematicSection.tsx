@@ -8,7 +8,7 @@ import { useTheme } from "next-themes";
 
 
 import heroImageDark from "@/assets/images/ChatGPT Image Apr 8, 2025, 12_09_35 PM.png"
-import heroImageLight from "@/assets/images/WhatsApp Image 2026-02-19 at 10.18.28 AM.jpeg"
+import heroImageLight from "@/assets/images/Gemini_Generated_Image_mmpwnvmmpwnvmmpw.png"
 import Image from "next/image";
 
 
@@ -100,10 +100,10 @@ export default function HeroCinematicSection() {
         }
         {/* Dynamic overlay based on scroll and theme */}
         <motion.div 
-          className={`absolute inset-0 bg-gradient-to-b transition-colors duration-500 ${
+          className={`absolute inset-0 transition-colors duration-500 ${
             isDark 
-              ? "from-black/80 via-black/70 to-black" 
-              : "from-white/60 via-white/50 to-white/40"
+              ? "bg-gradient-to-b from-black/80 via-black/70 to-black" 
+              : "bg-gradient-to-r from-white/80 via-white/70 to-white/10"
           }`}
         />
       </motion.div>

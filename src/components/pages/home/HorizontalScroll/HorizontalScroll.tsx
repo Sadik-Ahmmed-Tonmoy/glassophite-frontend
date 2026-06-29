@@ -1,123 +1,231 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { ReactLenis } from "lenis/react";
-import { animate, scroll, spring } from "motion";
-import { useContext, useEffect, useRef, useState } from "react";
 
 import { ContextProvider } from "@/lib/MyContextProvider";
+import { ReactLenis } from "lenis/react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
+
 import OriginStorySection from "./HorizontalScrollComponents/OriginStorySection";
 import CraftsmanshipShowcaseSection from "./HorizontalScrollComponents/CraftsmanshipShowcaseSection";
 import InnovationLabsSection from "./HorizontalScrollComponents/InnovationLabsSection";
 
+// ─── Config ──────────────────────────────────────────────────────────────
+const SECTIONS = 3;
+const SNAP_THRESHOLD = 0.35;      // magnetic zone: 35% from edge
+const SNAP_DURATION_MS = 680;      // snap animation length
+const IDLE_DELAY_MS = 80;          // wait after scroll stops before checking snap
+
+// ─── Types ──────────────────────────────────────────────────────────────
+interface SectionData {
+  id: string;
+  content: React.ReactNode;
+}
+
+// ─── Easing ──────────────────────────────────────────────────────────────
+const easeOutExpo = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
+
+// ─── Section Content Config ─────────────────────────────────────────────
+const SECTIONS_CONFIG: SectionData[] = [
+  {
+    id: "hero",
+    content: (
+      <>
+
+
+        <OriginStorySection />
+
+      </>
+    ),
+  },
+  {
+    id: "skills",
+    content: (
+   <CraftsmanshipShowcaseSection/>
+    ),
+  },
+  {
+    id: "more",
+    content: (
+     <InnovationLabsSection/>
+
+
+
+    ),
+  },
+];
+
+// ─── Custom Hook: Magnetic Snap ────────────────────────────────────────
+function useMagneticSnap(sectionRef: React.RefObject<HTMLElement | null>) {
+  const currentX = useRef(0);
+  const targetX = useRef(0);
+  const rafId = useRef<number | null>(null);
+  const isSnapping = useRef(false);
+  const lastScrollY = useRef(0);
+
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const getContainer = useCallback(
+    () => sectionRef.current?.querySelector<HTMLElement>("[data-scroll-container]"),
+    [sectionRef]
+  );
+
+  const snapToSection = useCallback(
+    (index: number) => {
+      const container = getContainer();
+      if (!container) return;
+
+      const vw = window.innerWidth;
+      targetX.current = -index * vw;
+      isSnapping.current = true;
+
+      const startX = currentX.current;
+      const delta = targetX.current - startX;
+      const startTime = performance.now();
+
+      const animate = (now: number) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / SNAP_DURATION_MS, 1);
+        const eased = easeOutExpo(progress);
+
+        currentX.current = startX + delta * eased;
+        container.style.transform = `translateX(${currentX.current}px)`;
+
+        if (progress < 1) {
+          rafId.current = requestAnimationFrame(animate);
+        } else {
+          currentX.current = targetX.current;
+          isSnapping.current = false;
+          setActiveIndex(index);
+        }
+      };
+
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+      rafId.current = requestAnimationFrame(animate);
+    },
+    [getContainer]
+  );
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const driveFromScroll = () => {
+      if (isSnapping.current) return;
+      const rect = section.getBoundingClientRect();
+      const sectionHeight = section.offsetHeight - window.innerHeight;
+      const scrolled = -rect.top;
+      const progress = Math.max(0, Math.min(1, scrolled / sectionHeight));
+      const vw = window.innerWidth;
+      const raw = -progress * (SECTIONS - 1) * vw;
+      currentX.current = raw;
+
+      const container = getContainer();
+      if (container) container.style.transform = `translateX(${raw}px)`;
+    };
+
+    let scrollTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const onScroll = () => {
+      driveFromScroll();
+      lastScrollY.current = window.scrollY;
+
+      if (scrollTimer) clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        if (isSnapping.current) return;
+
+        const rect = section.getBoundingClientRect();
+        const sectionHeight = section.offsetHeight - window.innerHeight;
+        const scrolled = -rect.top;
+        if (scrolled < 0 || scrolled > sectionHeight) return;
+
+        const progress = scrolled / sectionHeight;
+        const rawIndex = progress * (SECTIONS - 1);
+        const nearestIndex = Math.round(rawIndex);
+        const fraction = rawIndex - Math.floor(rawIndex);
+
+        const inMagneticZone =
+          fraction < SNAP_THRESHOLD || fraction > 1 - SNAP_THRESHOLD;
+
+        if (inMagneticZone) {
+          snapToSection(nearestIndex);
+          const snapScrollY =
+            section.offsetTop + (nearestIndex / (SECTIONS - 1)) * sectionHeight;
+          window.scrollTo({ top: snapScrollY, behavior: "instant" });
+        }
+      }, IDLE_DELAY_MS);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    driveFromScroll();
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (scrollTimer) clearTimeout(scrollTimer);
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+    };
+  }, [sectionRef, getContainer, snapToSection]);
+
+  return { activeIndex };
+}
+
+
+
+// ─── Main Component ─────────────────────────────────────────────────────
 export default function HorizontalScroll() {
-  const containerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (!containerRef.current || !sectionRef.current) return;
-
-    const sections = document.querySelectorAll(".scroll-section");
-    const totalSections = sections.length;
-
-    // Set up the horizontal scroll animation
-    const controls = animate(
-      containerRef.current,
-      {
-        transform: ["none", `translateX(-${totalSections - 1}00vw)`],
-      } as any,
-      { ...spring() },
-    );
-
-    // Connect the animation to the scroll position
-    scroll(controls, {
-      target: sectionRef.current!,
-      offset: ["start", "end"],
-    });
-
-    // Animate each section's heading
-    // sections.forEach((section, i) => {
-    //   const header = section.querySelector("h2");
-    //   if (header) {
-    //     scroll(animate(header, { x: [800, -800] }), {
-    //       target: sectionRef.current!,
-    //       offset: [i / totalSections, (i + 1) / totalSections],
-    //     });
-    //   }
-    // });
-
-    // // Add scroll progress indicator
-    // const progressBar = document.querySelector(".progress");
-    // if (progressBar) {
-    //   scroll(animate(progressBar, { scaleX: [0, 1] }), {
-    //     target: sectionRef.current,
-    //     offset: ["start", "end"],
-    //   });
-    // }
-  }, []);
-
-  const [show, setShow] = useState(true);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setShow(entry.isIntersecting),
-      { threshold: 0.1 },
-    );
-    if (sectionRef.current) observer.observe(sectionRef.current);
-
-    return () => observer.disconnect();
-  }, []);
+  useMagneticSnap(sectionRef);
 
   const context = useContext(ContextProvider);
-
   if (!context) return null;
+
   return (
     <ReactLenis root>
       <main>
         <article>
+          {/* Desktop/Tablet Horizontal Scroll View */}
           <section
             ref={sectionRef}
-            className="h-[300vh] relative bg-gradient-to-b from-[#0a0617] via-[#120b26] to-[#0b0614] hidden md:block w-full"
+            style={{ height: `${SECTIONS * 100}vh` }}
+            className="relative hidden w-full bg-neutral-50 dark:bg-neutral-950 md:block transition-colors duration-300"
           >
-            <div className="sticky top-0 overflow-hidden">
+            {/* Global Animated Particle Background */}
+            <div className="absolute inset-0 z-0 opacity-40 dark:opacity-60 pointer-events-none">
+            </div>
+
+            <div className="sticky top-0 h-screen overflow-hidden">
               <div
-                ref={containerRef}
-                className="flex w-[500vw]  overflow-hidden"
+                data-scroll-container
+                className="flex h-full"
+                style={{
+                  width: `${SECTIONS * 100}vw`,
+                  willChange: "transform",
+                }}
               >
-                <div className="scroll-section h-screen w-screen  flex flex-col justify-center overflow-hidden items-center ">
+                {SECTIONS_CONFIG.map((section) => (
                   <div
-                    id="couple"
-                    className="relative w-full h-full overflow-hidden "
+                    key={section.id}
+                    className="scroll-section relative h-screen w-screen shrink-0 overflow-hidden"
                   >
-                    <div className="absolute inset-0 z-10 flex items-center justify-center ">
-                    <OriginStorySection />
-                    </div>
+                    {section.content}
                   </div>
-
-                  {/* <div className="relative w-full h-screen overflow-hidden ">
-                   
-                    <Lightning hue={250} intensity={1.2} size={1.3} />
-
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center">
-                      <CoupleProfilesSection />
-                    </div>
-                  </div> */}
-                </div>
-                <div className="scroll-section h-screen w-screen  flex flex-col justify-center overflow-hidden relative">
-                  <div className="h-full w-full absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-size-[54px_54px] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
-
-                  <CraftsmanshipShowcaseSection />
-                  <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-size-[54px_54px] mask-[radial-gradient(ellipse_60%_50%_at_50%_95%,#000_70%,transparent_100%)]"></div>
-                </div>
-                <div className="scroll-section h-screen w-screen  bg-orange-400 flex flex-col justify-center overflow-hidden ">
-                  <InnovationLabsSection/>
-                </div>
+                ))}
               </div>
             </div>
           </section>
+
+          {/* Mobile Vertical Stack View */}
+          <section className="block md:hidden w-full bg-neutral-50 dark:bg-neutral-950 transition-colors duration-300">
+            <div className="flex flex-col">
+              {SECTIONS_CONFIG.map((section) => (
+                <div key={section.id} className="w-full">
+                  {section.content}
+                </div>
+              ))}
+            </div>
+          </section>
         </article>
-        {/* <div className="progress fixed left-0 right-0 h-2 rounded-full bg-red-600 bottom-[50px] origin-left"></div> */}
+        {/* <SectionDots active={activeIndex} total={SECTIONS} /> */}
       </main>
     </ReactLenis>
   );

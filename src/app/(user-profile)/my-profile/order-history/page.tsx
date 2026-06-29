@@ -1,5 +1,11 @@
 import OrderHistoryList from "@/components/pages/profile/OrderHistoryList";
 import ProfileHeader from "@/components/pages/profile/ProfileHeader";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Order History",
+  robots: "noindex, nofollow",
+};
 
 
 export default function OrderHistoryPage() {

@@ -1,0 +1,262 @@
+"use client";
+
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Search, 
+  HelpCircle, 
+  Truck, 
+  RefreshCcw, 
+  ShieldAlert, 
+  Sparkles,
+  ArrowRight,
+  MessageCircle
+} from "lucide-react";
+import Link from "next/link";
+import { 
+  Accordion, 
+  AccordionItem, 
+  AccordionTrigger, 
+  AccordionContent 
+} from "@/components/ui/accordion";
+
+interface FaqItem {
+  id: string;
+  q: string;
+  a: string;
+  translateQKey: string;
+  translateAKey: string;
+}
+
+interface FaqCategory {
+  id: string;
+  title: string;
+  translateTitleKey: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  items: FaqItem[];
+}
+
+const faqData: FaqCategory[] = [
+  {
+    id: "shipping",
+    title: "Shipping & Delivery",
+    translateTitleKey: "faq.cat_shipping",
+    icon: Truck,
+    items: [
+      {
+        id: "ship-1",
+        q: "What are your delivery times and rates in Bangladesh?",
+        translateQKey: "faq.ship1_q",
+        a: "We offer free home delivery inside Dhaka within 24–48 hours. For deliveries outside Dhaka, we partner with premium couriers; delivery takes 3–5 business days and incurs a flat charge of 120 BDT.",
+        translateAKey: "faq.ship1_a",
+      },
+      {
+        id: "ship-2",
+        q: "Can I inspect the product before accepting delivery?",
+        translateQKey: "faq.ship2_q",
+        a: "Yes! For deliveries within Dhaka, you can request open-box delivery. Inspect the package in front of our delivery executive. If you decide not to take it, simply return it instantly without any extra charge.",
+        translateAKey: "faq.ship2_a",
+      },
+      {
+        id: "ship-3",
+        q: "How can I track my package?",
+        translateQKey: "faq.ship3_q",
+        a: "Once shipped, you will receive a tracking link via SMS. You can also track the real-time package status directly on our portal at `/track-order` using your Order ID.",
+        translateAKey: "faq.ship3_a",
+      },
+    ],
+  },
+  {
+    id: "try-on",
+    title: "Virtual Try-On & Sizing",
+    translateTitleKey: "faq.cat_tryon",
+    icon: Sparkles,
+    items: [
+      {
+        id: "try-1",
+        q: "How does the Virtual Try-On work?",
+        translateQKey: "faq.try1_q",
+        a: "Our virtual try-on engine accesses your webcam and maps the 3D geometry of your face in real-time. You can toggle frames to see precisely how their dimensions, color, and frame type suit your facial structure.",
+        translateAKey: "faq.try1_a",
+      },
+      {
+        id: "try-2",
+        q: "How do I choose the correct frame size?",
+        translateQKey: "faq.try2_q",
+        a: "Every product page includes specific frame dimensions (Lens Width - Bridge - Temple Length) in millimeters. You can look at the inner temple of your current glasses for similar numbers to find your exact match.",
+        translateAKey: "faq.try2_a",
+      },
+    ],
+  },
+  {
+    id: "returns",
+    title: "Returns & Exchanges",
+    translateTitleKey: "faq.cat_returns",
+    icon: RefreshCcw,
+    items: [
+      {
+        id: "ret-1",
+        q: "What is Glassophite's return policy?",
+        translateQKey: "faq.ret1_q",
+        a: "We offer a 7-day hassle-free return and exchange policy for unused items in their original packaging, including the designer case and cleaning cloth. Customized prescription lenses cannot be refunded.",
+        translateAKey: "faq.ret1_a",
+      },
+      {
+        id: "ret-2",
+        q: "How do I initiate a return or exchange?",
+        translateQKey: "faq.ret2_q",
+        a: "Send us a request at support.glassophite@gmail.com or call our hotline. For customers in Dhaka, our courier will collect the package from your doorstep. For customers outside Dhaka, please dispatch it via courier to our Gulshan showroom.",
+        translateAKey: "faq.ret2_a",
+      },
+    ],
+  },
+  {
+    id: "product-care",
+    title: "Product Care & Warranty",
+    translateTitleKey: "faq.cat_care",
+    icon: ShieldAlert,
+    items: [
+      {
+        id: "care-1",
+        q: "How should I clean and protect my luxury lenses?",
+        translateQKey: "faq.care1_q",
+        a: "Always use the microfiber cloth provided in the case. Avoid paper towels or clothing, which can create micro-scratches. Wash lenses under lukewarm running water with a drop of mild dish soap to remove oil prints.",
+        translateAKey: "faq.care1_a",
+      },
+      {
+        id: "care-2",
+        q: "Do you offer a product warranty?",
+        translateQKey: "faq.care2_q",
+        a: "Yes, all Glassophite eyewear comes with a 1-Year Limited Warranty covering manufacturing defects on hinges, frame welds, and coatings. Accidental lens scratches or frame breakage from misuse are not covered.",
+        translateAKey: "faq.care2_a",
+      },
+    ],
+  },
+];
+
+export default function FaqPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter FAQs based on query
+  const filteredFaqs = faqData
+    .map((category) => {
+      const items = category.items.filter(
+        (item) =>
+          item.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.a.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      return { ...category, items };
+    })
+    .filter((category) => category.items.length > 0);
+
+  return (
+    <div className="w-full min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-[#0a0a0a] dark:via-neutral-900 dark:to-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-500 py-12">
+      <div className="container mx-auto px-4 md:px-6 space-y-12 max-w-4xl">
+        
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto space-y-4 pt-8">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-[#007C74] via-[#00A693] to-[#3C55A5] bg-clip-text text-transparent">
+            <span data-translate="faq.title">Help Center & FAQs</span>
+          </h1>
+          <p className="text-neutral-600 dark:text-neutral-400 font-medium" data-translate="faq.subtitle">
+            Find quick answers to queries regarding shipments, returns, virtual camera fittings, and care instructions.
+          </p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative max-w-xl mx-auto">
+          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-neutral-400 dark:text-neutral-500">
+            <Search className="w-5 h-5" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search questions or keywords..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-zinc-800/80 border border-neutral-200 dark:border-neutral-800 rounded-xl text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#007C74] shadow-md transition-all duration-300"
+          />
+        </div>
+
+        {/* FAQs List */}
+        <div className="space-y-8">
+          <AnimatePresence mode="popLayout">
+            {filteredFaqs.length > 0 ? (
+              filteredFaqs.map((category) => {
+                const IconComponent = category.icon;
+                return (
+                  <motion.div
+                    key={category.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="glass-panel p-6 rounded-2xl space-y-4"
+                  >
+                    <div className="flex items-center gap-3 border-b border-neutral-200/50 dark:border-neutral-800/50 pb-3 text-[#007C74]">
+                      <IconComponent className="w-5 h-5" />
+                      <h2 className="text-lg font-bold text-neutral-900 dark:text-white" data-translate={category.translateTitleKey}>
+                        {category.title}
+                      </h2>
+                    </div>
+
+                    <Accordion type="single" collapsible className="w-full">
+                      {category.items.map((item) => (
+                        <AccordionItem key={item.id} value={item.id} className="border-b border-neutral-200/30 dark:border-neutral-800/30 last:border-b-0">
+                          <AccordionTrigger className="text-left font-semibold text-neutral-800 dark:text-neutral-200 hover:no-underline hover:text-[#007C74] dark:hover:text-[#007C74]">
+                            <span data-translate={item.translateQKey}>{item.q}</span>
+                          </AccordionTrigger>
+                          <AccordionContent className="text-neutral-600 dark:text-neutral-400 leading-relaxed text-sm pt-1 pb-4">
+                            <span data-translate={item.translateAKey}>{item.a}</span>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </motion.div>
+                );
+              })
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-12 glass-panel rounded-2xl space-y-4"
+              >
+                <div className="p-4 bg-neutral-100 dark:bg-neutral-800 rounded-full w-fit mx-auto text-neutral-400 dark:text-neutral-500">
+                  <HelpCircle className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white" data-translate="faq.no_results_title">No matching questions found</h3>
+                <p className="text-sm text-neutral-500 max-w-sm mx-auto" data-translate="faq.no_results_desc">
+                  Try searching for general keywords like &quot;shipping&quot;, &quot;return&quot;, &quot;warranty&quot;, or contact support.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Support Section */}
+        <div className="glass-panel p-6 md:p-8 rounded-2xl bg-gradient-to-r from-[#007c74]/15 via-transparent to-[#3c55a5]/10 flex flex-col md:flex-row items-center justify-between gap-6 border border-[#007c74]/15">
+          <div className="flex items-center gap-4 text-center md:text-left">
+            <div className="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-[#007C74] hidden md:block">
+              <MessageCircle className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white" data-translate="faq.support_title">Still have questions?</h3>
+              <p className="text-sm text-neutral-500 mt-1" data-translate="faq.support_desc">
+                If you couldn&apos;t find the answers in our help portal, speak to our care executives.
+              </p>
+            </div>
+          </div>
+          <div>
+            <Link href="/contact">
+              <button className="px-6 py-3 bg-[#007C74] hover:bg-[#006059] text-white font-bold rounded-lg shadow-md hover:shadow-[#007c74]/10 transition-all duration-300 flex items-center gap-2 group cursor-pointer text-sm">
+                <span data-translate="faq.support_btn">Contact Support</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </Link>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}

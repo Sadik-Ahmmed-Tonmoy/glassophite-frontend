@@ -2,88 +2,55 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import {
-  Link,
   Navbar,
+  NavbarBrand,
   NavbarContent,
   NavbarMenu,
   NavbarMenuItem,
   NavbarMenuToggle,
 } from "@nextui-org/react";
+import Link from "next/link";
 import { useState } from "react";
-import { FieldValues } from "react-hook-form";
 
 export default function MobileNavBar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuItems = [
-    "Profile",
-    "Dashboard",
-    "Activity",
-    "Analytics",
-    "System",
-    "Deployments",
-    "My Settings",
-    "Team Settings",
-    "Help & Feedback",
-    "Log Out",
+    { label: "Home", href: "/" },
+    { label: "Sunglasses", href: "/product-filter" },
+    { label: "Optical Glasses", href: "/product-filter" },
+    { label: "My Profile", href: "/my-profile" },
+    { label: "Admin Dashboard", href: "/dashboard" },
+    { label: "Login", href: "/auth/login" },
+    { label: "Register", href: "/auth/register" },
   ];
 
-  const handleSubmit = (data: FieldValues, reset: any) => {
-    console.log("Form Data:", data);
-    // reset(); // Uncomment this line to reset the form after submission
-  };
-
   return (
-    <Navbar onMenuOpenChange={setIsMenuOpen}>
-      <NavbarContent>
-        <NavbarMenuToggle value="menu" icon={isMenuOpen ? "X" : "y"} />
+    <Navbar onMenuOpenChange={setIsMenuOpen} className="bg-white/70 dark:bg-black/70 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50">
+      <NavbarContent justify="start">
+        <NavbarMenuToggle
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+        />
       </NavbarContent>
 
-      {/* <NavbarContent className="hidden sm:flex gap-4" justify="center">
-      <NavbarItem>
-        <Link color="foreground" href="#">
-          Features
-        </Link>
-      </NavbarItem>
-      <NavbarItem isActive>
-        <Link aria-current="page" href="#">
-          Customers
-        </Link>
-      </NavbarItem>
-      <NavbarItem>
-        <Link color="foreground" href="#">
-          Integrations
-        </Link>
-      </NavbarItem>
-    </NavbarContent> */}
-      {/* <NavbarContent justify="end">
-      <NavbarItem className="hidden lg:flex">
-        <Link href="#">Login</Link>
-      </NavbarItem>
-      <NavbarItem>
-        <Button as={Link} color="primary" href="#" variant="flat">
-          Sign Up
-        </Button>
-      </NavbarItem>
-    </NavbarContent> */}
-      <NavbarMenu>
+      <NavbarContent justify="center" className="pr-10">
+        <NavbarBrand>
+          <Link href="/">
+            <span className="text-xl font-bold tracking-wider text-[#007C74] dark:text-white cursor-pointer">
+              Glassophite
+            </span>
+          </Link>
+        </NavbarBrand>
+      </NavbarContent>
+
+      <NavbarMenu className="bg-white/95 dark:bg-black/95 backdrop-blur-md pt-6 flex flex-col gap-4">
         {menuItems.map((item, index) => (
-          <NavbarMenuItem
-            key={`${item}-${index}`}
-            className="w-full bg-red-500"
-          >
+          <NavbarMenuItem key={`${item.label}-${index}`}>
             <Link
-              className="w-full"
-              color={
-                index === 2
-                  ? "primary"
-                  : index === menuItems.length - 1
-                  ? "danger"
-                  : "foreground"
-              }
-              href="#"
-              size="lg"
+              className="w-full text-lg py-2 block border-b border-neutral-100 dark:border-neutral-900 text-neutral-800 dark:text-neutral-200 hover:text-[#007C74] dark:hover:text-[#007C74] transition-colors"
+              href={item.href}
+              onClick={() => setIsMenuOpen(false)}
             >
-              {item}
+              {item.label}
             </Link>
           </NavbarMenuItem>
         ))}

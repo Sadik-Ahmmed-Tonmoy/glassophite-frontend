@@ -104,7 +104,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
       <div className="mt-4 flex justify-between">
         <div>
           <h3 className="text-sm font-medium text-gray-900">
-            <Link href={`/products/${product.id}`} className="hover:text-[#007C74]">
+            <Link href={`/product/${product.id}`} className="hover:text-[#007C74]">
               {variant.title}
             </Link>
           </h3>

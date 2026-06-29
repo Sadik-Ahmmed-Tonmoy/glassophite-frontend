@@ -145,7 +145,7 @@ export default function QuickViewModal({ product, onClose }: QuickViewModalProps
                           Add to Wishlist
                         </motion.button>
                         <Link
-                          href={`/products/${product.id}`}
+                          href={`/product/${product.id}`}
                           className="text-sm font-medium text-gray-700 hover:text-gray-900"
                         >
                           View Full Details

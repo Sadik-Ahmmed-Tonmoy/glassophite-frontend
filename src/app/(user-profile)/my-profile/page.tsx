@@ -2,6 +2,12 @@ import ContactInformation from "@/components/pages/profile/ContactInformation";
 import PersonalInformation from "@/components/pages/profile/PersonalInformation";
 import ProfileHeader from "@/components/pages/profile/ProfileHeader";
 import ProfilePicture from "@/components/pages/profile/ProfilePicture";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "My Profile",
+  robots: "noindex, nofollow",
+};
 
 
 export default function ProfilePage() {

@@ -9,6 +9,8 @@ import { useTheme } from "next-themes";
 import AddToCartButton from "../buttons/AddToCartButton/AddToCartButton";
 import RequestStockButton from "../buttons/RequestStockButton/RequestStockButton";
 import ViewDetailsButton from "../buttons/ViewDetailsButton/view-details-button";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface ProductCardProps {
   product: TProduct;
@@ -100,9 +102,9 @@ function ProductCard({ product }: ProductCardProps) {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className={`absolute top-3 right-3 z-20 p-2 rounded-full backdrop-blur-sm transition-colors duration-300 ${
+            className={cn(`absolute top-3 right-3 z-20 p-2 rounded-full backdrop-blur-sm transition-colors duration-300 ${
               isDark ? 'bg-black/50 hover:bg-black/70' : 'bg-white/50 hover:bg-white/70'
-            }`}
+            }`, isHovered && "top-6")}
             onClick={handleWishlistClick}
             aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           >
@@ -296,10 +298,9 @@ function ProductCard({ product }: ProductCardProps) {
 
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-2 mt-4">
-            <ViewDetailsButton 
-              // productId={product.id}
-              // variantId={selectedVariant.id}
-            />
+            <Link href={`/product/${product.id}`} className="w-full flex">
+              <ViewDetailsButton />
+            </Link>
             
             {!selectedVariant.inStock ? (
               <RequestStockButton 

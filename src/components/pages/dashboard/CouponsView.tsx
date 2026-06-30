@@ -1,40 +1,85 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Tag } from "lucide-react";
+import { Plus, Trash2, Tag, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-
-// Mock Coupons list
-const initialCoupons = [
-  { id: "CPN-101", code: "GLASSOPHITE10", discount: 10, expiry: "2026-12-31", status: "Active" },
-  { id: "CPN-102", code: "SUMMER20", discount: 20, expiry: "2026-08-31", status: "Active" },
-  { id: "CPN-103", code: "PREMIUMVIP", discount: 15, expiry: "2026-10-15", status: "Expired" },
-];
+import { getCoupons, saveCoupons, TCoupon } from "@/lib/couponMockData";
 
 export default function CouponsView() {
-  const [coupons, setCoupons] = useState(initialCoupons);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [coupons, setCoupons] = useState<TCoupon[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<TCoupon | null>(null);
 
-  // Form State
-  const [newCode, setNewCode] = useState("");
-  const [newDiscount, setNewDiscount] = useState("");
-  const [newExpiry, setNewExpiry] = useState("");
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-
-  const couponSchema = z.object({
-    code: z.string().min(4, "Coupon code must be at least 4 characters.").regex(/^[A-Z0-9]+$/, "Code must contain only capital letters and numbers."),
-    discount: z.number().min(1, "Discount rate must be at least 1%.").max(99, "Discount rate cannot exceed 99%."),
-    expiry: z.string().min(10, "Expiry date is required."),
+  // Deletion confirmation overlay state
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    id: string;
+    code: string;
+  }>({
+    isOpen: false,
+    id: "",
+    code: "",
   });
 
-  const handleAddCoupon = (e: React.FormEvent) => {
+  // Form State
+  const [code, setCode] = useState("");
+  const [discount, setDiscount] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [status, setStatus] = useState<"Active" | "Expired">("Active");
+  
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Load from dynamic helper on mount
+  useEffect(() => {
+    setCoupons(getCoupons());
+  }, []);
+
+  const couponSchema = z.object({
+    code: z
+      .string()
+      .min(4, "Coupon code must be at least 4 characters.")
+      .regex(
+        /^[A-Z0-9_-]+$/,
+        "Code must contain only uppercase letters, numbers, hyphens, and underscores."
+      ),
+    discount: z
+      .number()
+      .min(1, "Discount rate must be at least 1%.")
+      .max(99, "Discount rate cannot exceed 99%."),
+    expiry: z.string().min(10, "Expiry date is required."),
+    status: z.enum(["Active", "Expired"]),
+  });
+
+  const handleOpenAdd = () => {
+    setEditingCoupon(null);
+    setCode("");
+    setDiscount("");
+    setExpiry("");
+    setStatus("Active");
+    setFormErrors({});
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (c: TCoupon) => {
+    setEditingCoupon(c);
+    setCode(c.code);
+    setDiscount(c.discount.toString());
+    setExpiry(c.expiry);
+    setStatus(c.status);
+    setFormErrors({});
+    setIsModalOpen(true);
+  };
+
+  const handleSaveCoupon = (e: React.FormEvent) => {
     e.preventDefault();
+
     const dataToValidate = {
-      code: newCode.toUpperCase(),
-      discount: Number(newDiscount),
-      expiry: newExpiry,
+      code: code.toUpperCase().trim(),
+      discount: Number(discount),
+      expiry,
+      status,
     };
 
     const validationResult = couponSchema.safeParse(dataToValidate);
@@ -48,36 +93,67 @@ export default function CouponsView() {
       });
       setFormErrors(errors);
       toast.error("Form Validation Error", {
-        description: "Please correct errors inside active fields.",
+        description: "Please correct the coupon form errors.",
       });
       return;
     }
 
-    const newCoupon = {
-      id: `CPN-${Math.floor(104 + Math.random() * 900)}`,
-      code: newCode.toUpperCase(),
-      discount: Number(newDiscount),
-      expiry: newExpiry,
-      status: "Active",
-    };
+    if (editingCoupon) {
+      // EDIT MODE
+      const updated = coupons.map((c) => {
+        if (c.id === editingCoupon.id) {
+          return {
+            ...c,
+            code: code.toUpperCase().trim(),
+            discount: Number(discount),
+            expiry,
+            status,
+          };
+        }
+        return c;
+      });
+      setCoupons(updated);
+      saveCoupons(updated);
+      toast.success("Coupon Updated", {
+        description: `${code.toUpperCase()} coupon has been updated successfully.`,
+      });
+    } else {
+      // ADD MODE
+      const newCoupon: TCoupon = {
+        id: `CPN-${Math.floor(104 + Math.random() * 900)}`,
+        code: code.toUpperCase().trim(),
+        discount: Number(discount),
+        expiry,
+        status,
+      };
 
-    setCoupons([newCoupon, ...coupons]);
-    toast.success("Coupon Code Created!", {
-      description: `${newCoupon.code} is now active at checkout sheets.`,
-    });
+      const updated = [newCoupon, ...coupons];
+      setCoupons(updated);
+      saveCoupons(updated);
+      toast.success("Coupon Created!", {
+        description: `${newCoupon.code} is now active at checkout sheets.`,
+      });
+    }
 
-    setNewCode("");
-    setNewDiscount("");
-    setNewExpiry("");
-    setFormErrors({});
-    setIsAddModalOpen(false);
+    setIsModalOpen(false);
   };
 
-  const handleDeleteCoupon = (id: string, code: string) => {
-    setCoupons((prev) => prev.filter((c) => c.id !== id));
-    toast.success("Coupon Deleted", {
-      description: `${code} promo code has been deleted.`,
+  const triggerDeleteCoupon = (id: string, codeStr: string) => {
+    setDeleteConfirm({
+      isOpen: true,
+      id,
+      code: codeStr,
     });
+  };
+
+  const executeDelete = () => {
+    const updated = coupons.filter((c) => c.id !== deleteConfirm.id);
+    setCoupons(updated);
+    saveCoupons(updated);
+    toast.success("Coupon Deleted", {
+      description: `"${deleteConfirm.code}" promo code has been deleted.`,
+    });
+    setDeleteConfirm({ isOpen: false, id: "", code: "" });
   };
 
   return (
@@ -85,16 +161,20 @@ export default function CouponsView() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="space-y-6"
+      className="space-y-6 text-foreground"
     >
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">Promo Coupons</h1>
-          <p className="text-xs text-neutral-500">Configure discount code logic and validations.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+            Promo Coupons
+          </h1>
+          <p className="text-xs text-muted-foreground">
+            Configure discount codes, rate percentages, expiration checkouts, and logic.
+          </p>
         </div>
         <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="px-4 py-2.5 bg-[#007C74] hover:bg-[#006059] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shadow-md shadow-[#007c74]/10"
+          onClick={handleOpenAdd}
+          className="px-4 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shadow-md shadow-primary/10"
         >
           <Plus className="w-4 h-4" />
           <span>New Coupon</span>
@@ -102,10 +182,10 @@ export default function CouponsView() {
       </div>
 
       {/* Coupons Table */}
-      <div className="glass-panel rounded-2xl overflow-hidden overflow-x-auto">
+      <div className="glass-panel rounded-2xl border border-border overflow-hidden overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-neutral-100 dark:bg-neutral-850 text-neutral-500 uppercase tracking-wider font-extrabold text-[10px] border-b border-neutral-200 dark:border-neutral-800">
+            <tr className="bg-muted/40 text-muted-foreground uppercase tracking-wider font-extrabold text-[10px] border-b border-border">
               <th className="p-4">Coupon Code</th>
               <th className="p-4">Discount Rate</th>
               <th className="p-4">Expiry Date</th>
@@ -113,48 +193,73 @@ export default function CouponsView() {
               <th className="p-4 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-            {coupons.map((c) => (
-              <tr key={c.id} className="hover:bg-neutral-100/50 dark:hover:bg-neutral-800/30 transition-colors">
-                <td className="p-4 font-mono font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                  <Tag className="w-3.5 h-3.5 text-[#007C74]" />
-                  <span>{c.code}</span>
-                </td>
-                <td className="p-4 font-bold text-[#007C74]">{c.discount}% Off</td>
-                <td className="p-4 text-neutral-500">{c.expiry}</td>
-                <td className="p-4">
-                  <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
-                    c.status === "Active" ? "bg-green-500/10 text-green-500" : "bg-neutral-150 dark:bg-neutral-850 text-neutral-500"
-                  }`}>
-                    {c.status}
-                  </span>
-                </td>
-                <td className="p-4 flex justify-center gap-1.5">
-                  <button
-                    onClick={() => handleDeleteCoupon(c.id, c.code)}
-                    className="p-1.5 bg-neutral-100 hover:bg-red-500/10 dark:bg-neutral-800 dark:hover:bg-red-550/20 text-neutral-500 hover:text-red-550 dark:hover:text-red-400 rounded-lg border border-neutral-200 dark:border-neutral-850 transition-colors cursor-pointer"
-                    title="Delete coupon"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+          <tbody className="divide-y divide-border">
+            {coupons.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="p-8 text-center text-muted-foreground bg-card/25">
+                  No coupons configured. Click &quot;New Coupon&quot; to get started.
                 </td>
               </tr>
-            ))}
+            ) : (
+              coupons.map((c) => (
+                <tr
+                  key={c.id}
+                  className="hover:bg-muted/20 transition-colors"
+                >
+                  <td className="p-4 font-mono font-bold text-foreground flex items-center gap-2">
+                    <span className="p-1.5 bg-primary/10 rounded-lg text-primary">
+                      <Tag className="w-3.5 h-3.5" />
+                    </span>
+                    <span>{c.code}</span>
+                  </td>
+                  <td className="p-4 font-bold text-primary">
+                    {c.discount}% Off
+                  </td>
+                  <td className="p-4 text-muted-foreground font-semibold">{c.expiry}</td>
+                  <td className="p-4">
+                    <span
+                      className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
+                        c.status === "Active"
+                          ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                          : "bg-muted text-muted-foreground border border-border"
+                      }`}
+                    >
+                      {c.status}
+                    </span>
+                  </td>
+                  <td className="p-4 flex justify-center gap-1.5">
+                    <button
+                      onClick={() => handleOpenEdit(c)}
+                      className="p-1.5 bg-muted hover:bg-muted/80 text-foreground rounded-lg border border-border transition-colors cursor-pointer"
+                      title="Edit coupon"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => triggerDeleteCoupon(c.id, c.code)}
+                      className="p-1.5 bg-muted hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded-lg border border-border transition-colors cursor-pointer"
+                      title="Delete coupon"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Add Coupon Modal */}
+      {/* Add / Edit Coupon Modal */}
       <AnimatePresence>
-        {isAddModalOpen && (
+        {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsAddModalOpen(false)}
+              onClick={() => setIsModalOpen(false)}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
 
@@ -163,73 +268,102 @@ export default function CouponsView() {
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="glass-panel max-w-sm w-full p-6 rounded-2xl relative z-10 space-y-4 border border-[#007C74]/25 shadow-2xl bg-white dark:bg-neutral-900"
+              className="bg-card text-card-foreground p-6 rounded-2xl relative z-10 space-y-4 border border-border shadow-2xl max-w-sm w-full"
             >
-              <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <Plus className="w-5 h-5 text-[#007C74]" />
-                <span>Create Discount Coupon</span>
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <span className="p-1.5 bg-primary/10 rounded-lg text-primary">
+                  <Tag className="w-4 h-4" />
+                </span>
+                <span>{editingCoupon ? "Modify Discount Coupon" : "Create Discount Coupon"}</span>
               </h3>
-              
-              <form onSubmit={handleAddCoupon} className="space-y-4 text-xs">
+
+              <form onSubmit={handleSaveCoupon} className="space-y-4 text-xs">
                 {/* Code Name */}
                 <div className="space-y-1">
-                  <label className="font-bold text-neutral-600 dark:text-neutral-400 font-medium">Promo Code Name</label>
+                  <label className="font-bold text-muted-foreground">
+                    Promo Code Name
+                  </label>
                   <input
                     type="text"
-                    value={newCode}
-                    onChange={(e) => setNewCode(e.target.value)}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
                     placeholder="e.g. EXTRA25"
-                    className="w-full px-3.5 py-2 border border-neutral-250 dark:border-neutral-800 rounded-xl bg-white dark:bg-[#0c0c0c] focus:outline-none focus:ring-2 focus:ring-[#007C74]/50 text-neutral-900 dark:text-white uppercase"
+                    className="w-full px-3.5 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 uppercase"
                   />
                   {formErrors.code && (
-                    <span className="text-red-500 text-[10px] block mt-0.5">{formErrors.code}</span>
+                    <span className="text-red-500 text-[10px] block mt-0.5">
+                      {formErrors.code}
+                    </span>
                   )}
                 </div>
 
                 {/* Discount and Expiry */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="font-bold text-neutral-600 dark:text-neutral-400 font-medium">Rate (% Off)</label>
+                    <label className="font-bold text-muted-foreground">
+                      Rate (% Off)
+                    </label>
                     <input
                       type="number"
-                      value={newDiscount}
-                      onChange={(e) => setNewDiscount(e.target.value)}
+                      value={discount}
+                      onChange={(e) => setDiscount(e.target.value)}
                       placeholder="e.g. 15"
-                      className="w-full px-3.5 py-2 border border-neutral-250 dark:border-neutral-800 rounded-xl bg-white dark:bg-[#0c0c0c] focus:outline-none focus:ring-2 focus:ring-[#007C74]/50 text-neutral-900 dark:text-white"
+                      className="w-full px-3.5 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                     {formErrors.discount && (
-                      <span className="text-red-500 text-[10px] block mt-0.5">{formErrors.discount}</span>
+                      <span className="text-red-500 text-[10px] block mt-0.5">
+                        {formErrors.discount}
+                      </span>
                     )}
                   </div>
-                  
+
                   <div className="space-y-1">
-                    <label className="font-bold text-neutral-600 dark:text-neutral-400 font-medium">Expiry Expiry</label>
+                    <label className="font-bold text-muted-foreground">
+                      Expiry Date
+                    </label>
                     <input
                       type="date"
-                      value={newExpiry}
-                      onChange={(e) => setNewExpiry(e.target.value)}
-                      className="w-full px-3.5 py-2 border border-neutral-250 dark:border-neutral-800 rounded-xl bg-white dark:bg-[#0c0c0c] focus:outline-none focus:ring-2 focus:ring-[#007C74]/50 text-neutral-900 dark:text-white"
+                      value={expiry}
+                      onChange={(e) => setExpiry(e.target.value)}
+                      className="w-full px-3.5 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                     {formErrors.expiry && (
-                      <span className="text-red-500 text-[10px] block mt-0.5">{formErrors.expiry}</span>
+                      <span className="text-red-500 text-[10px] block mt-0.5">
+                        {formErrors.expiry}
+                      </span>
                     )}
                   </div>
+                </div>
+
+                {/* Status Selection */}
+                <div className="space-y-1">
+                  <label className="font-bold text-muted-foreground">
+                    Status
+                  </label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as "Active" | "Expired")}
+                    className="w-full px-3.5 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
+                  >
+                    <option value="Active">Active & Acceptable</option>
+                    <option value="Expired">Expired / Disabled</option>
+                  </select>
                 </div>
 
                 {/* CTA Buttons */}
                 <div className="flex gap-2 justify-end pt-2">
                   <button
                     type="button"
-                    onClick={() => setIsAddModalOpen(false)}
-                    className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700/80 rounded-lg font-bold transition-colors cursor-pointer"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-lg font-bold transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 bg-[#007C74] hover:bg-[#006059] text-white font-bold rounded-lg transition-colors cursor-pointer shadow-md shadow-[#007c74]/15"
+                    className="px-5 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg transition-colors cursor-pointer shadow-md shadow-primary/15"
                   >
-                    Save Coupon
+                    {editingCoupon ? "Save Changes" : "Save Coupon"}
                   </button>
                 </div>
               </form>
@@ -238,6 +372,48 @@ export default function CouponsView() {
         )}
       </AnimatePresence>
 
+      {/* Deletion Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirm.isOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDeleteConfirm({ isOpen: false, id: "", code: "" })}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-card text-card-foreground border border-border p-6 rounded-2xl relative z-10 max-w-sm w-full space-y-4 shadow-xl text-xs"
+            >
+              <h3 className="text-base font-bold text-foreground">Confirm Deletion</h3>
+              <p className="text-muted-foreground">
+                Are you sure you want to delete the coupon code &quot;{deleteConfirm.code}&quot;? This action cannot be undone.
+              </p>
+              <div className="flex gap-2 justify-end pt-2">
+                <button
+                  onClick={() => setDeleteConfirm({ isOpen: false, id: "", code: "" })}
+                  className="px-3 py-2 bg-background hover:bg-muted text-foreground font-semibold rounded-lg border border-border transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={executeDelete}
+                  className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors cursor-pointer shadow-md shadow-red-650/10"
+                >
+                  Confirm Delete
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

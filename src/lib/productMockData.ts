@@ -721,3 +721,28 @@ export const mockProducts: TProduct[] = [
     ],
   },
 ];
+
+// Mutate mockProducts in-place at evaluated runtime client-side
+if (typeof window !== "undefined") {
+  const stored = localStorage.getItem("glassophite_products");
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      mockProducts.length = 0;
+      mockProducts.push(...parsed);
+    } catch (e) {
+      console.error("Error loading products from localStorage", e);
+    }
+  } else {
+    localStorage.setItem("glassophite_products", JSON.stringify(mockProducts));
+  }
+}
+
+export const saveProductsToStorage = (products: TProduct[]) => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("glassophite_products", JSON.stringify(products));
+    // Also keep active reference in-place synced for live UI transitions
+    mockProducts.length = 0;
+    mockProducts.push(...products);
+  }
+};

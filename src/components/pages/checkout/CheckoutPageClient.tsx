@@ -4,6 +4,7 @@
 import { useCart } from "@/hooks/use-cart"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
+import { getCoupons } from "@/lib/couponMockData"
 
 import CheckoutStepper from "@/components/pages/checkout/CheckoutStepper"
 import CheckoutSummary from "@/components/pages/checkout/CheckoutSummary"
@@ -126,14 +127,41 @@ export default function CheckoutPageClient() {
 
   // Handle coupon application
   const applyCoupon = (code: string) => {
-    // Simple coupon validation
-    if (code.toUpperCase() === "SAVE10") {
-      const discountAmount = subtotal * 0.1 // 10% discount
+    const coupons = getCoupons()
+    const found = coupons.find(
+      (c) => c.code === code.toUpperCase().trim()
+    )
+
+    if (found) {
+      if (found.status !== "Active") {
+        toast({
+          title: "Coupon is inactive",
+          description: "The coupon code you entered is no longer active.",
+          type: "destructive",
+        })
+        return
+      }
+
+      const expiryDate = new Date(found.expiry)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      if (expiryDate < today) {
+        toast({
+          title: "Coupon expired",
+          description: "The coupon code you entered has expired.",
+          type: "destructive",
+        })
+        return
+      }
+
+      const discountPercent = found.discount
+      const discountAmount = subtotal * (discountPercent / 100)
       setDiscount(discountAmount)
-      setCouponCode(code)
+      setCouponCode(found.code)
       toast({
         title: "Coupon applied",
-        description: "10% discount has been applied to your order.",
+        description: `${discountPercent}% discount has been applied to your order.`,
         type: "success",
       })
     } else {

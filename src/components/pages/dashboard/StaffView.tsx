@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, Shield, UserPlus } from "lucide-react";
+import { Trash2, Shield, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -16,6 +16,17 @@ const initialStaff = [
 export default function StaffView() {
   const [staff, setStaff] = useState(initialStaff);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Deletion confirmation overlay state
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    id: string;
+    name: string;
+  }>({
+    isOpen: false,
+    id: "",
+    name: "",
+  });
 
   // Form State
   const [newName, setNewName] = useState("");
@@ -75,11 +86,20 @@ export default function StaffView() {
     setIsAddModalOpen(false);
   };
 
-  const handleDeleteStaff = (id: string, name: string) => {
-    setStaff((prev) => prev.filter((stf) => stf.id !== id));
-    toast.success("Staff Profile Deleted", {
-      description: `${name} has been removed from control panels.`,
+  const triggerDeleteStaff = (id: string, name: string) => {
+    setDeleteConfirm({
+      isOpen: true,
+      id,
+      name,
     });
+  };
+
+  const executeDelete = () => {
+    setStaff((prev) => prev.filter((stf) => stf.id !== deleteConfirm.id));
+    toast.success("Staff Profile Deleted", {
+      description: `"${deleteConfirm.name}" has been removed from control panels.`,
+    });
+    setDeleteConfirm({ isOpen: false, id: "", name: "" });
   };
 
   return (
@@ -87,16 +107,16 @@ export default function StaffView() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="space-y-6"
+      className="space-y-6 text-foreground"
     >
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">Staff Management</h1>
-          <p className="text-xs text-neutral-500">Invite, configure, and monitor team profile access roles.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Staff Management</h1>
+          <p className="text-xs text-muted-foreground">Invite, configure, and monitor team profile access roles.</p>
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="px-4 py-2.5 bg-[#007C74] hover:bg-[#006059] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shadow-md shadow-[#007c74]/10"
+          className="px-4 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shadow-md shadow-primary/10"
         >
           <UserPlus className="w-4 h-4" />
           <span>Add Member</span>
@@ -104,36 +124,36 @@ export default function StaffView() {
       </div>
 
       {/* Staff Table */}
-      <div className="glass-panel rounded-2xl overflow-hidden overflow-x-auto">
+      <div className="glass-panel rounded-2xl border border-border overflow-hidden overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-neutral-100 dark:bg-neutral-850 text-neutral-500 uppercase tracking-wider font-extrabold text-[10px] border-b border-neutral-200 dark:border-neutral-800">
+            <tr className="bg-muted/40 text-muted-foreground uppercase tracking-wider font-extrabold text-[10px] border-b border-border">
               <th className="p-4">Name</th>
               <th className="p-4">Role Title</th>
               <th className="p-4">Access Level</th>
               <th className="p-4 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+          <tbody className="divide-y divide-border">
             {staff.map((stf) => (
-              <tr key={stf.id} className="hover:bg-neutral-100/50 dark:hover:bg-neutral-800/30 transition-colors">
+              <tr key={stf.id} className="hover:bg-muted/20 transition-colors">
                 <td className="p-4">
-                  <p className="font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                    <Shield className="w-3.5 h-3.5 text-[#007C74]" />
+                  <p className="font-bold text-foreground flex items-center gap-2">
+                    <Shield className="w-3.5 h-3.5 text-primary" />
                     <span>{stf.name}</span>
                   </p>
-                  <p className="text-[10px] text-neutral-400 font-medium">{stf.email}</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">{stf.email}</p>
                 </td>
-                <td className="p-4 font-semibold text-neutral-600 dark:text-neutral-300">{stf.role}</td>
+                <td className="p-4 font-semibold text-muted-foreground">{stf.role}</td>
                 <td className="p-4">
-                  <span className="px-2.5 py-0.5 bg-neutral-150 dark:bg-neutral-800 text-[10px] font-bold rounded text-neutral-700 dark:text-neutral-355">
+                  <span className="px-2.5 py-0.5 bg-muted text-[10px] font-bold rounded text-foreground border border-border">
                     {stf.access}
                   </span>
                 </td>
                 <td className="p-4 flex justify-center gap-1.5">
                   <button
-                    onClick={() => handleDeleteStaff(stf.id, stf.name)}
-                    className="p-1.5 bg-neutral-100 hover:bg-red-500/10 dark:bg-neutral-800 dark:hover:bg-red-550/20 text-neutral-500 hover:text-red-550 dark:hover:text-red-400 rounded-lg border border-neutral-200 dark:border-neutral-850 transition-colors cursor-pointer"
+                    onClick={() => triggerDeleteStaff(stf.id, stf.name)}
+                    className="p-1.5 bg-muted hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded-lg border border-border transition-colors cursor-pointer"
                     title="Revoke access"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -164,23 +184,23 @@ export default function StaffView() {
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="glass-panel max-w-sm w-full p-6 rounded-2xl relative z-10 space-y-4 border border-[#007C74]/25 shadow-2xl bg-white dark:bg-neutral-900"
+              className="bg-card text-card-foreground p-6 rounded-2xl relative z-10 space-y-4 border border-border shadow-2xl max-w-sm w-full"
             >
-              <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-[#007C74]" />
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-primary" />
                 <span>Invite Team Member</span>
               </h3>
               
               <form onSubmit={handleAddStaff} className="space-y-4 text-xs">
                 {/* Full Name */}
                 <div className="space-y-1">
-                  <label className="font-bold text-neutral-600 dark:text-neutral-400 font-medium">Full Name</label>
+                  <label className="font-bold text-muted-foreground font-medium">Full Name</label>
                   <input
                     type="text"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="e.g. Shakil Ahmed"
-                    className="w-full px-3.5 py-2 border border-neutral-250 dark:border-neutral-800 rounded-xl bg-white dark:bg-[#0c0c0c] focus:outline-none focus:ring-2 focus:ring-[#007C74]/50 text-neutral-900 dark:text-white"
+                    className="w-full px-3.5 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                   {formErrors.name && (
                     <span className="text-red-500 text-[10px] block mt-0.5">{formErrors.name}</span>
@@ -189,13 +209,13 @@ export default function StaffView() {
 
                 {/* Corporate Email */}
                 <div className="space-y-1">
-                  <label className="font-bold text-neutral-600 dark:text-neutral-400 font-medium">Corporate Email</label>
+                  <label className="font-bold text-muted-foreground font-medium">Corporate Email</label>
                   <input
                     type="email"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="e.g. shakil@glassophite.com"
-                    className="w-full px-3.5 py-2 border border-neutral-250 dark:border-neutral-800 rounded-xl bg-white dark:bg-[#0c0c0c] focus:outline-none focus:ring-2 focus:ring-[#007C74]/50 text-neutral-900 dark:text-white"
+                    className="w-full px-3.5 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                   {formErrors.email && (
                     <span className="text-red-500 text-[10px] block mt-0.5">{formErrors.email}</span>
@@ -204,11 +224,11 @@ export default function StaffView() {
 
                 {/* Role dropdown */}
                 <div className="space-y-1">
-                  <label className="font-bold text-neutral-600 dark:text-neutral-400 font-medium">Administrative Role</label>
+                  <label className="font-bold text-muted-foreground font-medium">Administrative Role</label>
                   <select
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value)}
-                    className="w-full px-3.5 py-2 border border-neutral-250 dark:border-neutral-800 rounded-xl bg-white dark:bg-[#0c0c0c] focus:outline-none focus:ring-2 focus:ring-[#007C74]/50 text-neutral-900 dark:text-white"
+                    className="w-full px-3.5 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
                   >
                     <option value="Super Admin">Super Admin (Full Access)</option>
                     <option value="Content Editor">Content Editor (Catalog Access)</option>
@@ -221,13 +241,13 @@ export default function StaffView() {
                   <button
                     type="button"
                     onClick={() => setIsAddModalOpen(false)}
-                    className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700/80 rounded-lg font-bold transition-colors cursor-pointer"
+                    className="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-lg font-bold transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 bg-[#007C74] hover:bg-[#006059] text-white font-bold rounded-lg transition-colors cursor-pointer shadow-md shadow-[#007c74]/15"
+                    className="px-5 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg transition-colors cursor-pointer shadow-md shadow-primary/15"
                   >
                     Invite Staff
                   </button>
@@ -238,6 +258,48 @@ export default function StaffView() {
         )}
       </AnimatePresence>
 
+      {/* Deletion Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirm.isOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDeleteConfirm({ isOpen: false, id: "", name: "" })}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-card text-card-foreground border border-border p-6 rounded-2xl relative z-10 max-w-sm w-full space-y-4 shadow-xl text-xs"
+            >
+              <h3 className="text-base font-bold text-foreground">Confirm Deletion</h3>
+              <p className="text-muted-foreground">
+                Are you sure you want to delete the staff profile of &quot;{deleteConfirm.name}&quot;? This will revoke all dashboard privileges.
+              </p>
+              <div className="flex gap-2 justify-end pt-2">
+                <button
+                  onClick={() => setDeleteConfirm({ isOpen: false, id: "", name: "" })}
+                  className="px-3 py-2 bg-background hover:bg-muted text-foreground font-semibold rounded-lg border border-border transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={executeDelete}
+                  className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors cursor-pointer shadow-md shadow-red-600/10"
+                >
+                  Confirm Delete
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

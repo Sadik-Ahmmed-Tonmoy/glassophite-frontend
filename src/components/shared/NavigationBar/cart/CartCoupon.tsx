@@ -4,11 +4,12 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Tag, ChevronRight, X, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { getCoupons, TCoupon } from "@/lib/couponMockData"
 
 export default function CartCoupon() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [couponCode, setCouponCode] = useState("")
-  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null)
+  const [appliedCoupon, setAppliedCoupon] = useState<TCoupon | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const handleApplyCoupon = () => {
@@ -17,9 +18,27 @@ export default function CartCoupon() {
       return
     }
 
-    // Simulate API call to validate coupon
-    if (couponCode.toUpperCase() === "SAVE10") {
-      setAppliedCoupon(couponCode)
+    const coupons = getCoupons()
+    const found = coupons.find(
+      (c) => c.code === couponCode.toUpperCase().trim()
+    )
+
+    if (found) {
+      if (found.status !== "Active") {
+        setError("This coupon is no longer active")
+        return
+      }
+
+      const expiryDate = new Date(found.expiry)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      if (expiryDate < today) {
+        setError("This coupon has expired")
+        return
+      }
+
+      setAppliedCoupon(found)
       setError(null)
       setCouponCode("")
       setIsExpanded(false)
@@ -40,7 +59,7 @@ export default function CartCoupon() {
             <Check size={18} className="text-green-600 mr-2" />
             <div>
               <p className="text-sm font-medium text-green-800">Coupon Applied</p>
-              <p className="text-xs text-green-600">&quot;{appliedCoupon}&quot; - 10% off your order</p>
+              <p className="text-xs text-green-600">&quot;{appliedCoupon.code}&quot; - {appliedCoupon.discount}% off your order</p>
             </div>
           </div>
           <button
@@ -93,7 +112,7 @@ export default function CartCoupon() {
                     </Button>
                   </div>
                   {error && <p className="text-xs text-red-500 mt-1 ml-1">{error}</p>}
-                  <p className="text-xs text-gray-500 mt-2">Try &quot;SAVE10&quot; for 10% off your order</p>
+                  <p className="text-xs text-gray-500 mt-2">Try &quot;GLASSOPHITE10&quot; for 10% off your order</p>
                 </div>
               </motion.div>
             )}

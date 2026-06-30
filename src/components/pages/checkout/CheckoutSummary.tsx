@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp, Tag } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import { useState } from "react";
+import { getCoupons } from "@/lib/couponMockData";
 
 interface CheckoutSummaryProps {
   items: CartItem[];
@@ -34,6 +35,11 @@ export default function CheckoutSummary({
   const [isItemsExpanded, setIsItemsExpanded] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [isCouponExpanded, setIsCouponExpanded] = useState(false);
+
+  // Dynamic coupon lookup
+  const coupons = getCoupons();
+  const appliedCouponObj = coupons.find((c) => c.code === couponCode);
+  const discountRate = appliedCouponObj ? appliedCouponObj.discount : 10;
 
   // Theme styles
   const themeStyles = {
@@ -227,7 +233,7 @@ export default function CheckoutSummary({
                     Coupon Applied
                   </p>
                   <p className={`text-xs ${styles.couponText}`}>
-                    &quot;{couponCode}&quot; - 10% off your order
+                    &quot;{couponCode}&quot; - {discountRate}% off your order
                   </p>
                 </div>
               </div>
@@ -285,7 +291,7 @@ export default function CheckoutSummary({
                       className={`text-xs ${styles.textMutedLighter} mt-2`}
                       data-translate="checkout.couponHint"
                     >
-                      Try &quot;SAVE10&quot; for 10% off your order
+                      Try &quot;GLASSOPHITE10&quot; for 10% off your order
                     </p>
                   </motion.div>
                 )}

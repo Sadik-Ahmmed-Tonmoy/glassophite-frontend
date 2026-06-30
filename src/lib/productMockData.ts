@@ -365,7 +365,7 @@ export const mockProducts: TProduct[] = [
   },
   {
     id: "3",
-    img: "https://i.ibb.co.com/red-image1.png",
+    img: "/glasses/aviator/glasses_left_45.png",
     title: "Red Horizon Sunglasses",
     color: "#e0241b",
     inStock: true,
@@ -434,7 +434,7 @@ export const mockProducts: TProduct[] = [
   },
   {
     id: "4",
-    img: "https://i.ibb.co.com/silver-edition.png",
+    img: "/glasses/aviator/glasses_front.png",
     title: "Silver Edition Sunglasses",
     color: "#b0b0b0",
     inStock: true,
@@ -473,7 +473,7 @@ export const mockProducts: TProduct[] = [
         shortDescription: "A stylish silver frame for a bold, modern look.",
         imgList: [
           {
-            image: "https://i.ibb.co.com/silver-edition.png",
+            image: "/glasses/aviator/glasses_front.png",
             id: "411",
           },
         ],
@@ -482,7 +482,7 @@ export const mockProducts: TProduct[] = [
   },
   {
     id: "5",
-    img: "https://i.ibb.co.com/gold-horizon.png",
+    img: "/glasses/aviator/glasses_right_15.png",
     title: "Gold Horizon Sunglasses",
     color: "#d4af37",
     inStock: true,
@@ -521,7 +521,7 @@ export const mockProducts: TProduct[] = [
         shortDescription: "A stunning gold frame that exudes luxury.",
         imgList: [
           {
-            image: "https://i.ibb.co.com/gold-horizon.png",
+            image: "/glasses/aviator/glasses_right_15.png",
             id: "511",
           },
         ],
@@ -530,7 +530,7 @@ export const mockProducts: TProduct[] = [
   },
   {
     id: "6",
-    img: "https://i.ibb.co.com/black-knight.png",
+    img: "/glasses/aviator/glasses_right_30.png",
     title: "Black Knight Sunglasses",
     color: "#000000",
     inStock: true,
@@ -569,7 +569,7 @@ export const mockProducts: TProduct[] = [
         shortDescription: "A sleek black frame for a modern style.",
         imgList: [
           {
-            image: "https://i.ibb.co.com/black-knight.png",
+            image: "/glasses/aviator/glasses_right_30.png",
             id: "611",
           },
         ],
@@ -578,7 +578,7 @@ export const mockProducts: TProduct[] = [
   },
   {
     id: "7",
-    img: "https://i.ibb.co.com/clear-vision.png",
+    img: "/glasses/aviator/glasses_left_15.png",
     title: "Clear Vision Sunglasses",
     color: "#f4f4f4",
     inStock: false,
@@ -617,7 +617,7 @@ export const mockProducts: TProduct[] = [
         shortDescription: "A stylish transparent frame that matches any outfit.",
         imgList: [
           {
-            image: "https://i.ibb.co.com/clear-vision.png",
+            image: "/glasses/aviator/glasses_left_15.png",
             id: "711",
           },
         ],
@@ -626,7 +626,7 @@ export const mockProducts: TProduct[] = [
   },
   {
     id: "8",
-    img: "https://i.ibb.co.com/silver-mirage.png",
+    img: "/glasses/aviator/glasses_left_30.png",
     title: "Silver Mirage Sunglasses",
     color: "#c0c0c0",
     inStock: true,
@@ -665,7 +665,7 @@ export const mockProducts: TProduct[] = [
         shortDescription: "A sleek silver frame for a futuristic look.",
         imgList: [
           {
-            image: "https://i.ibb.co.com/silver-mirage.png",
+            image: "/glasses/aviator/glasses_left_30.png",
             id: "811",
           },
         ],
@@ -674,7 +674,7 @@ export const mockProducts: TProduct[] = [
   },
   {
     id: "9",
-    img: "https://i.ibb.co.com/black-ace.png",
+    img: "/glasses/aviator/glasses_right_45.png",
     title: "Black Ace Sunglasses",
     color: "#000000",
     inStock: false,
@@ -713,7 +713,7 @@ export const mockProducts: TProduct[] = [
         shortDescription: "A bold pair of sunglasses with a unique black design.",
         imgList: [
           {
-            image: "https://i.ibb.co.com/black-ace.png",
+            image: "/glasses/aviator/glasses_right_45.png",
             id: "911",
           },
         ],
@@ -722,14 +722,40 @@ export const mockProducts: TProduct[] = [
   },
 ];
 
+const deadImageFallbacks: Record<string, string> = {
+  "https://i.ibb.co.com/red-image1.png": "/glasses/aviator/glasses_left_45.png",
+  "https://i.ibb.co.com/silver-edition.png": "/glasses/aviator/glasses_front.png",
+  "https://i.ibb.co.com/gold-horizon.png": "/glasses/aviator/glasses_right_15.png",
+  "https://i.ibb.co.com/black-knight.png": "/glasses/aviator/glasses_right_30.png",
+  "https://i.ibb.co.com/clear-vision.png": "/glasses/aviator/glasses_left_15.png",
+  "https://i.ibb.co.com/silver-mirage.png": "/glasses/aviator/glasses_left_30.png",
+  "https://i.ibb.co.com/black-ace.png": "/glasses/aviator/glasses_right_45.png",
+};
+
+const getStableImageSrc = (src: string) => deadImageFallbacks[src] || src;
+
+const normalizeProductImages = (products: TProduct[]) =>
+  products.map((product) => ({
+    ...product,
+    img: getStableImageSrc(product.img),
+    variants: product.variants.map((variant) => ({
+      ...variant,
+      imgList: variant.imgList.map((image) => ({
+        ...image,
+        image: getStableImageSrc(image.image),
+      })),
+    })),
+  }));
+
 // Mutate mockProducts in-place at evaluated runtime client-side
 if (typeof window !== "undefined") {
   const stored = localStorage.getItem("glassophite_products");
   if (stored) {
     try {
-      const parsed = JSON.parse(stored);
+      const parsed = normalizeProductImages(JSON.parse(stored));
       mockProducts.length = 0;
       mockProducts.push(...parsed);
+      localStorage.setItem("glassophite_products", JSON.stringify(parsed));
     } catch (e) {
       console.error("Error loading products from localStorage", e);
     }
@@ -740,9 +766,10 @@ if (typeof window !== "undefined") {
 
 export const saveProductsToStorage = (products: TProduct[]) => {
   if (typeof window !== "undefined") {
-    localStorage.setItem("glassophite_products", JSON.stringify(products));
+    const normalizedProducts = normalizeProductImages(products);
+    localStorage.setItem("glassophite_products", JSON.stringify(normalizedProducts));
     // Also keep active reference in-place synced for live UI transitions
     mockProducts.length = 0;
-    mockProducts.push(...products);
+    mockProducts.push(...normalizedProducts);
   }
 };

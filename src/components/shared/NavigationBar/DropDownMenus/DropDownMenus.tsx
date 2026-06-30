@@ -7,7 +7,7 @@ import { Menu, MenuItem } from "@/components/ui/navbar-menu";
 import ScrollButton from "@/components/ui/ScrollButton/ScrollButton";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FieldValues } from "react-hook-form";
 import { IoSearchSharp } from "react-icons/io5";
 
@@ -73,7 +73,7 @@ const DropDownMenus = () => {
     }
   }, [watchSearch, brandList]);
 
-  const data = [
+  const data = useMemo<Brand[]>(() => [
     {
       id: 1,
       caption: "A",
@@ -282,7 +282,7 @@ const DropDownMenus = () => {
         { id: 262, title: "zucchini" },
       ],
     },
-  ];
+  ], []);
 
   useEffect(() => {
     if (data) {
@@ -291,7 +291,7 @@ const DropDownMenus = () => {
     // if (data) {
     //     setTopBrandListArr([...data.list]);
     // }
-  }, []);
+  }, [data]);
 
   const alphabetList = [
     "A",

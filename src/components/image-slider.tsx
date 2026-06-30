@@ -226,9 +226,12 @@ export default function ImageSlider({ images, inStock, selectedVariantColor }: I
           )}
         >
           <div className="h-full w-full">
-            <img
+            <Image
               src={images[currentIndex]?.image || "/placeholder.svg?height=450&width=450"}
               alt={`Zoomed product image ${currentIndex + 1}`}
+              width={800}
+              height={600}
+              unoptimized
               style={customStyle}
               className="rounded-lg"
             />

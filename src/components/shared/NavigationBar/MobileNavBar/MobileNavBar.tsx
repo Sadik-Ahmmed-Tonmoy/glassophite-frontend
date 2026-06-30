@@ -7,7 +7,6 @@ import {
   NavbarContent,
   NavbarMenu,
   NavbarMenuItem,
-  NavbarMenuToggle,
 } from "@nextui-org/react";
 import Link from "next/link";
 import { Heart, Menu, X } from "lucide-react";

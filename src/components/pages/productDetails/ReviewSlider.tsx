@@ -26,9 +26,7 @@ export default function ReviewSlider({ reviews }: ReviewSliderProps) {
   }
 
   const goToNext = () => {
-    const isLastSlide = currentIndex === reviews.length - 1
-    const newIndex = isLastSlide ? 0 : currentIndex + 1
-    setCurrentIndex(newIndex)
+    setCurrentIndex((prev) => (prev === reviews.length - 1 ? 0 : prev + 1))
   }
 
   const goToSlide = (index: number) => {
@@ -40,11 +38,11 @@ export default function ReviewSlider({ reviews }: ReviewSliderProps) {
     if (!autoplay || reviews.length <= 1) return
 
     const interval = setInterval(() => {
-      goToNext()
+      setCurrentIndex((prev) => (prev === reviews.length - 1 ? 0 : prev + 1))
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [currentIndex, autoplay, reviews.length])
+  }, [autoplay, reviews.length])
 
   if (reviews.length === 0) {
     return <p className="text-center py-8 text-gray-500">No reviews yet.</p>

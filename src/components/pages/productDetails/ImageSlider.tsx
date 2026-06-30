@@ -5,6 +5,7 @@ import type React from "react";
 import { MyButton } from "@/components/ui/buttons/MyButton/MyButton";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, XCircle } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { FaSearchengin } from "react-icons/fa6";
 import { TImage } from "@/types/types";
@@ -153,11 +154,12 @@ export default function ImageSlider({ images, inStock, selectedVariantColor }: I
                 blurDataURL={images[currentIndex]?.image}
                 className="object-center h-full w-full rounded-lg"
               /> */}
-              <img
+              <Image
                 src={images[currentIndex]?.image || "/placeholder.svg?height=450&width=450"}
                 alt={`Product image ${currentIndex + 1}`}
-                className="object-center h-full w-full rounded-lg"
-                loading="lazy"
+                fill
+                sizes="(max-width: 1280px) 100vw, 500px"
+                className="object-cover object-center rounded-lg"
               />
             </div>
           )}
@@ -207,9 +209,12 @@ export default function ImageSlider({ images, inStock, selectedVariantColor }: I
           )}
         >
           <div className="h-full w-full">
-            <img
+            <Image
               src={images[currentIndex]?.image || "/placeholder.svg?height=450&width=450"}
               alt={`Zoomed product image ${currentIndex + 1}`}
+              width={800}
+              height={800}
+              unoptimized
               style={customStyle}
               className="rounded-lg"
             />
@@ -238,7 +243,13 @@ export default function ImageSlider({ images, inStock, selectedVariantColor }: I
                 index === currentIndex ? "border-2 border-black" : "border border-gray-200 opacity-70 hover:opacity-100"
               }`}
             >
-              <img src={img.image || "/placeholder.svg?height=80&width=80"} alt={`Thumbnail ${index + 1}`} className="object-cover " />
+              <Image
+                src={img.image || "/placeholder.svg?height=80&width=80"}
+                alt={`Thumbnail ${index + 1}`}
+                fill
+                sizes="(max-width: 768px) 56px, 80px"
+                className="object-cover"
+              />
 
               {/* Thumbnail Stock Out Indicator */}
               {!inStock && (

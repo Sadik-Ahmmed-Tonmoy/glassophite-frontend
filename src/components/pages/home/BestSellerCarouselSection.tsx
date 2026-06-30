@@ -47,8 +47,6 @@ export default function BestSellerCarouselSection() {
 
   // Track dynamic swiper index in React to re-render custom dots
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isBeginning, setIsBeginning] = useState(true);
-  const [isEnd, setIsEnd] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const isLarge = useLargeScreen();
 
@@ -107,14 +105,10 @@ export default function BestSellerCarouselSection() {
 
   const handleSwiperInit = (swiper: SwiperType) => {
     setSwiperInstance(swiper);
-    setIsBeginning(swiper.isBeginning);
-    setIsEnd(swiper.isEnd);
     setActiveIndex(swiper.realIndex);
   };
 
   const handleSlideChange = (swiper: SwiperType) => {
-    setIsBeginning(swiper.isBeginning);
-    setIsEnd(swiper.isEnd);
     setActiveIndex(swiper.realIndex);
   };
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, Shield, UserPlus, X } from "lucide-react";
+import { Trash2, Shield, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 

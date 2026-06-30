@@ -8,6 +8,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { UserCircle, Settings, ShoppingBag, Bell, ChevronRight, Menu, X, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 
 const sidebarItems = [
   {
@@ -215,7 +216,13 @@ function SidebarContent({
       <div className={cn("p-6 border-b", styles.border)}>
         <div className="flex items-center space-x-3">
           <div className={cn("relative w-12 h-12 rounded-full overflow-hidden", isDark ? "bg-white/10" : "bg-primary/10")}>
-            <img src="/placeholder.svg?height=48&width=48" alt="Profile" className="w-full h-full object-cover" />
+            <Image
+              src="/placeholder.svg?height=48&width=48"
+              alt="Profile"
+              fill
+              sizes="48px"
+              className="object-cover"
+            />
           </div>
           <div>
             <h2 className={cn("font-semibold", styles.text)} data-translate="profile.name">John Doe</h2>

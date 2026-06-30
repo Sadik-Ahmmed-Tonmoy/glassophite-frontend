@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "next-themes"
 import { Camera, Upload, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 
 export default function ProfilePicture() {
   const { theme } = useTheme()
@@ -115,7 +116,14 @@ export default function ProfilePicture() {
           onMouseLeave={() => setIsHovering(false)}
         >
           {profileImage ? (
-            <img src={profileImage || "/placeholder.svg"} alt="Profile" className="w-full h-full object-cover" />
+            <Image
+              src={profileImage || "/placeholder.svg"}
+              alt="Profile"
+              fill
+              sizes="160px"
+              unoptimized
+              className="object-cover"
+            />
           ) : (
             <div className={cn("w-full h-full flex items-center justify-center", styles.iconBg)}>
               <Camera size={40} className={styles.placeholderIcon} />

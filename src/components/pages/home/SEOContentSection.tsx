@@ -47,14 +47,6 @@ export default function SEOContentSection() {
   const y2 = useTransform(scrollYProgress, [0, 1], [0, 50]);
   const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
 
-  // Auto-rotate guides
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveGuide((prev) => (prev + 1) % buyingGuides.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
   // SEO Content Categories
   const contentTabs = [
     { id: "about", name: "About Glassophite", icon: Info },
@@ -182,6 +174,14 @@ export default function SEOContentSection() {
       author: "Rahman Ahmed",
     },
   ];
+
+  // Auto-rotate guides
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveGuide((prev) => (prev + 1) % buyingGuides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [buyingGuides.length]);
 
   // FAQs
   const faqs = [

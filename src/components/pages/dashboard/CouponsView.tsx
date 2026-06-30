@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Tag, Pencil, X } from "lucide-react";
+import { Plus, Trash2, Tag, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { getCoupons, saveCoupons, TCoupon } from "@/lib/couponMockData";

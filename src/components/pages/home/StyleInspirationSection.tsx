@@ -45,14 +45,6 @@ export default function StyleInspirationSection() {
   const y2 = useTransform(scrollYProgress, [0, 1], [0, 100]);
   const rotate = useTransform(scrollYProgress, [0, 1], [0, 360]);
 
-  // Auto-rotate looks
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveLook((prev) => (prev + 1) % styleLooks.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, []);
-
   // Style categories
   const categories = [
     { id: "all", name: "All Styles", icon: Sparkles },
@@ -136,6 +128,14 @@ export default function StyleInspirationSection() {
       colors: ["#f4f4f4", "#c0c0c0", "#b0b0b0"],
     },
   ];
+
+  // Auto-rotate looks
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveLook((prev) => (prev + 1) % styleLooks.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [styleLooks.length]);
 
   // Filter looks based on category
   const filteredLooks = activeCategory === "all" 

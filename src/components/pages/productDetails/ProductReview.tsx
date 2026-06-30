@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // Import additional shadcn components
 import {
@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { TReview } from "@/types/types";
+import Image from "next/image";
 
 interface ProductReviewProps {
   productId: string;
@@ -452,17 +453,17 @@ export default function ProductReview({
     setShowImageModal(true);
   };
 
-  const goToPrevImage = () => {
+  const goToPrevImage = useCallback(() => {
     setCurrentImageIndex((prev) =>
       prev === 0 ? uploadedImages.length - 1 : prev - 1,
     );
-  };
+  }, [uploadedImages.length]);
 
-  const goToNextImage = () => {
+  const goToNextImage = useCallback(() => {
     setCurrentImageIndex((prev) =>
       prev === uploadedImages.length - 1 ? 0 : prev + 1,
     );
-  };
+  }, [uploadedImages.length]);
 
   // Handle review image click
   const handleReviewImageClick = (review: TReview, imageIndex: number) => {
@@ -486,7 +487,7 @@ export default function ProductReview({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showImageModal]);
+  }, [goToNextImage, goToPrevImage, showImageModal]);
 
   // Framer Motion variants
   const fadeIn = {
@@ -773,10 +774,13 @@ export default function ProductReview({
                             className={`relative h-16 w-16 rounded-md border ${styles.border} overflow-hidden cursor-pointer group`}
                             onClick={() => handleReviewImageClick(review, idx)}
                           >
-                            <img
+                            <Image
                               src={image || "/placeholder.svg"}
                               alt={`Review image ${idx + 1}`}
-                              className="h-full w-full object-cover"
+                              fill
+                              sizes="64px"
+                              unoptimized
+                              className="object-cover"
                             />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
                               <Eye className="h-4 w-4 text-white" />
@@ -898,10 +902,13 @@ export default function ProductReview({
                         transition={{ duration: 0.3 }}
                         className="absolute inset-0 flex items-center justify-center"
                       >
-                        <img
+                        <Image
                           src={image || "/placeholder.svg"}
                           alt={`Image ${index + 1}`}
-                          className="max-h-full max-w-full object-contain"
+                          fill
+                          sizes="(max-width: 768px) 100vw, 896px"
+                          unoptimized
+                          className="object-contain"
                         />
                       </motion.div>
                     ),
@@ -942,16 +949,19 @@ export default function ProductReview({
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`h-16 w-16 rounded-md overflow-hidden border-2 transition-all duration-200 transform ${
+                      className={`relative h-16 w-16 rounded-md overflow-hidden border-2 transition-all duration-200 transform ${
                         index === currentImageIndex
                           ? "border-blue-500 scale-110 shadow-lg"
                           : "border-transparent opacity-70 hover:opacity-100"
                       }`}
                     >
-                      <img
+                      <Image
                         src={image || "/placeholder.svg"}
                         alt={`Thumbnail ${index + 1}`}
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="64px"
+                        unoptimized
+                        className="object-cover"
                       />
                     </button>
                   ))}
@@ -1189,7 +1199,7 @@ export default function ProductReview({
                             className="relative group transform transition-all duration-200 hover:scale-105"
                           >
                             <div
-                              className="h-full w-full rounded-md overflow-hidden border cursor-pointer shadow-sm hover:shadow-md transition-all duration-300"
+                              className="relative h-24 w-full rounded-md overflow-hidden border cursor-pointer shadow-sm hover:shadow-md transition-all duration-300"
                               style={{
                                 borderColor: isDark
                                   ? "rgba(255,255,255,0.1)"
@@ -1197,10 +1207,13 @@ export default function ProductReview({
                               }}
                               onClick={() => openImageModal(index)}
                             >
-                              <img
+                              <Image
                                 src={image || "/placeholder.svg"}
                                 alt={`Preview ${index + 1}`}
-                                className="h-full w-full object-contain transition-opacity duration-300"
+                                fill
+                                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                                unoptimized
+                                className="object-contain transition-opacity duration-300"
                               />
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
                                 <Eye className="h-6 w-6 text-white" />

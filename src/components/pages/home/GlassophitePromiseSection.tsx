@@ -52,14 +52,6 @@ export default function GlassophitePromiseSection() {
   const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1, 0.9]);
   const rotate = useTransform(scrollYProgress, [0, 1], [0, 360]);
 
-  // Auto-rotate promises
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActivePromise((prev) => (prev + 1) % promises.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
   // Promise categories
   const promiseCategories = [
     { id: "quality", name: "Quality", icon: Medal },
@@ -167,6 +159,14 @@ export default function GlassophitePromiseSection() {
         "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop",
     },
   ];
+
+  // Auto-rotate promises
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActivePromise((prev) => (prev + 1) % promises.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [promises.length]);
 
   // Service guarantees
   const guarantees = [

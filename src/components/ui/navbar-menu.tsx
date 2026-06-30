@@ -35,13 +35,13 @@ export const MenuItem = ({
       <motion.p transition={{ duration: 0.3 }} className="cursor-pointer text-black hover:opacity-[0.9] dark:text-white">
         {href ? (
           <Link href={href}>
-            <span className={`${active === item ? "text-[#00a76b]" : ""} relative group font-medium`}>
+            <span className={`${active === item ? "text-[#00a76b]" : ""} ${item.toLowerCase().includes("sale") ? "text-red-500 font-extrabold" : ""} relative group font-medium`}>
               {item}
               <span className="absolute left-0 -bottom-5 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
             </span>
           </Link>
         ) : (
-          <span className={`${active === item ? "text-[#00a76b]" : ""} relative group font-medium`}>
+          <span className={`${active === item ? "text-[#00a76b]" : ""} ${item.toLowerCase().includes("sale") ? "text-red-500 font-extrabold" : ""} relative group font-medium`}>
             {item}
             <span className="absolute left-0 -bottom-5 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
           </span>

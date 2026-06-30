@@ -529,10 +529,85 @@ const DropDownMenus = () => {
         },
       ],
     },
+    {
+      imageUrl: "https://example.com/images/contact-lens.jpg",
+      menu: "Contact Lens",
+      subMenu: [
+        {
+          subMenuTitle: "Disposable Lenses",
+          imageUrl: "https://images.unsplash.com/photo-1516211697506-8360bd773497?w=500&q=80",
+          chieldMenu: [{ chieldMenuTitle: "Daily Disposables" }, { chieldMenuTitle: "Weekly Disposables" }, { chieldMenuTitle: "Monthly Disposables" }],
+          descriptions: "Convenient and hygienic contact lens options for everyday use."
+        },
+        {
+          subMenuTitle: "Colored Contact Lenses",
+          imageUrl: "https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=500&q=80",
+          chieldMenu: [{ chieldMenuTitle: "Natural Colors" }, { chieldMenuTitle: "Cosplay Lenses" }, { chieldMenuTitle: "Prescription Colored" }],
+          descriptions: "Change your eye color with premium safety approved lenses."
+        },
+        {
+          subMenuTitle: "Lens Solutions & Care",
+          imageUrl: "https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=500&q=80",
+          chieldMenu: [{ chieldMenuTitle: "Multi-Purpose Solutions" }, { chieldMenuTitle: "Travel Packs" }, { chieldMenuTitle: "Lens Cases" }],
+          descriptions: "Essential care items to keep your contact lenses safe and sanitized."
+        }
+      ]
+    },
+    {
+      imageUrl: "https://example.com/images/accessories.jpg",
+      menu: "Accessories",
+      subMenu: [
+        {
+          subMenuTitle: "Storage Cases",
+          imageUrl: "https://images.unsplash.com/photo-1591076482161-42ce6da69f67?w=500&q=80",
+          chieldMenu: [{ chieldMenuTitle: "Hard Cases" }, { chieldMenuTitle: "Soft Pouches" }, { chieldMenuTitle: "Double Cases" }],
+          descriptions: "Protective cases to safeguard your eyewear from scratches and drops."
+        },
+        {
+          subMenuTitle: "Cleaning Solutions",
+          imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500&q=80",
+          chieldMenu: [{ chieldMenuTitle: "Microfiber Cloths" }, { chieldMenuTitle: "Cleaning Sprays" }, { chieldMenuTitle: "Lens Wipes" }],
+          descriptions: "Keep your lenses crystal clear and streak-free with premium formulas."
+        },
+        {
+          subMenuTitle: "Chains & Accessories",
+          imageUrl: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=500&q=80",
+          chieldMenu: [{ chieldMenuTitle: "Anti-Slip Cords" }, { chieldMenuTitle: "Fashion Chains" }, { chieldMenuTitle: "Repair Tool Kits" }],
+          descriptions: "Stay stylish and secure your glasses with adjustable premium chains."
+        }
+      ]
+    },
+    {
+      imageUrl: "https://example.com/images/clearance-sale.jpg",
+      menu: "Clearance SALE",
+      subMenu: [
+        {
+          subMenuTitle: "Flat Discounts",
+          imageUrl: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=500&q=80",
+          chieldMenu: [{ chieldMenuTitle: "Flat 50% Off" }, { chieldMenuTitle: "Flat 30% Off" }, { chieldMenuTitle: "Flat 70% Off" }],
+          descriptions: "Grab last season's top sellers at unbelievable flat discounts."
+        },
+        {
+          subMenuTitle: "Special Bundles",
+          imageUrl: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=500&q=80",
+          chieldMenu: [{ chieldMenuTitle: "Buy 1 Get 1 Free" }, { chieldMenuTitle: "Pack of 2 Deals" }, { chieldMenuTitle: "Gift Bundles" }],
+          descriptions: "Get the best value deals with custom curated eyewear bundles."
+        },
+        {
+          subMenuTitle: "Budget Deals",
+          imageUrl: "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=500&q=80",
+          chieldMenu: [{ chieldMenuTitle: "Under ৳1500" }, { chieldMenuTitle: "Under ৳3000" }, { chieldMenuTitle: "Clearance Frames" }],
+          descriptions: "Shop premium designer styles that fit budget checkouts perfectly."
+        }
+      ]
+    }
   ];
 
   const sunglasses = fakeData.find((item) => item.menu === "Sunglasses");
   const opticalGlasses = fakeData.find((item) => item.menu === "Optical Glasses");
+  const contactLens = fakeData.find((item) => item.menu === "Contact Lens");
+  const accessories = fakeData.find((item) => item.menu === "Accessories");
+  const clearanceSale = fakeData.find((item) => item.menu === "Clearance SALE");
   const blog = fakeData.find((item) => item.menu === "Blog");
 
   return (
@@ -545,7 +620,7 @@ const DropDownMenus = () => {
           setActive={setActive}
           active={active}
           item="Sunglasses"
-          href="/"
+          href="/product-filter?category=sunglasses"
           className="sm:-translate-x-[153px] md:-translate-x-[105px] lg:-translate-x-[300px]  xl:-translate-x-[485px] slim-scroll "
         >
           <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll  text-sm grid grid-cols-2 xl:grid-cols-3 sm:gap-3 lg:gap-10 p-4 ">
@@ -576,9 +651,26 @@ const DropDownMenus = () => {
                 </div>
               </div>
             ))}
+            {/* View All Sunglasses Card */}
+            <div className="flex flex-col md:flex-row items-start md:gap-4 p-4 bg-[#007C74]/5 rounded-xl border border-[#007C74]/15 hover:bg-[#007C74]/10 transition-colors h-full min-h-[144px]">
+              <div className="flex flex-col justify-between h-full whitespace-nowrap">
+                <div>
+                  <h3 className="text-lg font-black text-[#007C74]">
+                    All Sunglasses
+                  </h3>
+                  <p className="text-xs text-muted-foreground whitespace-normal mt-1.5 max-w-[160px]">
+                    Browse our complete catalog of premium sunglasses styles.
+                  </p>
+                </div>
+                <Link href="/product-filter?category=sunglasses" className="text-xs font-bold text-red-500 flex items-center gap-1 group mt-4">
+                  <span>View All Collection</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </div>
+            </div>
           </div>
         </MenuItem>
-        <MenuItem setActive={setActive} active={active} item="Optical Glasses" href="/" className="sm:-translate-x-[200px] md:-translate-x-[245px] lg:-translate-x-[430px] xl:-translate-x-[640px] 2xl:-translate-x-[660px] ">
+        <MenuItem setActive={setActive} active={active} item="Optical Glasses" href="/product-filter?category=optical" className="sm:-translate-x-[200px] md:-translate-x-[245px] lg:-translate-x-[430px] xl:-translate-x-[640px] 2xl:-translate-x-[660px] ">
           <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll  text-sm grid grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-10 p-4">
             {opticalGlasses?.subMenu.map((item, index) => (
               <div key={index} className="flex flex-col md:flex-row items-start gap-1 md:gap-4">
@@ -608,18 +700,170 @@ const DropDownMenus = () => {
                 </div>
               </div>
             ))}
-            {/* <ProductItem
-              title="Anti-Reflective Coating"
-              href=""
-              src="https://da4e1j5r7gw87.cloudfront.net/wp-content/uploads/sites/4460/2023/06/Glasses-On-The-Road.jpg"
-              description="Reduce glare with anti-reflective lenses"
-            />
-            <ProductItem
-              title="Computer Glasses"
-              href=""
-              src="https://www.cnet.com/a/img/toFeyyNRJ23GqHaZQFM-kfTJRYc/u003d/940x0/2020/07/17/e1c89e0d-6662-4bbc-b564-14a0b63544a4/blueease.jpg"
-              description="Glasses for computer use"
-            /> */}
+            {/* View All Optical Glasses Card */}
+            <div className="flex flex-col md:flex-row items-start md:gap-4 p-4 bg-[#007C74]/5 rounded-xl border border-[#007C74]/15 hover:bg-[#007C74]/10 transition-colors h-full min-h-[144px]">
+              <div className="flex flex-col justify-between h-full whitespace-nowrap">
+                <div>
+                  <h3 className="text-lg font-black text-[#007C74]">
+                    All Optical Glasses
+                  </h3>
+                  <p className="text-xs text-muted-foreground whitespace-normal mt-1.5 max-w-[160px]">
+                    Browse our complete catalog of optical glasses.
+                  </p>
+                </div>
+                <Link href="/product-filter?category=optical" className="text-xs font-bold text-[#00a76b] flex items-center gap-1 group mt-4">
+                  <span>View All Collection</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </MenuItem>
+
+        <MenuItem setActive={setActive} active={active} item="Contact Lens" href="/product-filter?category=contact-lens" className="sm:-translate-x-[250px] md:-translate-x-[300px] lg:-translate-x-[500px] xl:-translate-x-[700px] 2xl:-translate-x-[750px] ">
+          <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll  text-sm grid grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-10 p-4">
+            {contactLens?.subMenu.map((item, index) => (
+              <div key={index} className="flex flex-col md:flex-row items-start gap-1 md:gap-4">
+                <div>
+                  <Link href={""}>
+                    <div className="sm:h-20 sm:w-20 md:h-24 md:w-24 lg:h-36 lg:w-36">
+                      <Image src={item.imageUrl} className="rounded-md cursor-pointer h-full w-full" height={150} width={150} alt="" />
+                    </div>
+                  </Link>
+                </div>
+                <div className="flex flex-col lg:gap-1 whitespace-nowrap">
+                  <Link href={""}>
+                    <h3 className={` hover:text-[#00a76b] text-xl w-min font-bold relative group cursor-pointer`}>
+                      {item.subMenuTitle.length > 20 ? item.subMenuTitle.substring(0, 20) + "..." : item.subMenuTitle}
+                      <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+                    </h3>
+                  </Link>
+                  {item.chieldMenu.map((chieldItem, index) => (
+                    <Link key={index} href={""}>
+                      <p className={` hover:text-[#00a76b]  w-min text-base font-medium relative group cursor-pointer`}>
+                        {chieldItem.chieldMenuTitle}
+                        <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {/* View All Contact Lenses Card */}
+            <div className="flex flex-col md:flex-row items-start md:gap-4 p-4 bg-[#007C74]/5 rounded-xl border border-[#007C74]/15 hover:bg-[#007C74]/10 transition-colors h-full min-h-[144px]">
+              <div className="flex flex-col justify-between h-full whitespace-nowrap">
+                <div>
+                  <h3 className="text-lg font-black text-[#007C74]">
+                    All Contact Lenses
+                  </h3>
+                  <p className="text-xs text-muted-foreground whitespace-normal mt-1.5 max-w-[160px]">
+                    Browse our complete range of quality contact lenses.
+                  </p>
+                </div>
+                <Link href="/product-filter?category=contact-lens" className="text-xs font-bold text-[#00a76b] flex items-center gap-1 group mt-4">
+                  <span>View All Collection</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </MenuItem>
+
+        <MenuItem setActive={setActive} active={active} item="Accessories" href="/product-filter?category=accessories" className="sm:-translate-x-[300px] md:-translate-x-[350px] lg:-translate-x-[550px] xl:-translate-x-[750px] 2xl:-translate-x-[800px] ">
+          <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll  text-sm grid grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-10 p-4">
+            {accessories?.subMenu.map((item, index) => (
+              <div key={index} className="flex flex-col md:flex-row items-start gap-1 md:gap-4">
+                <div>
+                  <Link href={""}>
+                    <div className="sm:h-20 sm:w-20 md:h-24 md:w-24 lg:h-36 lg:w-36">
+                      <Image src={item.imageUrl} className="rounded-md cursor-pointer h-full w-full" height={150} width={150} alt="" />
+                    </div>
+                  </Link>
+                </div>
+                <div className="flex flex-col lg:gap-1 whitespace-nowrap">
+                  <Link href={""}>
+                    <h3 className={` hover:text-[#00a76b] text-xl w-min font-bold relative group cursor-pointer`}>
+                      {item.subMenuTitle.length > 20 ? item.subMenuTitle.substring(0, 20) + "..." : item.subMenuTitle}
+                      <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+                    </h3>
+                  </Link>
+                  {item.chieldMenu.map((chieldItem, index) => (
+                    <Link key={index} href={""}>
+                      <p className={` hover:text-[#00a76b]  w-min text-base font-medium relative group cursor-pointer`}>
+                        {chieldItem.chieldMenuTitle}
+                        <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {/* View All Accessories Card */}
+            <div className="flex flex-col md:flex-row items-start md:gap-4 p-4 bg-[#007C74]/5 rounded-xl border border-[#007C74]/15 hover:bg-[#007C74]/10 transition-colors h-full min-h-[144px]">
+              <div className="flex flex-col justify-between h-full whitespace-nowrap">
+                <div>
+                  <h3 className="text-lg font-black text-[#007C74]">
+                    All Accessories
+                  </h3>
+                  <p className="text-xs text-muted-foreground whitespace-normal mt-1.5 max-w-[160px]">
+                    Browse cases, solutions, chains, and cleaner kits.
+                  </p>
+                </div>
+                <Link href="/product-filter?category=accessories" className="text-xs font-bold text-[#00a76b] flex items-center gap-1 group mt-4">
+                  <span>View All Collection</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </MenuItem>
+
+        <MenuItem setActive={setActive} active={active} item="Clearance SALE" href="/product-filter?sale=true" className="sm:-translate-x-[350px] md:-translate-x-[400px] lg:-translate-x-[600px] xl:-translate-x-[800px] 2xl:-translate-x-[850px] ">
+          <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll  text-sm grid grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-10 p-4">
+            {clearanceSale?.subMenu.map((item, index) => (
+              <div key={index} className="flex flex-col md:flex-row items-start gap-1 md:gap-4">
+                <div>
+                  <Link href={""}>
+                    <div className="sm:h-20 sm:w-20 md:h-24 md:w-24 lg:h-36 lg:w-36">
+                      <Image src={item.imageUrl} className="rounded-md cursor-pointer h-full w-full" height={150} width={150} alt="" />
+                    </div>
+                  </Link>
+                </div>
+                <div className="flex flex-col lg:gap-1 whitespace-nowrap">
+                  <Link href={""}>
+                    <h3 className={` hover:text-[#00a76b] text-xl w-min font-bold relative group cursor-pointer`}>
+                      {item.subMenuTitle.length > 20 ? item.subMenuTitle.substring(0, 20) + "..." : item.subMenuTitle}
+                      <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+                    </h3>
+                  </Link>
+                  {item.chieldMenu.map((chieldItem, index) => (
+                    <Link key={index} href={""}>
+                      <p className={` hover:text-[#00a76b]  w-min text-base font-medium relative group cursor-pointer`}>
+                        {chieldItem.chieldMenuTitle}
+                        <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {/* View All Clearance Deals Card */}
+            <div className="flex flex-col md:flex-row items-start md:gap-4 p-4 bg-red-500/5 rounded-xl border border-red-500/15 hover:bg-red-500/10 transition-colors h-full min-h-[144px]">
+              <div className="flex flex-col justify-between h-full whitespace-nowrap">
+                <div>
+                  <h3 className="text-lg font-black text-red-500 dark:text-red-400">
+                    All Clearance Deals
+                  </h3>
+                  <p className="text-xs text-muted-foreground whitespace-normal mt-1.5 max-w-[160px]">
+                    Grab special bundles and flat-discounted frames.
+                  </p>
+                </div>
+                <Link href="/product-filter?sale=true" className="text-xs font-bold text-red-500 dark:text-red-400 flex items-center gap-1 group mt-4">
+                  <span>View All Deals</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </div>
+            </div>
           </div>
         </MenuItem>
 

@@ -1,5 +1,6 @@
 import HomeComponent from "@/components/pages/home/HomeComponent";
 import { Metadata, Viewport } from "next";
+import Script from "next/script";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -101,8 +102,44 @@ export const metadata: Metadata = {
 };
 
 const page = () => {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Glassophite",
+    "url": "https://www.glassophite.com",
+    "description": "Glassophite is a statement of modern sophistication and refined luxury, crafted exclusively for the discerning eyes of Bangladeshi trendsetters.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://www.glassophite.com/product-filter?query={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  };
+
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Glassophite",
+    "url": "https://www.glassophite.com",
+    "logo": "https://www.glassophite.com/images/logo.png",
+    "sameAs": [
+      "https://facebook.com/glassophite",
+      "https://instagram.com/glassophite",
+      "https://twitter.com/glassophite"
+    ]
+  };
+
   return (
     <div className="relative">
+      <Script
+        id="website-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <Script
+        id="org-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+      />
       <HomeComponent />
     </div>
   );

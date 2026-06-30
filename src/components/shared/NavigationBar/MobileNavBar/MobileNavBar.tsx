@@ -23,8 +23,11 @@ export default function MobileNavBar() {
 
   const menuItems = [
     { label: "Home", href: "/" },
-    { label: "Sunglasses", href: "/product-filter" },
-    { label: "Optical Glasses", href: "/product-filter" },
+    { label: "Sunglasses", href: "/product-filter?category=sunglasses" },
+    { label: "Optical Glasses", href: "/product-filter?category=optical" },
+    { label: "Contact Lens", href: "/product-filter?category=contact-lens" },
+    { label: "Accessories", href: "/product-filter?category=accessories" },
+    { label: "Clearance SALE", href: "/product-filter?sale=true" },
     { label: "My Profile", href: "/my-profile" },
     { label: "Admin Dashboard", href: "/dashboard" },
   ];
@@ -105,7 +108,9 @@ export default function MobileNavBar() {
           {menuItems.map((item, index) => (
             <NavbarMenuItem key={`${item.label}-${index}`}>
               <Link
-                className="w-full text-base py-2 block border-b border-neutral-100 dark:border-neutral-900 text-neutral-800 dark:text-neutral-200 hover:text-[#007C74] dark:hover:text-[#007C74] transition-colors font-semibold"
+                className={`w-full text-base py-2 block border-b border-neutral-100 dark:border-neutral-900 hover:text-[#007C74] dark:hover:text-[#007C74] transition-colors font-semibold ${
+                  item.label.toLowerCase().includes("sale") ? "text-red-500 dark:text-red-400 font-extrabold" : "text-neutral-800 dark:text-neutral-200"
+                }`}
                 href={item.href}
                 onClick={() => setIsMenuOpen(false)}
               >

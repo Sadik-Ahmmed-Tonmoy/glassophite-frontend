@@ -11,7 +11,6 @@ import type { FilterOptionCounts, FilterState } from "@/types/filter-types";
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useState } from "react";
 import PriceRangeSlider from "./price-range-slider";
 
 interface FilterSidebarProps {
@@ -75,8 +74,8 @@ export default function FilterSidebar({
   };
 
   const styles = isDark ? themeStyles.dark : themeStyles.light;
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
+  // Render stars for rating
   const renderStars = (rating: number) => {
     return (
       <div className="flex items-center">
@@ -95,7 +94,8 @@ export default function FilterSidebar({
     );
   };
 
-  // Animation variants for list items
+  // -------------------- Variants --------------------
+  // Entry animation (fade + slide in)
   const itemVariants = {
     hidden: { opacity: 0, x: -10 },
     visible: (i: number) => ({
@@ -104,6 +104,75 @@ export default function FilterSidebar({
       transition: { delay: i * 0.05, duration: 0.3 },
     }),
   };
+
+  // Move the main content (checkbox + label text) right by 5px on hover
+  const contentVariants = {
+    rest: { x: 0 },
+    hover: { x: 5, transition: { type: "spring" as const, stiffness: 300, damping: 20 } },
+  };
+
+  // Move the count span left by 5px on hover (to cancel the right shift)
+  const countVariants = {
+    rest: { x: 0 },
+    hover: { x: -5, transition: { type: "spring" as const, stiffness: 300, damping: 20 } },
+  };
+ 
+  const ratingCountVariants = {
+    rest: { x: 0 },
+    hover: { x: -10, transition: { type: "spring" as const, stiffness: 300, damping: 20 } },
+  };
+
+  // Helper to map over filter options and render a consistent row
+  const renderFilterRow = ({
+    id,
+    checked,
+    onChange,
+    label,
+    count,
+    key,
+    index,
+    inputClassName = "",
+  }: {
+    id: string;
+    checked: boolean;
+    onChange: () => void;
+    label: React.ReactNode;
+    count: number | string;
+    key: string;
+    index: number;
+    inputClassName?: string;
+  }) => (
+    <motion.div
+      key={key}
+      custom={index}
+      variants={itemVariants}
+      initial="hidden"
+      animate="visible"
+      whileHover="hover"
+      className="flex items-center"
+    >
+      <motion.input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors ${inputClassName}`}
+        variants={contentVariants}
+      />
+      <label
+        htmlFor={id}
+        className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm ${styles.label} cursor-pointer`}
+      >
+        <motion.span variants={contentVariants}>{label}</motion.span>
+        <motion.span
+          variants={countVariants}
+          className={`text-xs ${styles.textMutedLighter}`}
+        >
+          ({count})
+        </motion.span>
+      </label>
+    </motion.div>
+  );
 
   return (
     <motion.div
@@ -125,7 +194,7 @@ export default function FilterSidebar({
           "availability",
         ]}
       >
-        {/* Collection */}
+        {/* ========== Collection ========== */}
         <AccordionItem value="collection" className={styles.border}>
           <AccordionTrigger
             className={`text-sm font-medium ${styles.accordionTrigger}`}
@@ -134,71 +203,29 @@ export default function FilterSidebar({
           </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4 space-y-4">
-              {collectionOptions.map((option, index) => (
-                <motion.div
-                  onMouseEnter={() => setHoveredItem(option.value)}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  key={option.value}
-                  custom={index}
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="flex items-center"
-                  // whileHover={{ scale: 1.02, x: 5 }}
-                  // whileTap={{ scale: 0.98 }}
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <motion.input
-                    id={`collection-${option.value}`}
-                    name={`collection-${option.value}`}
-                    type="checkbox"
-                    checked={
-                      option.type === "sale"
-                        ? filters.saleOnly
-                        : filters.categories.includes(option.value)
-                    }
-                    onChange={() =>
-                      option.type === "sale"
-                        ? handleFilterChange("saleOnly", !filters.saleOnly)
-                        : handleFilterChange("categories", option.value)
-                    }
-                    className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
-                    animate={{ x: hoveredItem === option.value ? 5 : 0 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  />
-                  <label
-                    htmlFor={`collection-${option.value}`}
-                    className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm ${styles.label} cursor-pointer`}
-                  >
-                    <motion.span
-                      animate={{ x: hoveredItem === option.value ? 5 : 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                    >
-                      {option.label}
-                    </motion.span>
-                    <motion.span
-                      animate={{ x: hoveredItem === option.value ? -5 : 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                      className={`text-xs ${styles.textMutedLighter}`}
-                    >
-                      ({optionCounts.collections[option.value] || 0})
-                    </motion.span>
-                  </label>
-                </motion.div>
-              ))}
+              {collectionOptions.map((option, index) => {
+                const isSale = option.type === "sale";
+                const checked = isSale ? filters.saleOnly : filters.categories.includes(option.value);
+                const onChange = () =>
+                  isSale
+                    ? handleFilterChange("saleOnly", !filters.saleOnly)
+                    : handleFilterChange("categories", option.value);
+                const count = optionCounts.collections[option.value] || 0;
+                return renderFilterRow({
+                  id: `collection-${option.value}`,
+                  checked,
+                  onChange,
+                  label: option.label,
+                  count,
+                  key: option.value,
+                  index,
+                });
+              })}
             </div>
           </AccordionContent>
         </AccordionItem>
 
-        {/* Price Range */}
+        {/* ========== Price Range ========== */}
         <AccordionItem value="price" className={styles.border}>
           <AccordionTrigger
             className={`text-sm font-medium ${styles.accordionTrigger}`}
@@ -221,7 +248,7 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        {/* Brand */}
+        {/* ========== Brand ========== */}
         <AccordionItem value="brand" className={styles.border}>
           <AccordionTrigger
             className={`text-sm font-medium ${styles.accordionTrigger}`}
@@ -231,67 +258,22 @@ export default function FilterSidebar({
           </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4 space-y-4">
-              {allBrands.map((brand, index) => (
-                <motion.div
-                  key={brand}
-                  custom={index}
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="flex items-center"
-                  // whileHover={{ scale: 1.02, translateX: 5 }}
-                  // whileTap={{ scale: 0.98 }}
-                  whileHover={{ scale: 1.02 }}
-                  onMouseEnter={() => setHoveredItem(brand)}
-                  onMouseLeave={() => setHoveredItem(null)}
-                >
-                  <motion.input
-                    id={`brand-${brand}`}
-                    name={`brand-${brand}`}
-                    type="checkbox"
-                    checked={filters.brands.includes(brand)}
-                    onChange={() => handleFilterChange("brands", brand)}
-                    className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
-                    animate={{ x: hoveredItem === brand ? 5 : 0 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 20,
-                    }}
-                  />
-                  <label
-                    htmlFor={`brand-${brand}`}
-                    className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm ${styles.label} cursor-pointer`}
-                  >
-                    <motion.span
-                      animate={{ x: hoveredItem === brand ? 5 : 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                    >
-                      {brand}
-                    </motion.span>
-                    <motion.span
-                      animate={{ x: hoveredItem === brand ? -5 : 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                      className={`text-xs ${styles.textMutedLighter}`}
-                    >
-                      ({optionCounts.brands[brand] || 0})
-                    </motion.span>
-                  </label>
-                </motion.div>
-              ))}
+              {allBrands.map((brand, index) =>
+                renderFilterRow({
+                  id: `brand-${brand}`,
+                  checked: filters.brands.includes(brand),
+                  onChange: () => handleFilterChange("brands", brand),
+                  label: brand,
+                  count: optionCounts.brands[brand] || 0,
+                  key: brand,
+                  index,
+                })
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
 
-        {/* Frame Type */}
+        {/* ========== Frame Type ========== */}
         <AccordionItem value="frame" className={styles.border}>
           <AccordionTrigger
             className={`text-sm font-medium ${styles.accordionTrigger}`}
@@ -301,67 +283,22 @@ export default function FilterSidebar({
           </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4 space-y-4">
-              {allFrameTypes.map((frameType, index) => (
-                <motion.div
-                  key={frameType}
-                  custom={index}
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="flex items-center"
-                  // whileHover={{ scale: 1.02, translateX: 5 }}
-                  // whileTap={{ scale: 0.98 }}
-                  whileHover={{ scale: 1.02 }}
-                  onMouseEnter={() => setHoveredItem(frameType)}
-                  onMouseLeave={() => setHoveredItem(null)}
-                >
-                  <motion.input
-                    id={`frame-${frameType}`}
-                    name={`frame-${frameType}`}
-                    type="checkbox"
-                    checked={filters.frameTypes.includes(frameType)}
-                    onChange={() => handleFilterChange("frameTypes", frameType)}
-                    className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
-                    animate={{ x: hoveredItem === frameType ? 5 : 0 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 20,
-                    }}
-                  />
-                  <label
-                    htmlFor={`frame-${frameType}`}
-                    className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm ${styles.label} cursor-pointer`}
-                  >
-                    <motion.span
-                      animate={{ x: hoveredItem === frameType ? 5 : 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                    >
-                      {frameType}
-                    </motion.span>
-                    <motion.span
-                      animate={{ x: hoveredItem === frameType ? -5 : 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                      className={`text-xs ${styles.textMutedLighter}`}
-                    >
-                      ({optionCounts.frameTypes[frameType] || 0})
-                    </motion.span>
-                  </label>
-                </motion.div>
-              ))}
+              {allFrameTypes.map((frameType, index) =>
+                renderFilterRow({
+                  id: `frame-${frameType}`,
+                  checked: filters.frameTypes.includes(frameType),
+                  onChange: () => handleFilterChange("frameTypes", frameType),
+                  label: frameType,
+                  count: optionCounts.frameTypes[frameType] || 0,
+                  key: frameType,
+                  index,
+                })
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
 
-        {/* Lens Type */}
+        {/* ========== Lens Type ========== */}
         <AccordionItem value="lens" className={styles.border}>
           <AccordionTrigger
             className={`text-sm font-medium ${styles.accordionTrigger}`}
@@ -371,67 +308,22 @@ export default function FilterSidebar({
           </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4 space-y-4">
-              {allLensTypes.map((lensType, index) => (
-                <motion.div
-                  key={lensType}
-                  custom={index}
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="flex items-center"
-                  whileHover={{ scale: 1.02 }}
-                  // whileHover={{ scale: 1.02, translateX: 5 }}
-                  // whileTap={{ scale: 0.98 }}
-                  onMouseEnter={() => setHoveredItem(lensType)}
-                  onMouseLeave={() => setHoveredItem(null)}
-                >
-                  <motion.input
-                    id={`lens-${lensType}`}
-                    name={`lens-${lensType}`}
-                    type="checkbox"
-                    checked={filters.lensTypes.includes(lensType)}
-                    onChange={() => handleFilterChange("lensTypes", lensType)}
-                    className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
-                    animate={{ x: hoveredItem === lensType ? 5 : 0 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 20,
-                    }}
-                  />
-                  <label
-                    htmlFor={`lens-${lensType}`}
-                    className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm ${styles.label} cursor-pointer`}
-                  >
-                    <motion.span
-                      animate={{ x: hoveredItem === lensType ? 5 : 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                    >
-                      {lensType}
-                    </motion.span>
-                    <motion.span
-                      animate={{ x: hoveredItem === lensType ? -5 : 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                      className={`text-xs ${styles.textMutedLighter}`}
-                    >
-                      ({optionCounts.lensTypes[lensType] || 0})
-                    </motion.span>
-                  </label>
-                </motion.div>
-              ))}
+              {allLensTypes.map((lensType, index) =>
+                renderFilterRow({
+                  id: `lens-${lensType}`,
+                  checked: filters.lensTypes.includes(lensType),
+                  onChange: () => handleFilterChange("lensTypes", lensType),
+                  label: lensType,
+                  count: optionCounts.lensTypes[lensType] || 0,
+                  key: lensType,
+                  index,
+                })
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
 
-        {/* Color */}
+        {/* ========== Color ========== */}
         <AccordionItem value="color" className={styles.border}>
           <AccordionTrigger
             className={`text-sm font-medium ${styles.accordionTrigger}`}
@@ -441,71 +333,31 @@ export default function FilterSidebar({
           </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4 space-y-4">
-              {allColors.map((colorObj, index) => (
-                <motion.div
-                  key={colorObj.color}
-                  custom={index}
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="flex items-center"
-                  onMouseEnter={() => setHoveredItem(colorObj.color)}
-                  onMouseLeave={() => setHoveredItem(null)}
-                >
-                  <motion.input
-                    id={`color-${colorObj.color}`}
-                    name={`color-${colorObj.color}`}
-                    type="checkbox"
-                    checked={filters.colors.includes(colorObj.color)}
-                    onChange={() =>
-                      handleFilterChange("colors", colorObj.color)
-                    }
-                    className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
-                    animate={{ x: hoveredItem === colorObj.color ? 5 : 0 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 20,
-                    }}
-                  />
-                  <label
-                    htmlFor={`color-${colorObj.color}`}
-                    className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm ${styles.label} cursor-pointer`}
-                  >
-                    <motion.span
-                      className="flex items-center"
-                      animate={{ x: hoveredItem === colorObj.color ? 5 : 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                    >
-                      <span
-                        className="mr-2 inline-block h-4 w-4 rounded-full border"
-                        style={{ backgroundColor: colorObj.color }}
-                      ></span>
-                      {colorObj.title}
-                    </motion.span>
-                    <motion.span
-                      animate={{ x: hoveredItem === colorObj.color ? -5 : 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                      className={`text-xs ${styles.textMutedLighter}`}
-                    >
-                      ({optionCounts.colors[colorObj.color] || 0})
-                    </motion.span>
-                  </label>
-                </motion.div>
-              ))}
+              {allColors.map((colorObj, index) => {
+                const label = (
+                  <span className="flex items-center">
+                    <span
+                      className="mr-2 inline-block h-4 w-4 rounded-full border"
+                      style={{ backgroundColor: colorObj.color }}
+                    />
+                    {colorObj.title}
+                  </span>
+                );
+                return renderFilterRow({
+                  id: `color-${colorObj.color}`,
+                  checked: filters.colors.includes(colorObj.color),
+                  onChange: () => handleFilterChange("colors", colorObj.color),
+                  label,
+                  count: optionCounts.colors[colorObj.color] || 0,
+                  key: colorObj.color,
+                  index,
+                });
+              })}
             </div>
           </AccordionContent>
         </AccordionItem>
 
-        {/* Rating */}
+        {/* ========== Rating ========== */}
         <AccordionItem value="rating" className={styles.border}>
           <AccordionTrigger
             className={`text-sm font-medium ${styles.accordionTrigger}`}
@@ -515,66 +367,47 @@ export default function FilterSidebar({
           </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4 space-y-4">
-              {[5, 4, 3, 2, 1].map((rating, index) => (
-                <motion.div
-                  key={rating}
-                  custom={index}
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="flex items-center"
-                  // whileHover={{ scale: 1.02, translateX: 5 }}
-                  // whileTap={{ scale: 0.98 }}
-                  whileHover={{ scale: 1.02 }}
-                  onMouseEnter={() => setHoveredItem(rating.toString())}
-                  onMouseLeave={() => setHoveredItem(null)}
-                >
-                  <motion.input
-                    id={`rating-${rating}`}
-                    name={`rating-${rating}`}
-                    type="checkbox"
-                    checked={filters.ratings.includes(rating)}
-                    onChange={() => handleFilterChange("ratings", rating)}
-                    className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
-                    animate={{ x: hoveredItem === rating.toString() ? 5 : 0 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 20,
-                    }}
-                  />
-                  <motion.label
-                    htmlFor={`rating-${rating}`}
-                    className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm cursor-pointer`}
-                    animate={{ x: hoveredItem === rating.toString() ? 5 : 0 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 20,
-                    }}
+              {[5, 4, 3, 2, 1].map((rating, index) => {
+                const id = `rating-${rating}`;
+                return (
+                  <motion.div
+                    key={rating}
+                    custom={index}
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    whileHover="hover"
+                    className="flex items-center"
                   >
-                    {renderStars(rating)}
-                    <motion.span
-                      className={`text-xs ${styles.textMutedLighter}`}
-                      animate={{
-                        x: hoveredItem === rating.toString() ? -10 : 0,
-                      }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
+                    <motion.input
+                      id={id}
+                      type="checkbox"
+                      checked={filters.ratings.includes(rating)}
+                      onChange={() => handleFilterChange("ratings", rating)}
+                      className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
+                      variants={contentVariants}
+                    />
+                    <motion.label
+                      htmlFor={id}
+                      className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm cursor-pointer`}
+                      variants={contentVariants}
                     >
-                      ({optionCounts.ratings[rating] || 0})
-                    </motion.span>
-                  </motion.label>
-                </motion.div>
-              ))}
+                      {renderStars(rating)}
+                      <motion.span
+                        variants={ratingCountVariants}
+                        className={`text-xs ${styles.textMutedLighter}`}
+                      >
+                        ({optionCounts.ratings[rating] || 0})
+                      </motion.span>
+                    </motion.label>
+                  </motion.div>
+                );
+              })}
             </div>
           </AccordionContent>
         </AccordionItem>
 
-        {/* Availability */}
+        {/* ========== Availability ========== */}
         <AccordionItem value="availability" className={styles.border}>
           <AccordionTrigger
             className={`text-sm font-medium ${styles.accordionTrigger}`}
@@ -586,58 +419,34 @@ export default function FilterSidebar({
             <div className="pt-2 pb-4">
               <motion.div
                 className="flex items-center"
-                // whileHover={{ scale: 1.02, translateX: 5 }}
-                // whileTap={{ scale: 0.98 }}
-                whileHover={{ scale: 1.02 }}
-                onMouseEnter={() => setHoveredItem("inStock")}
-                onMouseLeave={() => setHoveredItem(null)}
                 variants={itemVariants}
                 initial="hidden"
                 animate="visible"
                 custom={0}
+                whileHover="hover"
               >
                 <motion.input
                   id="in-stock"
-                  name="in-stock"
                   type="checkbox"
                   checked={filters.inStock === true}
                   onChange={() =>
                     handleFilterChange(
                       "inStock",
-                      filters.inStock === true ? null : true,
+                      filters.inStock === true ? null : true
                     )
                   }
                   className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
-                  animate={{ x: hoveredItem === "inStock" ? 5 : 0 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 20,
-                  }}
+                  variants={contentVariants}
                 />
                 <label
                   htmlFor="in-stock"
                   className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm ${styles.label} cursor-pointer`}
                   data-translate="filter.inStock"
                 >
+                  <motion.span variants={contentVariants}>In Stock</motion.span>
                   <motion.span
-                    animate={{ x: hoveredItem === "inStock" ? 5 : 0 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 20,
-                    }}
-                  >
-                    In Stock
-                  </motion.span>
-                  <motion.span
+                    variants={countVariants}
                     className={`text-xs ${styles.textMutedLighter}`}
-                    animate={{ x: hoveredItem === "inStock" ? -5 : 0 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 20,
-                    }}
                   >
                     ({optionCounts.inStock})
                   </motion.span>

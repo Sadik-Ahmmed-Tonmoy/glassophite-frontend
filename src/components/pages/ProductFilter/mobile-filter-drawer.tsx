@@ -2,13 +2,19 @@
 "use client"
 
 import { motion } from "framer-motion"
-import type { FilterState } from "@/types/filter-types"
+import type { FilterOptionCounts, FilterState } from "@/types/filter-types"
 // import { renderStars } from "@/lib/utils"
 import PriceRangeSlider from "./price-range-slider"
 import ActiveFilters from "./active-filters"
 
 interface MobileFilterDrawerProps {
   filters: FilterState
+  collectionOptions: readonly {
+    label: string
+    value: string
+    type: "category" | "sale"
+  }[]
+  optionCounts: FilterOptionCounts
   allBrands: string[]
   allFrameTypes: string[]
   allLensTypes: string[]
@@ -21,6 +27,8 @@ interface MobileFilterDrawerProps {
 
 export default function MobileFilterDrawer({
   filters,
+  collectionOptions,
+  optionCounts,
   allBrands,
   allFrameTypes,
   allLensTypes,
@@ -34,6 +42,8 @@ export default function MobileFilterDrawer({
   const hasActiveFilters = () => {
     return (
       filters.brands.length > 0 ||
+      filters.categories.length > 0 ||
+      filters.saleOnly ||
       filters.frameTypes.length > 0 ||
       filters.lensTypes.length > 0 ||
       filters.colors.length > 0 ||
@@ -50,6 +60,8 @@ export default function MobileFilterDrawer({
       handleFilterChange("priceRange", [minPrice, maxPrice])
     } else if (filterType === "inStock") {
       handleFilterChange("inStock", null)
+    } else if (filterType === "saleOnly") {
+      handleFilterChange("saleOnly", false)
     } else if (Array.isArray(filters[filterType])) {
       handleFilterChange(filterType, value)
     }
@@ -99,6 +111,7 @@ export default function MobileFilterDrawer({
             <div className="px-4 py-4 border-t border-gray-200">
               <ActiveFilters
                 filters={filters}
+                collectionOptions={collectionOptions}
                 allColors={allColors}
                 minPrice={minPrice}
                 maxPrice={maxPrice}
@@ -110,6 +123,32 @@ export default function MobileFilterDrawer({
           {/* Mobile filters */}
           <div className="mt-4 border-t border-gray-200">
             <div className="px-4 py-6">
+              <h3 className="text-sm font-medium text-gray-900">Collection</h3>
+              <div className="mt-4 space-y-4">
+                {collectionOptions.map((option) => (
+                  <div key={option.value} className="flex items-center">
+                    <input
+                      id={`mobile-collection-${option.value}`}
+                      name={`mobile-collection-${option.value}`}
+                      type="checkbox"
+                      checked={option.type === "sale" ? filters.saleOnly : filters.categories.includes(option.value)}
+                      onChange={() =>
+                        option.type === "sale"
+                          ? handleFilterChange("saleOnly", !filters.saleOnly)
+                          : handleFilterChange("categories", option.value)
+                      }
+                      className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74]"
+                    />
+                    <label htmlFor={`mobile-collection-${option.value}`} className="ml-3 flex flex-1 items-center justify-between gap-3 text-sm text-gray-600">
+                      <span>{option.label}</span>
+                      <span className="text-xs text-gray-400">({optionCounts.collections[option.value] || 0})</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="px-4 py-6 border-t border-gray-200">
               <h3 className="text-sm font-medium text-gray-900">Price Range</h3>
               <div className="mt-4">
                 <PriceRangeSlider
@@ -135,8 +174,9 @@ export default function MobileFilterDrawer({
                       onChange={() => handleFilterChange("brands", brand)}
                       className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74]"
                     />
-                    <label htmlFor={`mobile-brand-${brand}`} className="ml-3 text-sm text-gray-600">
-                      {brand}
+                    <label htmlFor={`mobile-brand-${brand}`} className="ml-3 flex flex-1 items-center justify-between gap-3 text-sm text-gray-600">
+                      <span>{brand}</span>
+                      <span className="text-xs text-gray-400">({optionCounts.brands[brand] || 0})</span>
                     </label>
                   </div>
                 ))}
@@ -156,8 +196,9 @@ export default function MobileFilterDrawer({
                       onChange={() => handleFilterChange("frameTypes", frameType)}
                       className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74]"
                     />
-                    <label htmlFor={`mobile-frame-${frameType}`} className="ml-3 text-sm text-gray-600">
-                      {frameType}
+                    <label htmlFor={`mobile-frame-${frameType}`} className="ml-3 flex flex-1 items-center justify-between gap-3 text-sm text-gray-600">
+                      <span>{frameType}</span>
+                      <span className="text-xs text-gray-400">({optionCounts.frameTypes[frameType] || 0})</span>
                     </label>
                   </div>
                 ))}
@@ -177,8 +218,9 @@ export default function MobileFilterDrawer({
                       onChange={() => handleFilterChange("lensTypes", lensType)}
                       className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74]"
                     />
-                    <label htmlFor={`mobile-lens-${lensType}`} className="ml-3 text-sm text-gray-600">
-                      {lensType}
+                    <label htmlFor={`mobile-lens-${lensType}`} className="ml-3 flex flex-1 items-center justify-between gap-3 text-sm text-gray-600">
+                      <span>{lensType}</span>
+                      <span className="text-xs text-gray-400">({optionCounts.lensTypes[lensType] || 0})</span>
                     </label>
                   </div>
                 ))}
@@ -200,13 +242,16 @@ export default function MobileFilterDrawer({
                     />
                     <label
                       htmlFor={`mobile-color-${colorObj.color}`}
-                      className="ml-3 flex items-center text-sm text-gray-600"
+                      className="ml-3 flex flex-1 items-center justify-between gap-3 text-sm text-gray-600"
                     >
-                      <span
-                        className="mr-2 inline-block h-4 w-4 rounded-full border"
-                        style={{ backgroundColor: colorObj.color }}
-                      ></span>
-                      {colorObj.title}
+                      <span className="flex items-center">
+                        <span
+                          className="mr-2 inline-block h-4 w-4 rounded-full border"
+                          style={{ backgroundColor: colorObj.color }}
+                        ></span>
+                        {colorObj.title}
+                      </span>
+                      <span className="text-xs text-gray-400">({optionCounts.colors[colorObj.color] || 0})</span>
                     </label>
                   </div>
                 ))}
@@ -226,9 +271,10 @@ export default function MobileFilterDrawer({
                       onChange={() => handleFilterChange("ratings", rating)}
                       className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74]"
                     />
-                    <label htmlFor={`mobile-rating-${rating}`} className="ml-3 flex items-center text-sm text-gray-600">
+                    <label htmlFor={`mobile-rating-${rating}`} className="ml-3 flex flex-1 items-center justify-between gap-3 text-sm text-gray-600">
                       {/* {renderStars(rating)} <span className="ml-1">& Up</span> */}
                       <p className="text-red-500">starrrrr</p>
+                      <span className="text-xs text-gray-400">({optionCounts.ratings[rating] || 0})</span>
                     </label>
                   </div>
                 ))}
@@ -247,8 +293,9 @@ export default function MobileFilterDrawer({
                     onChange={() => handleFilterChange("inStock", filters.inStock === true ? null : true)}
                     className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74]"
                   />
-                  <label htmlFor="mobile-in-stock" className="ml-3 text-sm text-gray-600">
-                    In Stock
+                  <label htmlFor="mobile-in-stock" className="ml-3 flex flex-1 items-center justify-between gap-3 text-sm text-gray-600">
+                    <span>In Stock</span>
+                    <span className="text-xs text-gray-400">({optionCounts.inStock})</span>
                   </label>
                 </div>
               </div>
@@ -262,6 +309,8 @@ export default function MobileFilterDrawer({
                 type="button"
                 onClick={() => {
                   handleFilterChange("priceRange", [minPrice, maxPrice])
+                  handleFilterChange("categories", [])
+                  handleFilterChange("saleOnly", false)
                   handleFilterChange("brands", [])
                   handleFilterChange("frameTypes", [])
                   handleFilterChange("lensTypes", [])

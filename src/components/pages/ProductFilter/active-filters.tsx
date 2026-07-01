@@ -8,6 +8,11 @@ import type { FilterState } from "@/types/filter-types"
 
 interface ActiveFiltersProps {
   filters: FilterState
+  collectionOptions?: readonly {
+    label: string
+    value: string
+    type: "category" | "sale"
+  }[]
   allColors: { color: string; title: string }[]
   minPrice: number
   maxPrice: number
@@ -16,6 +21,7 @@ interface ActiveFiltersProps {
 
 export default function ActiveFilters({
   filters,
+  collectionOptions = [],
   allColors,
   minPrice,
   maxPrice,
@@ -134,6 +140,58 @@ export default function ActiveFilters({
               </button>
             </motion.div>
           ))}
+
+          {/* Collections */}
+          {filters.categories.map((category) => {
+            const option = collectionOptions.find((item) => item.value === category)
+            return (
+              <motion.div
+                key={`category-${category}`}
+                className={`inline-flex items-center rounded-full border ${styles.chipBorder} ${styles.chipBg} py-1.5 pl-3 pr-2 text-sm font-medium ${styles.chipText}`}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+                layout
+              >
+                <span>
+                  <span className="sr-only">Collection:</span> {option?.label || category}
+                </span>
+                <button
+                  type="button"
+                  className={`ml-1 inline-flex h-6 w-6 flex-shrink-0 rounded-full p-1 ${styles.removeButton} transition-colors`}
+                  onClick={() => removeFilter("categories", category)}
+                  aria-label="Remove collection filter"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </motion.div>
+            )
+          })}
+
+          {/* Sale */}
+          {filters.saleOnly && (
+            <motion.div
+              className={`inline-flex items-center rounded-full border ${styles.chipBorder} ${styles.chipBg} py-1.5 pl-3 pr-2 text-sm font-medium ${styles.chipText}`}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+              layout
+            >
+              <span>
+                <span className="sr-only">Collection:</span> Sale
+              </span>
+              <button
+                type="button"
+                className={`ml-1 inline-flex h-6 w-6 flex-shrink-0 rounded-full p-1 ${styles.removeButton} transition-colors`}
+                onClick={() => removeFilter("saleOnly", null)}
+                aria-label="Remove sale filter"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </motion.div>
+          )}
 
           {/* Frame Types */}
           {filters.frameTypes.map((frameType) => (

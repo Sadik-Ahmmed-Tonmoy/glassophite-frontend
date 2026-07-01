@@ -14,7 +14,9 @@ import {
   Tag,
   Star,
   MessageSquare,
-  Shield
+  Shield,
+  BookOpen,
+  Store
 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -24,6 +26,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
     { label: "Products", href: "/dashboard/products", icon: Package },
+    { label: "Brands", href: "/dashboard/brands", icon: Store },
+    { label: "Blogs", href: "/dashboard/blogs", icon: BookOpen },
     { label: "Orders", href: "/dashboard/orders", icon: ShoppingCart },
     { label: "Customers", href: "/dashboard/customers", icon: Users },
     { label: "Promo Coupons", href: "/dashboard/coupons", icon: Tag },

@@ -5,6 +5,7 @@ import MyFormInputAceternity from "@/components/ui/MyForm/MyFormInputAceternity/
 import MyFormWrapper from "@/components/ui/MyForm/MyFormWrapper/MyFormWrapper";
 import { Menu, MenuItem } from "@/components/ui/navbar-menu";
 import ScrollButton from "@/components/ui/ScrollButton/ScrollButton";
+import { getBlogPosts, getBrandProfiles } from "@/lib/contentMockData";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -12,8 +13,10 @@ import { FieldValues } from "react-hook-form";
 import { IoSearchSharp } from "react-icons/io5";
 
 interface BrandItem {
-  id: number;
+  id: number | string;
   title: string;
+  imageUrl?: string;
+  tagline?: string;
 }
 
 interface Brand {
@@ -33,9 +36,11 @@ interface TopBrand {
 const DropDownMenus = () => {
   const [active, setActive] = useState<string | null>(null);
   console.log(active);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleSubmit = (data: FieldValues, reset: any) => {
     console.log("Form Data:", data);
+    setSearchTerm(data?.search || "");
     // reset(); // Uncomment this line to reset the form after submission
   };
 
@@ -52,10 +57,11 @@ const DropDownMenus = () => {
   const [topBrandListArr, setTopBrandListArr] = useState<BrandItem[]>([]);
   const [FilteredBrandList, setFilteredBrandList] = useState<Brand[]>(brandList);
   const [isBrandOpen, setIsBrandOpen] = useState(false);
+  const [blogMenuList, setBlogMenuList] = useState<SubMenu[]>([]);
   // const { register, handleSubmit, watch, setValue } = useForm<{ search: string }>();
 
   // const watchSearch = watch("search");
-  let watchSearch: any;
+  const watchSearch = searchTerm;
   const topBrandList: TopBrand[] = [{ id: 999999, caption: "Top Brands", list: [...topBrandListArr] }];
 
   useEffect(() => {
@@ -285,13 +291,56 @@ const DropDownMenus = () => {
   ], []);
 
   useEffect(() => {
-    if (data) {
-      setBrandList([...data]);
-    }
-    // if (data) {
-    //     setTopBrandListArr([...data.list]);
-    // }
-  }, [data]);
+    const activeBrands = getBrandProfiles().filter((brand) => brand.status === "Active");
+    const groupedBrands = activeBrands
+      .reduce<Brand[]>((groups, brand) => {
+        const caption = brand.name.charAt(0).toUpperCase();
+        const existingGroup = groups.find((group) => group.caption === caption);
+        const brandItem = {
+          id: brand.slug,
+          title: brand.name,
+          imageUrl: brand.logoUrl,
+          tagline: brand.tagline,
+        };
+
+        if (existingGroup) {
+          existingGroup.list.push(brandItem);
+        } else {
+          groups.push({ id: caption.charCodeAt(0), caption, list: [brandItem] });
+        }
+
+        return groups;
+      }, [])
+      .sort((a, b) => a.caption.localeCompare(b.caption));
+
+    setBrandList(groupedBrands);
+    setTopBrandListArr(
+      activeBrands
+        .filter((brand) => brand.featured)
+        .slice(0, 10)
+        .map((brand) => ({
+          id: brand.slug,
+          title: brand.name,
+          imageUrl: brand.logoUrl,
+          tagline: brand.tagline,
+        }))
+    );
+
+    const blogCategories = new Map<string, SubMenu>();
+    getBlogPosts()
+      .filter((post) => post.status === "Published")
+      .forEach((post) => {
+        if (!blogCategories.has(post.category)) {
+          blogCategories.set(post.category, {
+            subMenuTitle: post.category,
+            imageUrl: post.imageUrl,
+            descriptions: post.excerpt,
+            chieldMenu: [{ chieldMenuTitle: "" }],
+          });
+        }
+      });
+    setBlogMenuList(Array.from(blogCategories.values()));
+  }, []);
 
   const alphabetList = [
     "A",
@@ -609,6 +658,7 @@ const DropDownMenus = () => {
   const accessories = fakeData.find((item) => item.menu === "Accessories");
   const clearanceSale = fakeData.find((item) => item.menu === "Clearance SALE");
   const blog = fakeData.find((item) => item.menu === "Blog");
+  const blogItems = blogMenuList.length > 0 ? blogMenuList : blog?.subMenu || [];
 
   return (
     <div>
@@ -867,7 +917,7 @@ const DropDownMenus = () => {
           </div>
         </MenuItem>
 
-        <MenuItem setActive={setActive} active={active} item="Brands" className=" -translate-x-[350px] md:-translate-x-[345px] lg:-translate-x-[612px] xl:-translate-x-[712px] ">
+        <MenuItem setActive={setActive} active={active} item="Brands" href="/brands" className=" -translate-x-[350px] md:-translate-x-[345px] lg:-translate-x-[612px] xl:-translate-x-[712px] ">
           <div
             // style={{ boxShadow: "0px 4px 20px 0px rgba(36, 52, 58, 0.10)" }}
             className={`max-h-[calc(100vh-170px)] overflow-y-auto slim-scroll min-h-[412px] sm:w-[595px] md:w-[728px] lg:w-[1000px] xl:w-[1202px] md:-left-[207px] lg:-left-[206px] xl:-left-[180px] 2xl:-left-14  z-10 flex top-[52px] rounded overflow-hidden `}
@@ -890,7 +940,7 @@ const DropDownMenus = () => {
                 </form> */}
 
                 <MyFormWrapper onSubmit={handleSubmit} className="relative h-[45px]">
-                  <MyFormInputAceternity name="email" placeholder="Enter Brand Name" inputClassName="" />
+                  <MyFormInputAceternity name="search" placeholder="Enter Brand Name" inputClassName="" />
                   <button type="submit">
                     <IoSearchSharp size={20} className="absolute top-[13px] right-3" />
                   </button>
@@ -936,7 +986,7 @@ const DropDownMenus = () => {
                             }}
                             key={index}
                           >
-                            <Link href={`/product-filter?brand=${item?.id}`}>
+                            <Link href={`/product-filter?brand=${encodeURIComponent(item.title)}`}>
                               <p className={`text-sm font-normal leading-normal mb-2 hover:text-primary-color `}>{item.title}</p>
                             </Link>
                           </span>
@@ -961,7 +1011,27 @@ const DropDownMenus = () => {
               </div>
               {/* brand images start */}
               <div className="grid grid-cols-5 gap-5 p-8 h-[360px] overflow-hidden overflow-y-auto slim-scroll">
-                {/* Replace with your brand images logic */}
+                {topBrandListArr.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/product-filter?brand=${encodeURIComponent(item.title)}`}
+                    className="group rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden bg-white dark:bg-neutral-950 hover:border-[#00a76b]/60 transition-colors"
+                  >
+                    <div className="relative h-24 bg-neutral-100 dark:bg-neutral-900">
+                      {item.imageUrl && (
+                        <Image src={item.imageUrl} alt={item.title} fill className="object-cover" sizes="160px" />
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <p className="text-xs font-extrabold group-hover:text-[#00a76b] transition-colors line-clamp-1">
+                        {item.title}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground line-clamp-2 mt-1">
+                        {item.tagline}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
               </div>
               {/* brand images end */}
             </div>
@@ -973,19 +1043,19 @@ const DropDownMenus = () => {
           setActive={setActive}
           active={active}
           item="Blogs"
-          href="/"
+          href="/blogs"
           className=" -translate-x-[375px] lg:-translate-x-[600px] 2xl:-translate-x-[910px]"
         >
           <div className=" max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll  text-sm grid grid-cols-2  lg:grid-cols-3 2xl:grid-cols-5 gap-x-20 gap-y-4 md:gap-x-24  p-4">
-            {blog?.subMenu.map((item, index) => (
+            {blogItems.map((item, index) => (
               <div key={index} className="flex items-start gap-4">
                 <div className="h-14 w-14">
-                  <Link href={""}>
+                  <Link href={`/blogs?category=${encodeURIComponent(item.subMenuTitle)}`}>
                     <Image src={item.imageUrl} className="rounded-md cursor-pointer h-full w-full" height={150} width={150} alt="" />
                   </Link>
                 </div>
                 <div className="flex flex-col gap-1 max-w-[140px]">
-                  <Link href={""}>
+                  <Link href={`/blogs?category=${encodeURIComponent(item.subMenuTitle)}`}>
                     <h3 className={` hover:text-[#00a76b] text-sm w-min font-bold relative group cursor-pointer whitespace-nowrap`}>
                       {item.subMenuTitle.length > 20 ? item.subMenuTitle.substring(0, 20) + "..." : item.subMenuTitle}
                       <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>

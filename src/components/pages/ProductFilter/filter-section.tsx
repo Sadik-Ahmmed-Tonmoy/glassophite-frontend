@@ -6,10 +6,16 @@ import { useTheme } from "next-themes"
 import { SlidersHorizontal, X } from "lucide-react"
 import FilterSidebar from "./filter-sidebar"
 import ActiveFilters from "./active-filters"
-import type { FilterState } from "@/types/filter-types"
+import type { FilterOptionCounts, FilterState } from "@/types/filter-types"
 
 interface FilterSectionProps {
   filters: FilterState
+  collectionOptions: readonly {
+    label: string
+    value: string
+    type: "category" | "sale"
+  }[]
+  optionCounts: FilterOptionCounts
   allBrands: string[]
   allFrameTypes: string[]
   allLensTypes: string[]
@@ -24,6 +30,8 @@ interface FilterSectionProps {
 
 export default function FilterSection({
   filters,
+  collectionOptions,
+  optionCounts,
   allBrands,
   allFrameTypes,
   allLensTypes,
@@ -128,6 +136,7 @@ export default function FilterSection({
               </h4> */}
               <ActiveFilters
                 filters={filters}
+                collectionOptions={collectionOptions}
                 allColors={allColors}
                 minPrice={minPrice}
                 maxPrice={maxPrice}
@@ -138,9 +147,11 @@ export default function FilterSection({
         </AnimatePresence>
 
         {/* Filter sidebar */}
-        <FilterSidebar
-          filters={filters}
-          allBrands={allBrands}
+          <FilterSidebar
+            filters={filters}
+            collectionOptions={collectionOptions}
+            optionCounts={optionCounts}
+            allBrands={allBrands}
           allFrameTypes={allFrameTypes}
           allLensTypes={allLensTypes}
           allColors={allColors}

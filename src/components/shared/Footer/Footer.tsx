@@ -39,7 +39,7 @@ const footerSections = {
       { label: "About Us", href: "/about", translateKey: "footer.about" },
       { label: "Careers", href: "/careers", translateKey: "footer.careers" },
       { label: "Press", href: "/press", translateKey: "footer.press" },
-      { label: "Blog", href: "/blog", translateKey: "footer.blog" },
+      { label: "Blogs", href: "/blogs", translateKey: "footer.blog" },
     ],
   },
   quickLinks: {
@@ -47,6 +47,7 @@ const footerSections = {
     translateKey: "footer.quickLinks",
     items: [
       { label: "Shop All", href: "/shop", translateKey: "footer.shopAll" },
+      { label: "Brands", href: "/brands", translateKey: "footer.brands" },
       { label: "New Arrivals", href: "/new-arrivals", translateKey: "footer.newArrivals" },
       { label: "Best Sellers", href: "/best-sellers", translateKey: "footer.bestSellers" },
       { label: "Limited Edition", href: "/limited-edition", translateKey: "footer.limited" },

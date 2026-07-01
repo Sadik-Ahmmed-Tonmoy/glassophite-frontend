@@ -28,6 +28,8 @@ export default function MobileNavBar() {
     { label: "Contact Lens", href: "/product-filter?category=contact-lens" },
     { label: "Accessories", href: "/product-filter?category=accessories" },
     { label: "Clearance SALE", href: "/product-filter?sale=true" },
+    { label: "Brands", href: "/brands" },
+    { label: "Blogs", href: "/blogs" },
     { label: "My Profile", href: "/my-profile" },
     { label: "Admin Dashboard", href: "/dashboard" },
   ];

@@ -9,11 +9,34 @@ import Script from "next/script"
 import { useTheme } from "next-themes"
 import {  SlidersHorizontal, X } from "lucide-react"
 import MobileFilterDrawer from "./mobile-filter-drawer"
-import type { FilterState, SortOption } from "@/types/filter-types"
+import type { FilterOptionCounts, FilterState, SortOption } from "@/types/filter-types"
 import { mockProducts } from "@/lib/productMockData"
 import Breadcrumb from "./breadcrumb"
 import FilterSection from "./filter-section"
 import ProductSection from "./product-section"
+
+const collectionOptions = [
+  { label: "Sunglass", value: "sunglasses", type: "category" },
+  { label: "Optical", value: "optical", type: "category" },
+  { label: "Accessories", value: "accessories", type: "category" },
+  { label: "Sale", value: "sale", type: "sale" },
+  { label: "Contact Lens", value: "contact-lens", type: "category" },
+] as const
+
+const getInitialBrandsFromParams = (searchParams: Pick<URLSearchParams, "get">) => {
+  const brands = searchParams.get("brands")?.split(",").filter(Boolean) || []
+  const brand = searchParams.get("brand")
+  return brand && !brands.includes(brand) ? [brand, ...brands] : brands
+}
+
+const getInitialCategoriesFromParams = (searchParams: Pick<URLSearchParams, "get">) => {
+  return searchParams.get("category")?.split(",").filter(Boolean) || []
+}
+
+const isSaleProduct = (product: (typeof mockProducts)[number]) => {
+  const discount = Number.parseInt(product.discountPercent || "0")
+  return discount > 0 || Boolean(product.priceAfterDiscount && product.mainPrice && product.priceAfterDiscount < product.mainPrice)
+}
 
 export default function ProductFilterPage() {
   const searchParams = useSearchParams()
@@ -28,7 +51,9 @@ export default function ProductFilterPage() {
       Number.parseInt(searchParams.get("minPrice") || "0"),
       Number.parseInt(searchParams.get("maxPrice") || "5000"),
     ],
-    brands: searchParams.get("brands")?.split(",").filter(Boolean) || [],
+    categories: getInitialCategoriesFromParams(searchParams),
+    saleOnly: searchParams.get("sale") === "true",
+    brands: getInitialBrandsFromParams(searchParams),
     frameTypes: searchParams.get("frameTypes")?.split(",").filter(Boolean) || [],
     lensTypes: searchParams.get("lensTypes")?.split(",").filter(Boolean) || [],
     colors: searchParams.get("colors")?.split(",").filter(Boolean) || [],
@@ -71,6 +96,45 @@ export default function ProductFilterPage() {
     ),
   ).map((item) => JSON.parse(item))
 
+  const optionCounts: FilterOptionCounts = {
+    collections: collectionOptions.reduce<Record<string, number>>((counts, option) => {
+      if (option.type === "sale") {
+        counts[option.value] = mockProducts.filter(isSaleProduct).length
+        return counts
+      }
+
+      counts[option.value] =
+        option.value === "sunglasses"
+          ? mockProducts.length
+          : mockProducts.filter((product) => product.category?.toLowerCase() === option.value).length
+
+      return counts
+    }, {}),
+    brands: allBrands.reduce<Record<string, number>>((counts, brand) => {
+      counts[brand] = mockProducts.filter((product) => product.brand === brand).length
+      return counts
+    }, {}),
+    frameTypes: allFrameTypes.reduce<Record<string, number>>((counts, frameType) => {
+      counts[frameType] = mockProducts.filter((product) => product.frameType === frameType).length
+      return counts
+    }, {}),
+    lensTypes: allLensTypes.reduce<Record<string, number>>((counts, lensType) => {
+      counts[lensType] = mockProducts.filter((product) => product.lensType?.split(", ").includes(lensType)).length
+      return counts
+    }, {}),
+    colors: allColors.reduce<Record<string, number>>((counts, colorObj: { color: string; title: string }) => {
+      counts[colorObj.color] = mockProducts.filter((product) =>
+        product.variants.some((variant) => variant.color === colorObj.color)
+      ).length
+      return counts
+    }, {}),
+    ratings: [5, 4, 3, 2, 1].reduce<Record<number, number>>((counts, rating) => {
+      counts[rating] = mockProducts.filter((product) => Math.floor(product.averageRating || 0) === rating).length
+      return counts
+    }, {}),
+    inStock: mockProducts.filter((product) => product.variants.some((variant) => variant.inStock)).length,
+  }
+
   // Price range
   const minPrice = Math.min(
     ...mockProducts.flatMap((product) => product.variants.map((variant) => variant.priceAfterDiscount)),
@@ -79,26 +143,93 @@ export default function ProductFilterPage() {
     ...mockProducts.flatMap((product) => product.variants.map((variant) => variant.priceAfterDiscount)),
   )
 
+  // Sync URL search params to React state
+  useEffect(() => {
+    const minP = Number.parseInt(searchParams.get("minPrice") || "0")
+    const maxP = Number.parseInt(searchParams.get("maxPrice") || "5000")
+    const categories = getInitialCategoriesFromParams(searchParams)
+    const saleOnly = searchParams.get("sale") === "true"
+    const brands = getInitialBrandsFromParams(searchParams)
+    const frameTypes = searchParams.get("frameTypes")?.split(",").filter(Boolean) || []
+    const lensTypes = searchParams.get("lensTypes")?.split(",").filter(Boolean) || []
+    const colors = searchParams.get("colors")?.split(",").filter(Boolean) || []
+    const ratings = searchParams.get("ratings")?.split(",").map(Number).filter(Boolean) || []
+    const inStock = searchParams.get("inStock") === "true" ? true : searchParams.get("inStock") === "false" ? false : null
+
+    setFilters((prev) => {
+      if (
+        prev.priceRange[0] === minP &&
+        prev.priceRange[1] === maxP &&
+        prev.categories.length === categories.length && prev.categories.every((v, i) => v === categories[i]) &&
+        prev.saleOnly === saleOnly &&
+        prev.brands.length === brands.length && prev.brands.every((v, i) => v === brands[i]) &&
+        prev.frameTypes.length === frameTypes.length && prev.frameTypes.every((v, i) => v === frameTypes[i]) &&
+        prev.lensTypes.length === lensTypes.length && prev.lensTypes.every((v, i) => v === lensTypes[i]) &&
+        prev.colors.length === colors.length && prev.colors.every((v, i) => v === colors[i]) &&
+        prev.ratings.length === ratings.length && prev.ratings.every((v, i) => v === ratings[i]) &&
+        prev.inStock === inStock
+      ) {
+        return prev
+      }
+      return {
+        priceRange: [minP, maxP],
+        categories,
+        saleOnly,
+        brands,
+        frameTypes,
+        lensTypes,
+        colors,
+        ratings,
+        inStock,
+      }
+    })
+
+    const sort = (searchParams.get("sort") as SortOption) || "featured"
+    setSortOption((prev) => (prev === sort ? prev : sort))
+
+    const page = Number.parseInt(searchParams.get("page") || "1")
+    setCurrentPage((prev) => (prev === page ? prev : page))
+
+    const limit = Number.parseInt(searchParams.get("limit") || "6")
+    setProductsPerPage((prev) => (prev === limit ? prev : limit))
+  }, [searchParams])
+
   // Update URL when filters change
   useEffect(() => {
-    const params = new URLSearchParams()
+    const params = new URLSearchParams(searchParams.toString())
 
-    if (filters.priceRange[0] > minPrice) params.set("minPrice", filters.priceRange[0].toString())
-    if (filters.priceRange[1] < maxPrice) params.set("maxPrice", filters.priceRange[1].toString())
+    const updateParam = (key: string, value: string | null, defaultValue?: string) => {
+      if (value && value !== defaultValue) {
+        params.set(key, value)
+      } else {
+        params.delete(key)
+      }
+    }
 
-    if (filters.brands.length > 0) params.set("brands", filters.brands.join(","))
-    if (filters.frameTypes.length > 0) params.set("frameTypes", filters.frameTypes.join(","))
-    if (filters.lensTypes.length > 0) params.set("lensTypes", filters.lensTypes.join(","))
-    if (filters.colors.length > 0) params.set("colors", filters.colors.join(","))
-    if (filters.ratings.length > 0) params.set("ratings", filters.ratings.join(","))
-    if (filters.inStock !== null) params.set("inStock", filters.inStock.toString())
+    updateParam("minPrice", filters.priceRange[0] > minPrice ? filters.priceRange[0].toString() : null)
+    updateParam("maxPrice", filters.priceRange[1] < maxPrice ? filters.priceRange[1].toString() : null)
 
-    if (sortOption !== "featured") params.set("sort", sortOption)
-    if (currentPage > 1) params.set("page", currentPage.toString())
-    if (productsPerPage !== 6) params.set("limit", productsPerPage.toString())
+    updateParam("category", filters.categories.length > 0 ? filters.categories.join(",") : null)
+    updateParam("sale", filters.saleOnly ? "true" : null)
+    params.delete("brand")
+    updateParam("brands", filters.brands.length > 0 ? filters.brands.join(",") : null)
+    updateParam("frameTypes", filters.frameTypes.length > 0 ? filters.frameTypes.join(",") : null)
+    updateParam("lensTypes", filters.lensTypes.length > 0 ? filters.lensTypes.join(",") : null)
+    updateParam("colors", filters.colors.length > 0 ? filters.colors.join(",") : null)
+    updateParam("ratings", filters.ratings.length > 0 ? filters.ratings.join(",") : null)
+    updateParam("inStock", filters.inStock !== null ? filters.inStock.toString() : null)
 
-    router.push(`${pathname}?${params.toString()}`, { scroll: false })
-  }, [filters, sortOption, currentPage, pathname, router, minPrice, maxPrice, productsPerPage])
+    updateParam("sort", sortOption, "featured")
+    updateParam("page", currentPage > 1 ? currentPage.toString() : null)
+    updateParam("limit", productsPerPage !== 6 ? productsPerPage.toString() : null)
+
+    const newSearch = params.toString()
+    const currentSearch = searchParams.toString()
+
+    if (newSearch !== currentSearch) {
+      router.push(`${pathname}?${newSearch}`, { scroll: false })
+    }
+  }, [filters, sortOption, currentPage, pathname, router, minPrice, maxPrice, productsPerPage, searchParams])
 
   // Apply filters and sorting
   useEffect(() => {
@@ -106,6 +237,23 @@ export default function ProductFilterPage() {
 
     const timer = setTimeout(() => {
       let result = [...mockProducts]
+
+      if (filters.categories.length > 0) {
+        result = result.filter((product) => {
+          const productCategory = product.category?.toLowerCase()
+          return filters.categories.some((category) => {
+            if (category === "sunglasses") return true
+            return productCategory === category.toLowerCase()
+          })
+        })
+      }
+
+      if (filters.saleOnly) {
+        result = result.filter((product) => {
+          const discount = Number.parseInt(product.discountPercent || "0")
+          return discount > 0 || (product.priceAfterDiscount && product.mainPrice && product.priceAfterDiscount < product.mainPrice)
+        })
+      }
 
       result = result.filter((product) => {
         const productPrice = product.variants[0].priceAfterDiscount
@@ -166,7 +314,7 @@ export default function ProductFilterPage() {
     }, 500)
 
     return () => clearTimeout(timer)
-  }, [filters, sortOption])
+  }, [filters, sortOption, searchParams])
 
   const handleFilterChange = (filterType: keyof FilterState, value: any) => {
     setFilters((prev) => {
@@ -176,7 +324,14 @@ export default function ProductFilterPage() {
         newFilters.priceRange = value
       } else if (filterType === "inStock") {
         newFilters.inStock = value
+      } else if (filterType === "saleOnly") {
+        newFilters.saleOnly = value
       } else if (Array.isArray(newFilters[filterType])) {
+        if (Array.isArray(value)) {
+          newFilters[filterType] = value as any
+          return newFilters
+        }
+
         const filterArray = newFilters[filterType] as any[]
         if (filterArray.includes(value)) {
           newFilters[filterType] = filterArray.filter((item) => item !== value) as any
@@ -194,6 +349,8 @@ export default function ProductFilterPage() {
   const clearAllFilters = () => {
     setFilters({
       priceRange: [minPrice, maxPrice],
+      categories: [],
+      saleOnly: false,
       brands: [],
       frameTypes: [],
       lensTypes: [],
@@ -203,7 +360,14 @@ export default function ProductFilterPage() {
     })
     setSortOption("featured")
     setCurrentPage(1)
-    router.push(pathname, { scroll: false })
+
+    // Clear only managed filters from the URL, preserving others
+    const params = new URLSearchParams(searchParams.toString())
+    const managedKeys = ["minPrice", "maxPrice", "category", "sale", "brand", "brands", "frameTypes", "lensTypes", "colors", "ratings", "inStock", "sort", "page", "limit"]
+    managedKeys.forEach((key) => params.delete(key))
+
+    const newSearch = params.toString()
+    router.push(newSearch ? `${pathname}?${newSearch}` : pathname, { scroll: false })
   }
 
   const removeFilter = (filterType: keyof FilterState, value: any) => {
@@ -214,6 +378,8 @@ export default function ProductFilterPage() {
         newFilters.priceRange = [minPrice, maxPrice]
       } else if (filterType === "inStock") {
         newFilters.inStock = null
+      } else if (filterType === "saleOnly") {
+        newFilters.saleOnly = false
       } else if (Array.isArray(newFilters[filterType])) {
         newFilters[filterType] = (newFilters[filterType] as any[]).filter((item) => item !== value) as any
       }
@@ -237,6 +403,8 @@ export default function ProductFilterPage() {
   const hasActiveFilters = () => {
     return (
       filters.brands.length > 0 ||
+      filters.categories.length > 0 ||
+      filters.saleOnly ||
       filters.frameTypes.length > 0 ||
       filters.lensTypes.length > 0 ||
       filters.colors.length > 0 ||
@@ -250,6 +418,8 @@ export default function ProductFilterPage() {
   const getActiveFilterCount = () => {
     let count = 0
     count += filters.brands.length
+    count += filters.categories.length
+    if (filters.saleOnly) count += 1
     count += filters.frameTypes.length
     count += filters.lensTypes.length
     count += filters.colors.length
@@ -261,6 +431,11 @@ export default function ProductFilterPage() {
 
   const getMetaTitle = () => {
     let title = "Eyewear Collection"
+    if (filters.categories.length === 1) {
+      const option = collectionOptions.find((item) => item.value === filters.categories[0])
+      title = `${option?.label || filters.categories[0]} Eyewear`
+    }
+    if (filters.saleOnly) title = `Sale ${title}`
     if (filters.brands.length === 1) title = `${filters.brands[0]} Eyewear`
     if (filters.frameTypes.length === 1) title = `${filters.frameTypes[0]} ${title}`
     if (filters.lensTypes.length === 1) title = `${filters.lensTypes[0]} ${title}`
@@ -271,6 +446,11 @@ export default function ProductFilterPage() {
   const getMetaDescription = () => {
     let description = "Browse our premium collection of eyewear including sunglasses and prescription glasses."
     const filterParts = []
+    if (filters.categories.length > 0) {
+      const labels = filters.categories.map((category) => collectionOptions.find((item) => item.value === category)?.label || category)
+      filterParts.push(`collections like ${labels.join(", ")}`)
+    }
+    if (filters.saleOnly) filterParts.push("sale items")
     if (filters.brands.length > 0) filterParts.push(`brands like ${filters.brands.join(", ")}`)
     if (filters.frameTypes.length > 0) filterParts.push(`${filters.frameTypes.join(", ")} frames`)
     if (filters.lensTypes.length > 0) filterParts.push(`${filters.lensTypes.join(", ")} lenses`)
@@ -360,6 +540,8 @@ export default function ProductFilterPage() {
   // Filter props
   const filterProps = {
     filters,
+    collectionOptions,
+    optionCounts,
     allBrands,
     allFrameTypes,
     allLensTypes,
@@ -459,7 +641,9 @@ export default function ProductFilterPage() {
           {mobileFiltersOpen && (
             <MobileFilterDrawer
               filters={filters}
+              optionCounts={optionCounts}
               allBrands={allBrands}
+              collectionOptions={collectionOptions}
               allFrameTypes={allFrameTypes}
               allLensTypes={allLensTypes}
               allColors={allColors}
@@ -536,6 +720,28 @@ export default function ProductFilterPage() {
                   <X className="w-3 h-3" />
                 </button>
               ))}
+              {filters.categories.map((category) => {
+                const option = collectionOptions.find((item) => item.value === category)
+                return (
+                  <button
+                    key={category}
+                    onClick={() => removeFilter("categories", category)}
+                    className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
+                  >
+                    {option?.label || category}
+                    <X className="w-3 h-3" />
+                  </button>
+                )
+              })}
+              {filters.saleOnly && (
+                <button
+                  onClick={() => removeFilter("saleOnly", null)}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
+                >
+                  Sale
+                  <X className="w-3 h-3" />
+                </button>
+              )}
               {filters.frameTypes.map((type) => (
                 <button
                   key={type}

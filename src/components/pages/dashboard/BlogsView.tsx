@@ -2,10 +2,16 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle, Eye, FileText, ImageIcon, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { CheckCircle, Eye, FileText, ImageIcon, Loader2, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { getBlogPosts, saveBlogPosts, slugify, TBlogPost } from "@/lib/contentMockData";
+import { slugify, TBlogPost } from "@/lib/contentMockData";
+import {
+  useGetAllPostsQuery,
+  useCreatePostMutation,
+  useUpdatePostMutation,
+  useDeletePostMutation,
+} from "@/redux/features/blog/blogApi";
 
 const blogSchema = z.object({
   title: z.string().min(4, "Title must be at least 4 characters."),
@@ -24,7 +30,12 @@ const blogSchema = z.object({
 });
 
 export default function BlogsView() {
-  const [posts, setPosts] = useState<TBlogPost[]>([]);
+  const { data, isLoading } = useGetAllPostsQuery({});
+  const posts = (data?.data || []) as TBlogPost[];
+  const [createPost] = useCreatePostMutation();
+  const [updatePost] = useUpdatePostMutation();
+  const [deletePost] = useDeletePostMutation();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<TBlogPost | null>(null);
@@ -43,9 +54,6 @@ export default function BlogsView() {
   const [status, setStatus] = useState<"Published" | "Draft">("Published");
   const [featured, setFeatured] = useState(false);
 
-  useEffect(() => {
-    setPosts(getBlogPosts());
-  }, []);
 
   const filteredPosts = useMemo(() => {
     const query = searchTerm.toLowerCase();
@@ -134,32 +142,26 @@ export default function BlogsView() {
     }
 
     if (editingPost) {
-      const updated = posts.map((post) =>
-        post.id === editingPost.id ? { ...post, ...payload, featured } : post
-      );
-      setPosts(updated);
-      saveBlogPosts(updated);
-      toast.success("Blog post updated", { description: `${payload.title} has been saved.` });
+      try {
+        await updatePost({ id: editingPost.id, ...payload, featured }).unwrap();
+        toast.success("Blog post updated", { description: `${payload.title} has been saved.` });
+      } catch { toast.error("Failed to update post"); }
     } else {
-      const newPost: TBlogPost = {
-        id: `BLOG-${Math.floor(1000 + Math.random() * 9000)}`,
-        ...payload,
-        featured,
-      };
-      const updated = [newPost, ...posts];
-      setPosts(updated);
-      saveBlogPosts(updated);
-      toast.success("Blog post created", { description: `${payload.title} is ready for publishing.` });
+      try {
+        await createPost({ ...payload, featured }).unwrap();
+        toast.success("Blog post created", { description: `${payload.title} is ready for publishing.` });
+      } catch (err: any) {
+        toast.error("Failed to create post", { description: err?.data?.message || "Slug may already exist" });
+      }
     }
-
     setIsModalOpen(false);
   };
 
-  const executeDelete = () => {
-    const updated = posts.filter((post) => post.id !== deleteConfirm.id);
-    setPosts(updated);
-    saveBlogPosts(updated);
-    toast.success("Blog post deleted", { description: `${deleteConfirm.title} has been removed.` });
+  const executeDelete = async () => {
+    try {
+      await deletePost(deleteConfirm.id).unwrap();
+      toast.success("Blog post deleted", { description: `${deleteConfirm.title} has been removed.` });
+    } catch { toast.error("Failed to delete post"); }
     setDeleteConfirm({ isOpen: false, id: "", title: "" });
   };
 

@@ -4,7 +4,8 @@
 import { useCart } from "@/hooks/use-cart"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
-import { getCoupons } from "@/lib/couponMockData"
+import { useValidateCouponMutation } from "@/redux/features/coupon/couponApi"
+import { useCreateOrderMutation, useCreateStripeSessionMutation } from "@/redux/features/order/orderApi"
 
 import CheckoutStepper from "@/components/pages/checkout/CheckoutStepper"
 import CheckoutSummary from "@/components/pages/checkout/CheckoutSummary"
@@ -18,8 +19,10 @@ import Link from "next/link"
 
 export default function CheckoutPageClient() {
   const { items, totalPrice, clearCart } = useCart()
-
   const { toast } = useToast()
+  const [validateCoupon, { isLoading: isValidatingCoupon }] = useValidateCouponMutation()
+  const [createOrder] = useCreateOrderMutation()
+  const [createStripeSession] = useCreateStripeSessionMutation()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderComplete, setOrderComplete] = useState(false)
@@ -91,85 +94,72 @@ export default function CheckoutPageClient() {
   // Handle order placement
   const placeOrder = async () => {
     setIsSubmitting(true)
-
     try {
-      // Simulate API call to process order
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      // Generate a random order ID
-      const newOrderId = `ORD-${Math.floor(Math.random() * 10000)}-${new Date().getFullYear()}`
-      setOrderId(newOrderId)
-
-      // Clear cart after successful order
-      clearCart()
-
-      // Show success message
-      toast({
-        title: "Order placed successfully!",
-        description: `Your order #${newOrderId} has been placed.`,
-        type: "success",
-      })
-
-      // Set order as complete and move to confirmation
-      setOrderComplete(true)
-      setCurrentStep(4)
-    } catch (error) {
+      if (paymentMethod === "stripe") {
+        // Stripe checkout session
+        const session = await createStripeSession({
+          items: items.map((item) => ({
+            name: item.name,
+            price: item.discountPrice || item.price,
+            quantity: item.quantity,
+            image: item.image,
+          })),
+          couponCode: couponCode || undefined,
+          shippingAddress: shippingDetails,
+          shippingMethod,
+        }).unwrap()
+        // Redirect to Stripe
+        if (session?.data?.url) {
+          window.location.href = session.data.url
+          return
+        }
+      } else {
+        // COD / Bank Transfer order
+        const res = await createOrder({
+          items: items.map((item) => ({
+            productId: item.id.split("-")[0],
+            variantId: item.id,
+            quantity: item.quantity,
+            price: item.discountPrice || item.price,
+          })),
+          couponCode: couponCode || undefined,
+          shippingAddress: shippingDetails,
+          shippingMethod,
+          paymentMethod: paymentMethod === "cod" ? "CASH_ON_DELIVERY" : "BANK_TRANSFER",
+          subtotal,
+          shipping: shippingCost,
+          tax,
+          discount,
+          total: grandTotal,
+        }).unwrap()
+        const newOrderId = res?.data?.orderNumber || `ORD-${Date.now()}`
+        setOrderId(newOrderId)
+        clearCart()
+        toast({ title: "Order placed successfully!", description: `Your order #${newOrderId} has been placed.`, type: "success" })
+        setOrderComplete(true)
+        setCurrentStep(4)
+      }
+    } catch (error: any) {
       console.error("Error placing order:", error)
-      toast({
-        title: "Error placing order",
-        description: "There was an error processing your order. Please try again.",
-        type: "destructive",
-      })
+      toast({ title: "Error placing order", description: error?.data?.message || "There was an error processing your order. Please try again.", type: "destructive" })
     } finally {
       setIsSubmitting(false)
     }
   }
 
   // Handle coupon application
-  const applyCoupon = (code: string) => {
-    const coupons = getCoupons()
-    const found = coupons.find(
-      (c) => c.code === code.toUpperCase().trim()
-    )
-
-    if (found) {
-      if (found.status !== "Active") {
-        toast({
-          title: "Coupon is inactive",
-          description: "The coupon code you entered is no longer active.",
-          type: "destructive",
-        })
-        return
+  const applyCoupon = async (code: string) => {
+    try {
+      const result = await validateCoupon({ code: code.toUpperCase().trim() }).unwrap()
+      const couponData = result?.data
+      if (couponData) {
+        const discountAmount = subtotal * (couponData.discount / 100)
+        setDiscount(discountAmount)
+        setCouponCode(couponData.code)
+        toast({ title: "Coupon applied", description: `${couponData.discount}% discount has been applied.`, type: "success" })
       }
-
-      const expiryDate = new Date(found.expiry)
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-
-      if (expiryDate < today) {
-        toast({
-          title: "Coupon expired",
-          description: "The coupon code you entered has expired.",
-          type: "destructive",
-        })
-        return
-      }
-
-      const discountPercent = found.discount
-      const discountAmount = subtotal * (discountPercent / 100)
-      setDiscount(discountAmount)
-      setCouponCode(found.code)
-      toast({
-        title: "Coupon applied",
-        description: `${discountPercent}% discount has been applied to your order.`,
-        type: "success",
-      })
-    } else {
-      toast({
-        title: "Invalid coupon",
-        description: "The coupon code you entered is invalid or expired.",
-        type: "destructive",
-      })
+    } catch (err: any) {
+      toast({ title: "Invalid coupon", description: err?.data?.message || "The coupon code you entered is invalid or expired.", type: "destructive" })
     }
   }
 

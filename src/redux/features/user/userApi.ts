@@ -1,0 +1,43 @@
+import { baseApi } from "../../api/baseApi";
+
+const userApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getMe: builder.query({
+      query: () => ({ url: "auth/get-me" }),
+      providesTags: ["user"],
+    }),
+    updateMe: builder.mutation({
+      query: (body) => ({ url: "user/update-user", method: "PATCH", body }),
+      invalidatesTags: ["user"],
+    }),
+    getAllUsers: builder.query({
+      query: (params = {}) => ({ url: "user/all", params }),
+      providesTags: ["users"],
+    }),
+    getUserById: builder.query({
+      query: (id: string) => ({ url: `user/single/${id}` }),
+      providesTags: (_r, _e, id) => [{ type: "user", id }],
+    }),
+    updateUserStatus: builder.mutation({
+      query: ({ id, status }) => ({ url: `user/status/${id}`, method: "PATCH", body: { status } }),
+      invalidatesTags: ["users"],
+    }),
+    deleteAccount: builder.mutation({
+      query: () => ({ url: "user/delete-user", method: "DELETE" }),
+      invalidatesTags: ["user"],
+    }),
+    changePassword: builder.mutation({
+      query: (body) => ({ url: "auth/change-password", method: "PUT", body }),
+    }),
+  }),
+});
+
+export const {
+  useGetMeQuery,
+  useUpdateMeMutation,
+  useGetAllUsersQuery,
+  useGetUserByIdQuery,
+  useUpdateUserStatusMutation,
+  useDeleteAccountMutation,
+  useChangePasswordMutation,
+} = userApi;

@@ -1,40 +1,32 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Tag, Pencil } from "lucide-react";
+import { Plus, Trash2, Tag, Pencil, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { getCoupons, saveCoupons, TCoupon } from "@/lib/couponMockData";
+import {
+  useGetAllCouponsQuery,
+  useCreateCouponMutation,
+  useUpdateCouponMutation,
+  useDeleteCouponMutation,
+} from "@/redux/features/coupon/couponApi";
 
 export default function CouponsView() {
-  const [coupons, setCoupons] = useState<TCoupon[]>([]);
+  const { data, isLoading } = useGetAllCouponsQuery(undefined);
+  const coupons = data?.data || [];
+  const [createCoupon, { isLoading: isCreating }] = useCreateCouponMutation();
+  const [updateCoupon, { isLoading: isUpdating }] = useUpdateCouponMutation();
+  const [deleteCoupon] = useDeleteCouponMutation();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCoupon, setEditingCoupon] = useState<TCoupon | null>(null);
-
-  // Deletion confirmation overlay state
-  const [deleteConfirm, setDeleteConfirm] = useState<{
-    isOpen: boolean;
-    id: string;
-    code: string;
-  }>({
-    isOpen: false,
-    id: "",
-    code: "",
-  });
-
-  // Form State
+  const [editingCoupon, setEditingCoupon] = useState<{ id: string; code: string; discount: number; expiry: string; status: string } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string; code: string }>({ isOpen: false, id: "", code: "" });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [code, setCode] = useState("");
   const [discount, setDiscount] = useState("");
   const [expiry, setExpiry] = useState("");
   const [status, setStatus] = useState<"Active" | "Expired">("Active");
-  
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-
-  // Load from dynamic helper on mount
-  useEffect(() => {
-    setCoupons(getCoupons());
-  }, []);
 
   const couponSchema = z.object({
     code: z
@@ -99,42 +91,20 @@ export default function CouponsView() {
     }
 
     if (editingCoupon) {
-      // EDIT MODE
-      const updated = coupons.map((c) => {
-        if (c.id === editingCoupon.id) {
-          return {
-            ...c,
-            code: code.toUpperCase().trim(),
-            discount: Number(discount),
-            expiry,
-            status,
-          };
-        }
-        return c;
-      });
-      setCoupons(updated);
-      saveCoupons(updated);
-      toast.success("Coupon Updated", {
-        description: `${code.toUpperCase()} coupon has been updated successfully.`,
-      });
+      try {
+        await updateCoupon({ id: editingCoupon.id, code: code.toUpperCase().trim(), discount: Number(discount), expiry, status }).unwrap();
+        toast.success("Coupon Updated", { description: `${code.toUpperCase()} coupon has been updated successfully.` });
+      } catch {
+        toast.error("Failed to update coupon");
+      }
     } else {
-      // ADD MODE
-      const newCoupon: TCoupon = {
-        id: `CPN-${Math.floor(104 + Math.random() * 900)}`,
-        code: code.toUpperCase().trim(),
-        discount: Number(discount),
-        expiry,
-        status,
-      };
-
-      const updated = [newCoupon, ...coupons];
-      setCoupons(updated);
-      saveCoupons(updated);
-      toast.success("Coupon Created!", {
-        description: `${newCoupon.code} is now active at checkout sheets.`,
-      });
+      try {
+        await createCoupon({ code: code.toUpperCase().trim(), discount: Number(discount), expiry, status }).unwrap();
+        toast.success("Coupon Created!", { description: `${code.toUpperCase()} is now active at checkout.` });
+      } catch (err: any) {
+        toast.error("Failed to create coupon", { description: err?.data?.message || "Something went wrong" });
+      }
     }
-
     setIsModalOpen(false);
   };
 
@@ -146,13 +116,13 @@ export default function CouponsView() {
     });
   };
 
-  const executeDelete = () => {
-    const updated = coupons.filter((c) => c.id !== deleteConfirm.id);
-    setCoupons(updated);
-    saveCoupons(updated);
-    toast.success("Coupon Deleted", {
-      description: `"${deleteConfirm.code}" promo code has been deleted.`,
-    });
+  const executeDelete = async () => {
+    try {
+      await deleteCoupon(deleteConfirm.id).unwrap();
+      toast.success("Coupon Deleted", { description: `"${deleteConfirm.code}" promo code has been deleted.` });
+    } catch {
+      toast.error("Failed to delete coupon");
+    }
     setDeleteConfirm({ isOpen: false, id: "", code: "" });
   };
 
@@ -194,7 +164,9 @@ export default function CouponsView() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {coupons.length === 0 ? (
+            {isLoading ? (
+              <tr><td colSpan={5} className="p-8 text-center text-muted-foreground"><Loader2 className="w-5 h-5 animate-spin mx-auto" /></td></tr>
+            ) : coupons.length === 0 ? (
               <tr>
                 <td colSpan={5} className="p-8 text-center text-muted-foreground bg-card/25">
                   No coupons configured. Click &quot;New Coupon&quot; to get started.

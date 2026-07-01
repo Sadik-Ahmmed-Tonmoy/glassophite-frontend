@@ -2,10 +2,16 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle, ExternalLink, Globe, ImageIcon, Pencil, Plus, Search, Star, Tag, Trash2 } from "lucide-react";
+import { CheckCircle, ExternalLink, Globe, ImageIcon, Loader2, Pencil, Plus, Search, Star, Tag, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { getBrandProfiles, saveBrandProfiles, slugify, TBrandProfile } from "@/lib/contentMockData";
+import { slugify, TBrandProfile } from "@/lib/contentMockData";
+import {
+  useGetAllBrandsQuery,
+  useCreateBrandMutation,
+  useUpdateBrandMutation,
+  useDeleteBrandMutation,
+} from "@/redux/features/brand/brandApi";
 
 const brandSchema = z.object({
   name: z.string().min(2, "Brand name is required."),
@@ -23,7 +29,12 @@ const brandSchema = z.object({
 });
 
 export default function BrandsView() {
-  const [brands, setBrands] = useState<TBrandProfile[]>([]);
+  const { data, isLoading } = useGetAllBrandsQuery({});
+  const brands = (data?.data || []) as TBrandProfile[];
+  const [createBrand] = useCreateBrandMutation();
+  const [updateBrand] = useUpdateBrandMutation();
+  const [deleteBrand] = useDeleteBrandMutation();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<TBrandProfile | null>(null);
@@ -41,9 +52,6 @@ export default function BrandsView() {
   const [status, setStatus] = useState<"Active" | "Draft">("Active");
   const [featured, setFeatured] = useState(false);
 
-  useEffect(() => {
-    setBrands(getBrandProfiles());
-  }, []);
 
   const filteredBrands = useMemo(() => {
     const query = searchTerm.toLowerCase();
@@ -131,32 +139,26 @@ export default function BrandsView() {
     }
 
     if (editingBrand) {
-      const updated = brands.map((brand) =>
-        brand.id === editingBrand.id ? { ...brand, ...payload, featured } : brand
-      );
-      setBrands(updated);
-      saveBrandProfiles(updated);
-      toast.success("Brand updated", { description: `${payload.name} has been saved.` });
+      try {
+        await updateBrand({ id: editingBrand.id, ...payload, featured }).unwrap();
+        toast.success("Brand updated", { description: `${payload.name} has been saved.` });
+      } catch { toast.error("Failed to update brand"); }
     } else {
-      const newBrand: TBrandProfile = {
-        id: `BRAND-${Math.floor(1000 + Math.random() * 9000)}`,
-        ...payload,
-        featured,
-      };
-      const updated = [newBrand, ...brands];
-      setBrands(updated);
-      saveBrandProfiles(updated);
-      toast.success("Brand created", { description: `${payload.name} is now available in the brand flow.` });
+      try {
+        await createBrand({ ...payload, featured }).unwrap();
+        toast.success("Brand created", { description: `${payload.name} is now available.` });
+      } catch (err: any) {
+        toast.error("Failed to create brand", { description: err?.data?.message || "Slug may already exist" });
+      }
     }
-
     setIsModalOpen(false);
   };
 
-  const executeDelete = () => {
-    const updated = brands.filter((brand) => brand.id !== deleteConfirm.id);
-    setBrands(updated);
-    saveBrandProfiles(updated);
-    toast.success("Brand deleted", { description: `${deleteConfirm.name} has been removed.` });
+  const executeDelete = async () => {
+    try {
+      await deleteBrand(deleteConfirm.id).unwrap();
+      toast.success("Brand deleted", { description: `${deleteConfirm.name} has been removed.` });
+    } catch { toast.error("Failed to delete brand"); }
     setDeleteConfirm({ isOpen: false, id: "", name: "" });
   };
 

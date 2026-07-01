@@ -2,16 +2,13 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-
-// Mock Customers
-const initialCustomers = [
-  { name: "Sadik Rahman", email: "sadik.rahman@gmail.com", joined: "2026-01-15", ordersCount: 5, spent: 78500 },
-  { name: "Tasnim Sultana", email: "tasnim.s@gmail.com", joined: "2026-02-18", ordersCount: 3, spent: 34200 },
-  { name: "Farhan Tanvir", email: "farhan.t@gmail.com", joined: "2026-03-10", ordersCount: 4, spent: 48900 },
-  { name: "Nabila Tabassum", email: "nabila.t@gmail.com", joined: "2026-04-05", ordersCount: 2, spent: 28400 },
-];
+import { Loader2 } from "lucide-react";
+import { useGetAllUsersQuery } from "@/redux/features/user/userApi";
 
 export default function CustomersView() {
+  const { data, isLoading } = useGetAllUsersQuery({ limit: 50 });
+  const customers = data?.data || [];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -31,21 +28,41 @@ export default function CustomersView() {
             <tr className="bg-neutral-100 dark:bg-neutral-850 text-neutral-500 uppercase tracking-wider font-extrabold text-[10px] border-b border-neutral-200 dark:border-neutral-800">
               <th className="p-4">Client Name</th>
               <th className="p-4">Email</th>
+              <th className="p-4">Phone</th>
               <th className="p-4">Registration</th>
-              <th className="p-4 text-center">Total Orders</th>
-              <th className="p-4 text-right">Lifetime Spent</th>
+              <th className="p-4 text-center">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-            {initialCustomers.map((cust, idx) => (
-              <tr key={idx} className="hover:bg-neutral-100/50 dark:hover:bg-neutral-800/30 transition-colors">
-                <td className="p-4 font-bold text-neutral-900 dark:text-white">{cust.name}</td>
-                <td className="p-4 text-neutral-500">{cust.email}</td>
-                <td className="p-4 text-neutral-500">{cust.joined}</td>
-                <td className="p-4 text-center font-semibold text-neutral-600 dark:text-neutral-300">{cust.ordersCount}</td>
-                <td className="p-4 text-right font-bold text-[#007C74]">৳{cust.spent}</td>
+            {isLoading ? (
+              <tr>
+                <td colSpan={5} className="p-8 text-center">
+                  <Loader2 className="w-5 h-5 animate-spin mx-auto text-neutral-400" />
+                </td>
               </tr>
-            ))}
+            ) : customers.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="p-8 text-center text-neutral-400">No customers registered yet.</td>
+              </tr>
+            ) : (
+              customers.map((cust: any) => (
+                <tr key={cust.id} className="hover:bg-neutral-100/50 dark:hover:bg-neutral-800/30 transition-colors">
+                  <td className="p-4 font-bold text-neutral-900 dark:text-white">{cust.fullName || "—"}</td>
+                  <td className="p-4 text-neutral-500">{cust.email}</td>
+                  <td className="p-4 text-neutral-500">{cust.phoneNumber || "—"}</td>
+                  <td className="p-4 text-neutral-500">{new Date(cust.createdAt).toLocaleDateString()}</td>
+                  <td className="p-4 text-center">
+                    <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                      cust.status === "ACTIVE"
+                        ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                        : "bg-red-500/10 text-red-500"
+                    }`}>
+                      {cust.status}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

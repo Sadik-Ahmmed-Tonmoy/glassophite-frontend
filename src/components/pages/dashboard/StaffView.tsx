@@ -65,7 +65,7 @@ export default function StaffView() {
     let accessRights = "Catalog Management";
     if (newRole === "Super Admin") accessRights = "Full Control";
     if (newRole === "Support Agent") accessRights = "Support & Orders";
-
+ 
     const newMember = {
       id: `STF-${Math.floor(304 + Math.random() * 900)}`,
       name: newName,

@@ -117,15 +117,32 @@ export default function CheckoutPageClient() {
         // COD / Bank Transfer order
         const res = await createOrder({
           items: items.map((item) => ({
-            productId: item.id.split("-")[0],
-            variantId: item.id,
-            quantity: item.quantity,
+            productId: item.id,
+            name: item.name,
+            sku: `${item.name.replace(/\s+/g, "-").toUpperCase()}-${item.size || "STD"}`,
             price: item.discountPrice || item.price,
+            originalPrice: item.price,
+            quantity: item.quantity,
+            variant: item.colorName || item.color || undefined,
+            image: item.image || undefined,
           })),
           couponCode: couponCode || undefined,
-          shippingAddress: shippingDetails,
+          shippingAddress: {
+            name: `${shippingDetails.firstName} ${shippingDetails.lastName}`.trim(),
+            street: shippingDetails.address,
+            city: shippingDetails.city,
+            state: shippingDetails.state,
+            zipCode: shippingDetails.zipCode,
+            country: shippingDetails.country,
+            phone: shippingDetails.phone,
+          },
           shippingMethod,
-          paymentMethod: paymentMethod === "cod" ? "CASH_ON_DELIVERY" : "BANK_TRANSFER",
+          paymentMethod:
+            paymentMethod === "cod"
+              ? "CASH_ON_DELIVERY"
+              : paymentMethod === "stripe"
+              ? "STRIPE"
+              : "CREDIT_CARD",
           subtotal,
           shipping: shippingCost,
           tax,

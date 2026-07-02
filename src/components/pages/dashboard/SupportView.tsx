@@ -63,7 +63,7 @@ export default function SupportView() {
                 </td>
                 <td className="p-4">
                   <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
-                    tkt.status === "Open" ? "bg-red-500/10 text-red-500" : "bg-green-550/15 text-green-550 dark:text-green-400"
+                    tkt.status === "Open" ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-600 dark:text-green-400"
                   }`}>
                     {tkt.status}
                   </span>

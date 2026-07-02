@@ -2,14 +2,95 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { 
-  DollarSign, 
-  ShoppingCart, 
-  Activity, 
-  TrendingUp 
+import {
+  DollarSign,
+  ShoppingCart,
+  Users,
+  Package,
+  Loader2,
 } from "lucide-react";
+import { useGetAllOrdersQuery } from "@/redux/features/order/orderApi";
+import { useGetAllUsersQuery } from "@/redux/features/user/userApi";
+import { useGetAllProductsQuery } from "@/redux/features/product/productApi";
 
 export default function OverviewView() {
+  const { data: ordersData, isLoading: ordersLoading } = useGetAllOrdersQuery({ limit: 1000 });
+  const { data: usersData, isLoading: usersLoading } = useGetAllUsersQuery({ limit: 1000 });
+  const { data: productsData, isLoading: productsLoading } = useGetAllProductsQuery({ limit: 1000 });
+
+  const orders = (ordersData?.data || []) as any[];
+  const users = (usersData?.data || []) as any[];
+  const products = (productsData?.data || []) as any[];
+
+  const isLoading = ordersLoading || usersLoading || productsLoading;
+
+  const totalRevenue = orders
+    .filter((o) => o.status === "DELIVERED")
+    .reduce((sum: number, o: any) => sum + (o.total || 0), 0);
+
+  const totalOrders = ordersData?.meta?.total ?? orders.length;
+  const totalCustomers = usersData?.meta?.total ?? users.length;
+  const totalProducts = productsData?.meta?.total ?? products.length;
+
+  // Revenue by month for last 6 months
+  const now = new Date();
+  const last6Months = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+    return {
+      label: d.toLocaleString("default", { month: "short" }),
+      month: d.getMonth(),
+      year: d.getFullYear(),
+      revenue: 0,
+    };
+  });
+
+  orders.forEach((o: any) => {
+    if (o.status !== "DELIVERED") return;
+    const d = new Date(o.createdAt);
+    const entry = last6Months.find(
+      (m) => m.month === d.getMonth() && m.year === d.getFullYear()
+    );
+    if (entry) entry.revenue += o.total || 0;
+  });
+
+  const maxRevenue = Math.max(...last6Months.map((m) => m.revenue), 1);
+
+  // Recent orders for activity feed
+  const recentOrders = [...orders]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5);
+
+  const metrics = [
+    {
+      label: "Total Revenue",
+      value: isLoading ? "—" : `৳${totalRevenue.toLocaleString()}`,
+      icon: DollarSign,
+      color: "#007C74",
+      bg: "#007C74",
+    },
+    {
+      label: "Orders Processed",
+      value: isLoading ? "—" : totalOrders.toLocaleString(),
+      icon: ShoppingCart,
+      color: "#3C55A5",
+      bg: "#3C55A5",
+    },
+    {
+      label: "Registered Customers",
+      value: isLoading ? "—" : totalCustomers.toLocaleString(),
+      icon: Users,
+      color: "#00A693",
+      bg: "#00A693",
+    },
+    {
+      label: "Products in Catalog",
+      value: isLoading ? "—" : totalProducts.toLocaleString(),
+      icon: Package,
+      color: "#8B5CF6",
+      bg: "#8B5CF6",
+    },
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -19,131 +100,134 @@ export default function OverviewView() {
     >
       {/* Heading */}
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">Overview</h1>
-        <p className="text-xs text-neutral-500">Live operational data and sales trends.</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Overview</h1>
+        <p className="text-xs text-muted-foreground">Live operational data and sales trends.</p>
       </div>
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-panel p-6 rounded-2xl flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] uppercase tracking-wider font-extrabold text-neutral-500">Total revenue</span>
-            <h3 className="text-2xl font-black text-neutral-900 dark:text-white">৳324,500</h3>
+        {metrics.map((m) => (
+          <div key={m.label} className="glass-panel p-6 rounded-2xl flex items-center justify-between border border-border">
+            <div className="space-y-1.5">
+              <span className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground">
+                {m.label}
+              </span>
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              ) : (
+                <h3 className="text-2xl font-black text-foreground">{m.value}</h3>
+              )}
+            </div>
+            <div
+              className="p-3 rounded-xl"
+              style={{ backgroundColor: `${m.bg}15`, color: m.color }}
+            >
+              <m.icon className="w-5 h-5" />
+            </div>
           </div>
-          <div className="p-3 bg-[#007C74]/10 text-[#007C74] rounded-xl">
-            <DollarSign className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="glass-panel p-6 rounded-2xl flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] uppercase tracking-wider font-extrabold text-neutral-500">Orders Processed</span>
-            <h3 className="text-2xl font-black text-neutral-900 dark:text-white">142</h3>
-          </div>
-          <div className="p-3 bg-[#3C55A5]/10 text-[#3C55A5] rounded-xl">
-            <ShoppingCart className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="glass-panel p-6 rounded-2xl flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] uppercase tracking-wider font-extrabold text-neutral-500">Active Try-Ons</span>
-            <h3 className="text-2xl font-black text-neutral-900 dark:text-white">842</h3>
-          </div>
-          <div className="p-3 bg-[#00A693]/10 text-[#00A693] rounded-xl">
-            <Activity className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="glass-panel p-6 rounded-2xl flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] uppercase tracking-wider font-extrabold text-neutral-500">Conversion Rate</span>
-            <h3 className="text-2xl font-black text-neutral-900 dark:text-white">3.8%</h3>
-          </div>
-          <div className="p-3 bg-neutral-100 dark:bg-neutral-800 text-neutral-500 rounded-xl">
-            <TrendingUp className="w-5 h-5" />
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Chart and Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* SVG Area Chart */}
-        <div className="lg:col-span-8 glass-panel p-6 rounded-2xl space-y-4">
-          <h3 className="text-sm font-bold tracking-wide text-neutral-900 dark:text-white">Revenue Growth (Last 6 Months)</h3>
-          <div className="w-full h-64 relative flex items-end">
-            <svg viewBox="0 0 600 200" className="w-full h-full text-[#007C74]">
-              <defs>
-                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#007C74" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="#007C74" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              {/* Grid lines */}
-              <line x1="0" y1="50" x2="600" y2="50" stroke="rgba(128,128,128,0.1)" strokeDasharray="5,5" />
-              <line x1="0" y1="100" x2="600" y2="100" stroke="rgba(128,128,128,0.1)" strokeDasharray="5,5" />
-              <line x1="0" y1="150" x2="600" y2="150" stroke="rgba(128,128,128,0.1)" strokeDasharray="5,5" />
-              
-              {/* Area */}
-              <path
-                d="M 50 170 C 130 140, 200 130, 280 80 C 360 90, 450 60, 550 30 L 550 190 L 50 190 Z"
-                fill="url(#chartGrad)"
-              />
-              
-              {/* Line */}
-              <path
-                d="M 50 170 C 130 140, 200 130, 280 80 C 360 90, 450 60, 550 30"
-                fill="transparent"
-                stroke="#007C74"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-              />
-
-              {/* Data Dots */}
-              <circle cx="50" cy="170" r="5" fill="#007C74" stroke="white" strokeWidth="1.5" />
-              <circle cx="150" cy="145" r="5" fill="#007C74" stroke="white" strokeWidth="1.5" />
-              <circle cx="280" cy="80" r="5" fill="#007C74" stroke="white" strokeWidth="1.5" />
-              <circle cx="410" cy="75" r="5" fill="#3C55A5" stroke="white" strokeWidth="1.5" />
-              <circle cx="550" cy="30" r="5" fill="#007C74" stroke="white" strokeWidth="1.5" />
-            </svg>
-          </div>
-          {/* Chart Legend */}
-          <div className="flex justify-between items-center text-[10px] uppercase font-extrabold text-neutral-400 px-4">
-            <span>Jan</span>
-            <span>Feb</span>
-            <span>Mar</span>
-            <span>Apr</span>
-            <span>May</span>
-            <span>Jun</span>
-          </div>
+        {/* Bar Chart — Revenue by Month */}
+        <div className="lg:col-span-8 glass-panel p-6 rounded-2xl space-y-4 border border-border">
+          <h3 className="text-sm font-bold tracking-wide text-foreground">
+            Delivered Revenue (Last 6 Months)
+          </h3>
+          {ordersLoading ? (
+            <div className="h-56 flex items-center justify-center">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="flex items-end gap-3 h-56 px-2">
+              {last6Months.map((m, i) => {
+                const heightPct = maxRevenue > 0 ? (m.revenue / maxRevenue) * 100 : 0;
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
+                    <div className="text-[9px] font-bold text-muted-foreground">
+                      {m.revenue > 0 ? `৳${(m.revenue / 1000).toFixed(0)}k` : ""}
+                    </div>
+                    <div className="w-full flex items-end justify-center" style={{ height: "180px" }}>
+                      <div
+                        className="w-full rounded-t-lg transition-all duration-500"
+                        style={{
+                          height: `${Math.max(heightPct, 2)}%`,
+                          background:
+                            i === last6Months.length - 1
+                              ? "linear-gradient(to top, #007C74, #00BFB3)"
+                              : "linear-gradient(to top, #007C7440, #007C7480)",
+                        }}
+                      />
+                    </div>
+                    <span className="text-[10px] uppercase font-extrabold text-muted-foreground">
+                      {m.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Recent Activities */}
-        <div className="lg:col-span-4 glass-panel p-6 rounded-2xl space-y-4">
-          <h3 className="text-sm font-bold tracking-wide text-neutral-900 dark:text-white">Live Stream Feed</h3>
-          <div className="space-y-4">
-            <div className="flex gap-3 text-xs">
-              <div className="w-2.5 h-2.5 bg-green-500 rounded-full mt-1.5 flex-shrink-0 animate-ping" />
-              <div>
-                <p className="font-bold text-neutral-800 dark:text-white">New subscriber registered</p>
-                <p className="text-[10px] text-neutral-500">2 minutes ago</p>
-              </div>
+        {/* Recent Activity Feed */}
+        <div className="lg:col-span-4 glass-panel p-6 rounded-2xl space-y-4 border border-border">
+          <h3 className="text-sm font-bold tracking-wide text-foreground">Recent Orders</h3>
+          {ordersLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             </div>
-            <div className="flex gap-3 text-xs">
-              <div className="w-2.5 h-2.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0" />
-              <div>
-                <p className="font-bold text-neutral-800 dark:text-white">ORD-9482 status changed</p>
-                <p className="text-[10px] text-neutral-500">12 minutes ago</p>
-              </div>
+          ) : recentOrders.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No orders yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {recentOrders.map((o: any, i: number) => {
+                const statusColors: Record<string, string> = {
+                  DELIVERED: "bg-green-500",
+                  SHIPPED: "bg-blue-500",
+                  PROCESSING: "bg-yellow-500",
+                  CANCELLED: "bg-red-500",
+                };
+                return (
+                  <div key={o.id} className="flex gap-3 text-xs">
+                    <div
+                      className={`w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 ${statusColors[o.status] || "bg-gray-400"} ${i === 0 ? "animate-pulse" : ""}`}
+                    />
+                    <div>
+                      <p className="font-bold text-foreground">
+                        {o.orderNumber} — {o.user?.fullName || "Customer"}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {o.status} · ৳{o.total?.toLocaleString()} · {new Date(o.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div className="flex gap-3 text-xs">
-              <div className="w-2.5 h-2.5 bg-[#007C74] rounded-full mt-1.5 flex-shrink-0" />
-              <div>
-                <p className="font-bold text-neutral-800 dark:text-white">New product GP-341 created</p>
-                <p className="text-[10px] text-neutral-500">1 hour ago</p>
-              </div>
-            </div>
-          </div>
+          )}
+        </div>
+      </div>
+
+      {/* Quick Stats Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="glass-panel p-5 rounded-2xl border border-border space-y-1">
+          <p className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground">Processing Orders</p>
+          <p className="text-2xl font-black text-foreground">
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : orders.filter((o) => o.status === "PROCESSING").length}
+          </p>
+        </div>
+        <div className="glass-panel p-5 rounded-2xl border border-border space-y-1">
+          <p className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground">Shipped Orders</p>
+          <p className="text-2xl font-black text-foreground">
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : orders.filter((o) => o.status === "SHIPPED").length}
+          </p>
+        </div>
+        <div className="glass-panel p-5 rounded-2xl border border-border space-y-1">
+          <p className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground">Delivered Orders</p>
+          <p className="text-2xl font-black text-foreground">
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : orders.filter((o) => o.status === "DELIVERED").length}
+          </p>
         </div>
       </div>
     </motion.div>

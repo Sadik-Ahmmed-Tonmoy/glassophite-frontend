@@ -34,7 +34,7 @@ const getInitialCategoriesFromParams = (searchParams: Pick<URLSearchParams, "get
 }
 
 const isSaleProduct = (product: (typeof mockProducts)[number]) => {
-  const discount = Number.parseInt(product.discountPercent || "0")
+  const discount = Number.parseInt(String(product.discountPercent || "0"))
   return discount > 0 || Boolean(product.priceAfterDiscount && product.mainPrice && product.priceAfterDiscount < product.mainPrice)
 }
 
@@ -250,7 +250,7 @@ export default function ProductFilterPage() {
 
       if (filters.saleOnly) {
         result = result.filter((product) => {
-          const discount = Number.parseInt(product.discountPercent || "0")
+          const discount = Number.parseInt(String(product.discountPercent || "0"))
           return discount > 0 || (product.priceAfterDiscount && product.mainPrice && product.priceAfterDiscount < product.mainPrice)
         })
       }

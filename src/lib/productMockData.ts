@@ -737,7 +737,7 @@ const getStableImageSrc = (src: string) => deadImageFallbacks[src] || src;
 const normalizeProductImages = (products: TProduct[]) =>
   products.map((product) => ({
     ...product,
-    img: getStableImageSrc(product.img),
+    img: getStableImageSrc(product.img ?? ""),
     variants: product.variants.map((variant) => ({
       ...variant,
       imgList: variant.imgList.map((image) => ({

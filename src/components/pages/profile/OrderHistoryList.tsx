@@ -104,9 +104,9 @@ export default function OrderHistoryList() {
     .sort((a, b) => {
       switch (sortBy) {
         case "date-asc":
-          return new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime();
+          return new Date(a.orderDate ?? a.createdAt ?? 0).getTime() - new Date(b.orderDate ?? b.createdAt ?? 0).getTime();
         case "date-desc":
-          return new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime();
+          return new Date(b.orderDate ?? b.createdAt ?? 0).getTime() - new Date(a.orderDate ?? a.createdAt ?? 0).getTime();
         case "total-asc":
           return a.total - b.total;
         case "total-desc":
@@ -314,7 +314,7 @@ export default function OrderHistoryList() {
                       <div className="flex items-center text-sm mt-1">
                         <Calendar size={14} className={cn("mr-1", styles.icon)} />
                         <span className={styles.textMutedLighter}>
-                          Ordered on {new Date(order.orderDate).toLocaleDateString()}
+                          Ordered on {new Date(order.orderDate ?? order.createdAt ?? 0).toLocaleDateString()}
                         </span>
                       </div>
                     </div>
@@ -328,7 +328,7 @@ export default function OrderHistoryList() {
                         {order.items.length} items
                       </div>
                     </div>
-                    {order.status === "shipped" && order.estimatedDelivery && (
+                    {(order.status === "shipped" || order.status === "SHIPPED") && order.estimatedDelivery && (
                       <div className={cn("text-xs px-2 py-1 rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-50 text-blue-700")}>
                         Est. Delivery: {new Date(order.estimatedDelivery).toLocaleDateString()}
                       </div>

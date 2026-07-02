@@ -7,23 +7,27 @@ const userApi = baseApi.injectEndpoints({
       providesTags: ["user"],
     }),
     updateMe: builder.mutation({
-      query: (body) => ({ url: "user/update-user", method: "PATCH", body }),
+      query: (body) => ({ url: "users/update-user", method: "PATCH", body }),
       invalidatesTags: ["user"],
     }),
     getAllUsers: builder.query({
-      query: (params = {}) => ({ url: "user/all", params }),
+      query: (params = {}) => ({ url: "users/all", params }),
       providesTags: ["users"],
     }),
     getUserById: builder.query({
-      query: (id: string) => ({ url: `user/single/${id}` }),
+      query: (id: string) => ({ url: `users/single/${id}` }),
       providesTags: (_r, _e, id) => [{ type: "user", id }],
     }),
     updateUserStatus: builder.mutation({
-      query: ({ id, status }) => ({ url: `user/status/${id}`, method: "PATCH", body: { status } }),
+      query: ({ id, status }) => ({
+        url: `users/status/${id}`,
+        method: "PATCH",
+        body: { status },
+      }),
       invalidatesTags: ["users"],
     }),
     deleteAccount: builder.mutation({
-      query: () => ({ url: "user/delete-user", method: "DELETE" }),
+      query: () => ({ url: "users/delete-user", method: "DELETE" }),
       invalidatesTags: ["user"],
     }),
     changePassword: builder.mutation({

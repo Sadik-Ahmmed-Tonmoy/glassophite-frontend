@@ -65,7 +65,7 @@ export default function OrderDetailsPageClient() {
     <div className="">
       <ProfileHeader
         title={`Order #${order.orderNumber}`}
-        description={`Placed on ${new Date(order.orderDate).toLocaleDateString()}`}
+        description={`Placed on ${new Date(order.orderDate ?? order.createdAt ?? 0).toLocaleDateString()}`}
       />
 
       <div className="mt-8">

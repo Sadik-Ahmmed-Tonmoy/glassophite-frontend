@@ -218,7 +218,7 @@ export default function ProductReview({
   const validateForm = () => {
     const errors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
+    if (!(formData.name ?? "").trim()) {
       errors.name = "Name is required";
     }
 

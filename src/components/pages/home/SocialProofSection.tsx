@@ -297,7 +297,7 @@ export default function SocialProofSection() {
                   {/* Avatar Placeholder with Initials */}
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] flex items-center justify-center mb-4">
                     <span className="text-xl sm:text-2xl font-bold text-white">
-                      {reviewsData[activeReview].name
+                      {(reviewsData[activeReview].name ?? "")
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}

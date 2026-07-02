@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState } from "react";
@@ -12,11 +14,20 @@ import {
   useDeleteCouponMutation,
 } from "@/redux/features/coupon/couponApi";
 
+
+type TCoupon = {
+  id: string;
+  code: string;
+  discount: number;
+  expiry: string;
+  status: "Active" | "Expired";
+};
+
 export default function CouponsView() {
   const { data, isLoading } = useGetAllCouponsQuery(undefined);
   const coupons = data?.data || [];
-  const [createCoupon, { isLoading: isCreating }] = useCreateCouponMutation();
-  const [updateCoupon, { isLoading: isUpdating }] = useUpdateCouponMutation();
+  const [createCoupon] = useCreateCouponMutation();
+  const [updateCoupon] = useUpdateCouponMutation();
   const [deleteCoupon] = useDeleteCouponMutation();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,7 +75,7 @@ export default function CouponsView() {
     setIsModalOpen(true);
   };
 
-  const handleSaveCoupon = (e: React.FormEvent) => {
+  const handleSaveCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const dataToValidate = {
@@ -101,8 +112,9 @@ export default function CouponsView() {
       try {
         await createCoupon({ code: code.toUpperCase().trim(), discount: Number(discount), expiry, status }).unwrap();
         toast.success("Coupon Created!", { description: `${code.toUpperCase()} is now active at checkout.` });
-      } catch (err: any) {
-        toast.error("Failed to create coupon", { description: err?.data?.message || "Something went wrong" });
+      } catch (err) {
+        const error = err as { data?: { message?: string } };
+        toast.error("Failed to create coupon", { description: error?.data?.message || "Something went wrong" });
       }
     }
     setIsModalOpen(false);
@@ -173,7 +185,7 @@ export default function CouponsView() {
                 </td>
               </tr>
             ) : (
-              coupons.map((c) => (
+              coupons.map((c: TCoupon) => (
                 <tr
                   key={c.id}
                   className="hover:bg-muted/20 transition-colors"

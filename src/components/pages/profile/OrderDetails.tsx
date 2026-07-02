@@ -81,7 +81,7 @@ export default function OrderDetails({ order }: OrderDetailsProps) {
       {/* Order Status */}
       <motion.div variants={itemVariants}>
         <OrderStatusBadge
-          status={order.status}
+          status={order.status as any}
           deliveryDate={order.deliveryDate}
           estimatedDelivery={order.estimatedDelivery}
         />
@@ -90,8 +90,8 @@ export default function OrderDetails({ order }: OrderDetailsProps) {
       {/* Order Timeline */}
       <motion.div variants={itemVariants}>
         <OrderTimeline
-          status={order.status}
-          orderDate={order.orderDate}
+          status={order.status as any}
+          orderDate={order.orderDate ?? order.createdAt}
           processingDate={order.processingDate}
           shippingDate={order.shippingDate}
           deliveryDate={order.deliveryDate}
@@ -108,7 +108,7 @@ export default function OrderDetails({ order }: OrderDetailsProps) {
           tax={order.tax}
           discount={order.discount}
           total={order.total}
-          status={order.status}
+          status={order.status as any}
         />
       </motion.div>
 
@@ -117,14 +117,14 @@ export default function OrderDetails({ order }: OrderDetailsProps) {
         <motion.div variants={itemVariants}>
           <AddressDisplay
             title="Shipping Address"
-            address={order.shippingAddress}
+            address={order.shippingAddress as any}
           />
         </motion.div>
         <motion.div variants={itemVariants}>
           <PaymentInformation
             paymentMethod={order.paymentMethod}
-            paymentDetails={order.paymentDetails}
-            shippingAddress={order.shippingAddress}
+            paymentDetails={order.paymentDetails as any}
+            shippingAddress={order.shippingAddress as any}
           />
         </motion.div>
       </div>

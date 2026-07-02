@@ -1,13 +1,31 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
-import { useGetAllUsersQuery } from "@/redux/features/user/userApi";
+import { Loader2, UserCheck, UserX } from "lucide-react";
+import { toast } from "sonner";
+import { useGetAllUsersQuery, useUpdateUserStatusMutation } from "@/redux/features/user/userApi";
 
 export default function CustomersView() {
-  const { data, isLoading } = useGetAllUsersQuery({ limit: 50 });
-  const customers = data?.data || [];
+  const { data, isLoading } = useGetAllUsersQuery({ limit: 100, role: "USER" });
+  const customers = (data?.data || []) as any[];
+  const [updateUserStatus] = useUpdateUserStatusMutation();
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const handleToggleStatus = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === "ACTIVE" ? "BLOCKED" : "ACTIVE";
+    setLoadingId(id);
+    try {
+      await updateUserStatus({ id, status: newStatus }).unwrap();
+      toast.success("Status Updated", {
+        description: `Customer has been ${newStatus === "ACTIVE" ? "activated" : "blocked"}.`,
+      });
+    } catch {
+      toast.error("Failed to update customer status.");
+    } finally {
+      setLoadingId(null);
+    }
+  };
 
   return (
     <motion.div
@@ -16,49 +34,84 @@ export default function CustomersView() {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="space-y-6"
     >
-      <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">Customers</h1>
-        <p className="text-xs text-neutral-500">Detailed list of verified client profiles.</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Customers</h1>
+          <p className="text-xs text-muted-foreground">Detailed list of verified client profiles.</p>
+        </div>
+        <div className="glass-panel rounded-2xl border border-border px-5 py-3 text-right">
+          <p className="text-[10px] uppercase font-extrabold text-muted-foreground">Total</p>
+          <p className="text-2xl font-extrabold text-foreground">
+            {isLoading ? "—" : data?.meta?.total ?? customers.length}
+          </p>
+        </div>
       </div>
 
       {/* Customers Table */}
-      <div className="glass-panel rounded-2xl overflow-hidden overflow-x-auto">
+      <div className="glass-panel rounded-2xl border border-border overflow-hidden overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-neutral-100 dark:bg-neutral-850 text-neutral-500 uppercase tracking-wider font-extrabold text-[10px] border-b border-neutral-200 dark:border-neutral-800">
+            <tr className="bg-muted/40 text-muted-foreground uppercase tracking-wider font-extrabold text-[10px] border-b border-border">
               <th className="p-4">Client Name</th>
               <th className="p-4">Email</th>
               <th className="p-4">Phone</th>
               <th className="p-4">Registration</th>
               <th className="p-4 text-center">Status</th>
+              <th className="p-4 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+          <tbody className="divide-y divide-border">
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center">
-                  <Loader2 className="w-5 h-5 animate-spin mx-auto text-neutral-400" />
+                <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                  <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                 </td>
               </tr>
             ) : customers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-neutral-400">No customers registered yet.</td>
+                <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                  No customers registered yet.
+                </td>
               </tr>
             ) : (
               customers.map((cust: any) => (
-                <tr key={cust.id} className="hover:bg-neutral-100/50 dark:hover:bg-neutral-800/30 transition-colors">
-                  <td className="p-4 font-bold text-neutral-900 dark:text-white">{cust.fullName || "—"}</td>
-                  <td className="p-4 text-neutral-500">{cust.email}</td>
-                  <td className="p-4 text-neutral-500">{cust.phoneNumber || "—"}</td>
-                  <td className="p-4 text-neutral-500">{new Date(cust.createdAt).toLocaleDateString()}</td>
+                <tr key={cust.id} className="hover:bg-muted/20 transition-colors">
+                  <td className="p-4 font-bold text-foreground">{cust.fullName || "—"}</td>
+                  <td className="p-4 text-muted-foreground">{cust.email}</td>
+                  <td className="p-4 text-muted-foreground">{cust.phoneNumber || "—"}</td>
+                  <td className="p-4 text-muted-foreground">
+                    {new Date(cust.createdAt).toLocaleDateString()}
+                  </td>
                   <td className="p-4 text-center">
-                    <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                      cust.status === "ACTIVE"
-                        ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                        : "bg-red-500/10 text-red-500"
-                    }`}>
+                    <span
+                      className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                        cust.status === "ACTIVE"
+                          ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                          : "bg-red-500/10 text-red-500"
+                      }`}
+                    >
                       {cust.status}
                     </span>
+                  </td>
+                  <td className="p-4 text-center">
+                    <button
+                      onClick={() => handleToggleStatus(cust.id, cust.status)}
+                      disabled={loadingId === cust.id}
+                      title={cust.status === "ACTIVE" ? "Block customer" : "Activate customer"}
+                      className={`p-1.5 rounded-lg border transition-colors cursor-pointer disabled:opacity-50 ${
+                        cust.status === "ACTIVE"
+                          ? "bg-muted hover:bg-red-500/10 text-muted-foreground hover:text-red-500 border-border"
+                          : "bg-muted hover:bg-green-500/10 text-muted-foreground hover:text-green-600 border-border"
+                      }`}
+                    >
+                      {loadingId === cust.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : cust.status === "ACTIVE" ? (
+                        <UserX className="w-3.5 h-3.5" />
+                      ) : (
+                        <UserCheck className="w-3.5 h-3.5" />
+                      )}
+                    </button>
                   </td>
                 </tr>
               ))

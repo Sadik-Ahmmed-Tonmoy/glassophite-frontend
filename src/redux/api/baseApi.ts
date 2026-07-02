@@ -46,7 +46,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
 
       // Make a request to refresh the token
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}refresh-token`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}auth/refresh-token`,
         {
           method: "POST",
           credentials: "include",
@@ -67,23 +67,25 @@ const baseQueryWithRefreshToken: BaseQueryFn<
         // Retry the original query with the new token
         result = await baseQuery(args, api, extraOptions);
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Session Expired",
-          text: "Please login again to continue",
-          showConfirmButton: false,
-          showCancelButton: true,
-          cancelButtonText: "Stay Logged Out",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            api.dispatch(logout());
-            signOut();
-          }
-          else if (result.isDismissed) {
-            api.dispatch(logout());
-            signOut();
-          }
-        });
+        // Swal.fire({
+        //   icon: "error",
+        //   title: "Session Expired",
+        //   text: "Please login again to continue",
+        //   showConfirmButton: false,
+        //   showCancelButton: true,
+        //   cancelButtonText: "Stay Logged Out",
+        // }).then((result) => {
+        //   if (result.isConfirmed) {
+        //     api.dispatch(logout());
+        //     signOut();
+        //   }
+        //   else if (result.isDismissed) {
+        //     api.dispatch(logout());
+        //     signOut();
+        //   }
+        // });
+            //  api.dispatch(logout());
+            // signOut();
       }
     } catch (error) {
       console.error("Error during token refresh:", error);

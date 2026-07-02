@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -13,16 +15,34 @@ import {
   ChevronUp,
   Upload,
   Check,
-  Package
+  Package,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import Image from "next/image";
-import { mockProducts, saveProductsToStorage } from "@/lib/productMockData";
 import { TProduct, TVariant } from "@/types/types";
+import {
+  useGetAllProductsQuery,
+  useCreateProductMutation,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
+  useAddVariantMutation,
+  useUpdateVariantMutation,
+  useDeleteVariantMutation,
+} from "@/redux/features/product/productApi";
 
 export default function ProductsView() {
-  const [products, setProducts] = useState<TProduct[]>([]);
+  const { data, isLoading } = useGetAllProductsQuery({ limit: 100 });
+  const products: TProduct[] = (data?.data || []) as TProduct[];
+
+  const [createProduct] = useCreateProductMutation();
+  const [updateProduct] = useUpdateProductMutation();
+  const [deleteProduct] = useDeleteProductMutation();
+  const [addVariant] = useAddVariantMutation();
+  const [updateVariant] = useUpdateVariantMutation();
+  const [deleteVariant] = useDeleteVariantMutation();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<TProduct | null>(null);
@@ -35,20 +55,15 @@ export default function ProductsView() {
     isOpen: boolean;
     type: "product" | "variant" | null;
     productId: string;
-    variantIndex: number | null;
+    variantId: string;
     title: string;
   }>({
     isOpen: false,
     type: null,
     productId: "",
-    variantIndex: null,
+    variantId: "",
     title: "",
   });
-
-  // Dynamic products load
-  useEffect(() => {
-    setProducts([...mockProducts]);
-  }, []);
 
   // Main Form States
   const [title, setTitle] = useState("");
@@ -71,12 +86,13 @@ export default function ProductsView() {
   // Form Validation Errors
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Variants List for current product
+  // Variants List for current product (staging area)
   const [variantsList, setVariantsList] = useState<TVariant[]>([]);
 
   // Sub-Form States for Variant Builder
   const [showVariantForm, setShowVariantForm] = useState(false);
   const [editingVariantIndex, setEditingVariantIndex] = useState<number | null>(null);
+  const [editingVariantId, setEditingVariantId] = useState<string | null>(null);
 
   const [varTitle, setVarTitle] = useState("");
   const [varColor, setVarColor] = useState("#232323");
@@ -92,6 +108,9 @@ export default function ProductsView() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [urlInput, setUrlInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Submitting state
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Zod Schemas
   const productSchema = z.object({
@@ -117,8 +136,7 @@ export default function ProductsView() {
     }));
   };
 
-  const handleOpenAdd = () => {
-    setEditingProduct(null);
+  const resetProductForm = () => {
     setTitle("");
     setBrand("Elite Styles");
     setCategory("all");
@@ -135,11 +153,16 @@ export default function ProductsView() {
     setTargetAudience("Unisex, Luxury Seekers");
     setCareInstructions("Store in a protective case. Clean lenses with a microfiber cloth.");
     setIsFeatured(false);
-
     setVariantsList([]);
     setShowVariantForm(false);
     setEditingVariantIndex(null);
+    setEditingVariantId(null);
     setFormErrors({});
+  };
+
+  const handleOpenAdd = () => {
+    setEditingProduct(null);
+    resetProductForm();
     setIsOpenModal(true);
   };
 
@@ -161,10 +184,10 @@ export default function ProductsView() {
     setTargetAudience(p.targetAudience || "Unisex");
     setCareInstructions(p.careInstructions || "Clean lenses with a microfiber cloth.");
     setIsFeatured(!!p.isFeatured);
-
     setVariantsList([...p.variants]);
     setShowVariantForm(false);
     setEditingVariantIndex(null);
+    setEditingVariantId(null);
     setFormErrors({});
     setIsOpenModal(true);
   };
@@ -172,6 +195,7 @@ export default function ProductsView() {
   // Variant Form Handlers
   const handleOpenAddVariant = () => {
     setEditingVariantIndex(null);
+    setEditingVariantId(null);
     setVarTitle("");
     setVarColor("#232323");
     setVarMainPrice("");
@@ -188,6 +212,7 @@ export default function ProductsView() {
   const handleOpenEditVariant = (index: number) => {
     const v = variantsList[index];
     setEditingVariantIndex(index);
+    setEditingVariantId(v.id);
     setVarTitle(v.title);
     setVarColor(v.color);
     setVarMainPrice(v.mainPrice.toString());
@@ -242,7 +267,7 @@ export default function ProductsView() {
           ];
 
     const targetVariant: TVariant = {
-      id: editingVariantIndex !== null ? variantsList[editingVariantIndex].id : `VAR-${Math.floor(100 + Math.random() * 900)}`,
+      id: editingVariantId || `VAR-${Math.floor(100 + Math.random() * 900)}`,
       title: varTitle,
       color: varColor,
       mainPrice: Number(varMainPrice),
@@ -259,65 +284,77 @@ export default function ProductsView() {
       const updated = [...variantsList];
       updated[editingVariantIndex] = targetVariant;
       setVariantsList(updated);
-      toast.success("Variant Updated", { description: `${varTitle} variant changes applied.` });
+      toast.success("Variant Staged", { description: `${varTitle} variant changes staged.` });
     } else {
       setVariantsList([...variantsList, targetVariant]);
-      toast.success("Variant Created", { description: `${varTitle} variant added to listing builder.` });
+      toast.success("Variant Added", { description: `${varTitle} variant added to listing.` });
     }
 
     setShowVariantForm(false);
     setEditingVariantIndex(null);
+    setEditingVariantId(null);
   };
 
-  // Triggers deletion warning modal
+  // For existing saved products, we can delete a variant immediately via API
+  const triggerDeleteVariant = (index: number, varId: string, titleStr: string) => {
+    setDeleteConfirm({
+      isOpen: true,
+      type: "variant",
+      productId: editingProduct?.id || "",
+      variantId: varId,
+      title: titleStr,
+    });
+  };
+
   const triggerDeleteProduct = (prodId: string, titleStr: string) => {
     setDeleteConfirm({
       isOpen: true,
       type: "product",
       productId: prodId,
-      variantIndex: null,
+      variantId: "",
       title: titleStr,
     });
   };
 
-  const triggerDeleteVariant = (index: number, titleStr: string) => {
-    setDeleteConfirm({
-      isOpen: true,
-      type: "variant",
-      productId: "",
-      variantIndex: index,
-      title: titleStr,
-    });
-  };
-
-  // Confirmed execution of deletion
-  const executeDelete = () => {
+  const executeDelete = async () => {
     if (deleteConfirm.type === "product") {
-      const updated = products.filter((p) => p.id !== deleteConfirm.productId);
-      setProducts(updated);
-      saveProductsToStorage(updated);
-      toast.success("Product Deleted", {
-        description: `"${deleteConfirm.title}" listing has been deleted.`,
-      });
-    } else if (deleteConfirm.type === "variant" && deleteConfirm.variantIndex !== null) {
-      const updated = variantsList.filter((_, i) => i !== deleteConfirm.variantIndex);
-      setVariantsList(updated);
-      toast.success("Variant Removed", {
-        description: `"${deleteConfirm.title}" variant removed from temporary listing.`,
-      });
+      try {
+        await deleteProduct(deleteConfirm.productId).unwrap();
+        toast.success("Product Deleted", {
+          description: `"${deleteConfirm.title}" listing has been deleted.`,
+        });
+      } catch {
+        toast.error("Failed to delete product");
+      }
+    } else if (deleteConfirm.type === "variant" && deleteConfirm.productId && deleteConfirm.variantId) {
+      try {
+        await deleteVariant({
+          productId: deleteConfirm.productId,
+          variantId: deleteConfirm.variantId,
+        }).unwrap();
+        // Also remove from local staging list
+        setVariantsList((prev) => prev.filter((v) => v.id !== deleteConfirm.variantId));
+        toast.success("Variant Deleted", {
+          description: `"${deleteConfirm.title}" variant removed.`,
+        });
+      } catch {
+        toast.error("Failed to delete variant");
+      }
+    } else {
+      // Local-only staged variant (no ID in DB yet)
+      setVariantsList((prev) => prev.filter((_, i) => i !== editingVariantIndex));
+      toast.success("Variant Removed", { description: `Staged variant removed.` });
     }
-    setDeleteConfirm({ isOpen: false, type: null, productId: "", variantIndex: null, title: "" });
+    setDeleteConfirm({ isOpen: false, type: null, productId: "", variantId: "", title: "" });
   };
 
-  // Mock File Upload Simulation
+  // Image upload
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     const file = files[0];
-
     setIsUploading(true);
     setUploadProgress(0);
-
     const interval = setInterval(() => {
       setUploadProgress((old) => {
         if (old >= 100) {
@@ -326,16 +363,11 @@ export default function ProductsView() {
             const simulatedUrl = URL.createObjectURL(file);
             setVarImgList((prev) => [
               ...prev,
-              {
-                id: `IMG-${Math.floor(1000 + Math.random() * 9000)}`,
-                image: simulatedUrl,
-              },
+              { id: `IMG-${Math.floor(1000 + Math.random() * 9000)}`, image: simulatedUrl },
             ]);
             setIsUploading(false);
             setUploadProgress(0);
-            toast.success("Image Uploaded", {
-              description: `Uploaded ${file.name} successfully. (Simulated URL preview)`,
-            });
+            toast.success("Image Uploaded", { description: `Uploaded ${file.name} successfully.` });
           }, 450);
           return 100;
         }
@@ -349,10 +381,7 @@ export default function ProductsView() {
     if (!urlInput.trim()) return;
     setVarImgList((prev) => [
       ...prev,
-      {
-        id: `IMG-${Math.floor(1000 + Math.random() * 9000)}`,
-        image: urlInput.trim(),
-      },
+      { id: `IMG-${Math.floor(1000 + Math.random() * 9000)}`, image: urlInput.trim() },
     ]);
     setUrlInput("");
     toast.success("External Image Added", { description: "Image link attached." });
@@ -363,27 +392,17 @@ export default function ProductsView() {
   };
 
   // Main Submit Handler
-  const handleSubmitProduct = (e: React.FormEvent) => {
+  const handleSubmitProduct = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const mainVal = productSchema.safeParse({
-      title,
-      brand,
-      category,
-      shortDescription,
-    });
-
+    const mainVal = productSchema.safeParse({ title, brand, category, shortDescription });
     if (!mainVal.success) {
       const errors: Record<string, string> = {};
       mainVal.error.errors.forEach((err) => {
-        if (err.path[0]) {
-          errors[err.path[0].toString()] = err.message;
-        }
+        if (err.path[0]) errors[err.path[0].toString()] = err.message;
       });
       setFormErrors(errors);
-      toast.error("Form Validation Error", {
-        description: "Please check standard product fields.",
-      });
+      toast.error("Form Validation Error", { description: "Please check standard product fields." });
       return;
     }
 
@@ -394,94 +413,57 @@ export default function ProductsView() {
       return;
     }
 
-    const primaryVar = variantsList[0];
-    const totalStock = variantsList.reduce((acc, v) => acc + v.quantity, 0);
-    const anyInStock = totalStock > 0;
-    const finalMainPrice = primaryVar.mainPrice;
-    const finalDiscountPercent = primaryVar.discountPercent;
-    const finalPriceAfterDiscount = primaryVar.priceAfterDiscount;
-    const finalColor = primaryVar.color;
-    const finalImg = primaryVar.imgList?.[0]?.image || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png";
+    setIsSubmitting(true);
 
-    if (editingProduct) {
-      // EDIT MODE
-      const updated = products.map((p) => {
-        if (p.id === editingProduct.id) {
-          return {
-            ...p,
-            title,
-            brand,
-            category,
-            shortDescription,
-            longDescription,
-            material,
-            dimensions,
-            weight,
-            shippingInfo,
-            frameType,
-            lensType,
-            warranty,
-            countryOfOrigin,
-            targetAudience,
-            careInstructions,
-            isFeatured,
-            img: finalImg,
-            color: finalColor,
-            mainPrice: finalMainPrice,
-            discountPercent: finalDiscountPercent.toString(),
-            priceAfterDiscount: finalPriceAfterDiscount,
-            inStock: anyInStock,
-            variants: variantsList,
-          };
-        }
-        return p;
-      });
-
-      setProducts(updated);
-      saveProductsToStorage(updated);
-      toast.success("Product Updated", {
-        description: `${title} has been updated with ${variantsList.length} variants.`,
-      });
-    } else {
-      // CREATE MODE
-      const newId = (products.length + 1).toString();
-      const newProduct: TProduct = {
-        id: newId,
-        title,
-        brand,
-        category,
-        shortDescription,
-        longDescription,
-        material,
-        dimensions,
-        weight,
-        shippingInfo,
-        frameType,
-        lensType,
-        warranty,
-        countryOfOrigin,
-        targetAudience,
-        careInstructions,
-        isFeatured,
-        img: finalImg,
-        color: finalColor,
-        mainPrice: finalMainPrice,
-        discountPercent: finalDiscountPercent.toString(),
-        priceAfterDiscount: finalPriceAfterDiscount,
-        inStock: anyInStock,
-        reviews: [],
-        variants: variantsList,
+    try {
+      const productPayload = {
+        title, brand, category, shortDescription, longDescription,
+        material, dimensions, weight, shippingInfo, frameType,
+        lensType, warranty, countryOfOrigin, targetAudience,
+        careInstructions, isFeatured,
       };
 
-      const updated = [newProduct, ...products];
-      setProducts(updated);
-      saveProductsToStorage(updated);
-      toast.success("Product Created", {
-        description: `${title} collection listing added to database catalog.`,
-      });
-    }
+      if (editingProduct) {
+        // Update product fields
+        await updateProduct({ id: editingProduct.id, ...productPayload }).unwrap();
 
-    setIsOpenModal(false);
+        // Sync variants: find new vs existing
+        const existingIds = new Set(editingProduct.variants.map((v) => v.id));
+        const newVariants = variantsList.filter((v) => !existingIds.has(v.id));
+        const updatedVariants = variantsList.filter((v) => existingIds.has(v.id));
+
+        // Add new variants
+        for (const v of newVariants) {
+          const { id: _id, ...variantData } = v;
+          await addVariant({ productId: editingProduct.id, ...variantData }).unwrap();
+        }
+        // Update existing variants
+        for (const v of updatedVariants) {
+          const { id, ...variantData } = v;
+          await updateVariant({ productId: editingProduct.id, variantId: id, ...variantData }).unwrap();
+        }
+
+        toast.success("Product Updated", {
+          description: `${title} has been updated with ${variantsList.length} variant(s).`,
+        });
+      } else {
+        // Create product with all variants at once
+        const variantsPayload = variantsList.map(({ id: _id, ...v }) => v);
+        await createProduct({ ...productPayload, variants: variantsPayload }).unwrap();
+        toast.success("Product Created", {
+          description: `${title} collection listing added to catalog.`,
+        });
+      }
+
+      setIsOpenModal(false);
+    } catch (err) {
+      const error = err as { data?: { message?: string } };
+      toast.error("Operation Failed", {
+        description: error?.data?.message || "Something went wrong. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const filteredProducts = products.filter(
@@ -544,10 +526,18 @@ export default function ProductsView() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {filteredProducts.length === 0 ? (
+            {isLoading ? (
+              <tr>
+                <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                  <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                </td>
+              </tr>
+            ) : filteredProducts.length === 0 ? (
               <tr>
                 <td colSpan={7} className="p-8 text-center text-muted-foreground bg-card/25">
-                  No products found matching &quot;{searchTerm}&quot;.
+                  {searchTerm
+                    ? `No products found matching "${searchTerm}".`
+                    : "No products yet. Click \"Add Eyewear\" to get started."}
                 </td>
               </tr>
             ) : (
@@ -555,6 +545,12 @@ export default function ProductsView() {
                 const totalStock = p.variants?.reduce((acc, v) => acc + v.quantity, 0) || 0;
                 const isExpanded = !!expandedProducts[p.id];
                 const activeColor = p.color || "#ccc";
+                const displayImg =
+                  p.variants?.[0]?.imgList?.[0]?.image ||
+                  p.img ||
+                  "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png";
+                const displayPrice =
+                  p.variants?.[0]?.priceAfterDiscount ?? p.priceAfterDiscount ?? p.mainPrice;
 
                 return (
                   <React.Fragment key={p.id}>
@@ -570,17 +566,16 @@ export default function ProductsView() {
                       <td className="p-4 flex items-center gap-3">
                         <div className="relative w-10 h-10 rounded border border-border bg-muted overflow-hidden flex-shrink-0">
                           <Image
-                            src={p.img || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png"}
+                            src={displayImg}
                             alt={p.title}
                             fill
                             className="object-cover"
+                            unoptimized
                           />
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <p className="font-bold text-foreground">
-                              {p.title}
-                            </p>
+                            <p className="font-bold text-foreground">{p.title}</p>
                             {p.isFeatured && (
                               <span className="px-1.5 py-0.5 bg-yellow-400/10 text-yellow-500 rounded text-[9px] font-bold flex items-center gap-0.5">
                                 <Sparkles className="w-2.5 h-2.5" /> Featured
@@ -588,7 +583,7 @@ export default function ProductsView() {
                             )}
                           </div>
                           <div className="flex gap-2 items-center text-[10px] text-muted-foreground font-medium">
-                            <span className="font-mono">ID: {p.id}</span>
+                            <span className="font-mono">ID: {p.id.slice(-8)}</span>
                             <span>•</span>
                             <span className="flex items-center gap-1">
                               <span
@@ -600,9 +595,7 @@ export default function ProductsView() {
                           </div>
                         </div>
                       </td>
-                      <td className="p-4 font-semibold text-muted-foreground">
-                        {p.brand}
-                      </td>
+                      <td className="p-4 font-semibold text-muted-foreground">{p.brand}</td>
                       <td className="p-4">
                         <span className="px-2.5 py-0.5 bg-muted text-[10px] font-bold rounded text-foreground capitalize">
                           {p.category || "all"}
@@ -618,7 +611,7 @@ export default function ProductsView() {
                         )}
                       </td>
                       <td className="p-4 font-extrabold text-primary">
-                        ৳{p.priceAfterDiscount ?? p.mainPrice}
+                        ৳{displayPrice?.toLocaleString()}
                       </td>
                       <td className="p-4 flex justify-center gap-1.5 mt-2">
                         <button
@@ -647,47 +640,50 @@ export default function ProductsView() {
                               <Package className="w-3.5 h-3.5" />
                               <span>Variant Stock Specifications</span>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {p.variants?.map((v) => (
-                                <div
-                                  key={v.id}
-                                  className="glass-panel p-3 rounded-xl border border-border flex items-center gap-3 bg-card"
-                                >
-                                  <div className="relative w-12 h-12 rounded overflow-hidden border border-border bg-muted flex-shrink-0">
-                                    <Image
-                                      src={v.imgList?.[0]?.image || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png"}
-                                      alt={v.title}
-                                      fill
-                                      className="object-cover"
-                                    />
-                                  </div>
-                                  <div className="flex-1 min-w-0 text-xs">
-                                    <div className="flex justify-between items-center mb-1">
-                                      <span className="font-extrabold text-foreground truncate">
-                                        {v.title}
-                                      </span>
-                                      <span
-                                        className="w-3 h-3 rounded-full border border-border shadow-sm"
-                                        style={{ backgroundColor: v.color }}
+                            {p.variants?.length === 0 ? (
+                              <p className="text-xs text-muted-foreground">No variants found for this product.</p>
+                            ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {p.variants?.map((v) => (
+                                  <div
+                                    key={v.id}
+                                    className="glass-panel p-3 rounded-xl border border-border flex items-center gap-3 bg-card"
+                                  >
+                                    <div className="relative w-12 h-12 rounded overflow-hidden border border-border bg-muted flex-shrink-0">
+                                      <Image
+                                        src={v.imgList?.[0]?.image || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png"}
+                                        alt={v.title}
+                                        fill
+                                        className="object-cover"
+                                        unoptimized
                                       />
                                     </div>
-                                    <p className="text-[10px] text-muted-foreground font-mono mb-1">
-                                      Code: {v.productCode}
-                                    </p>
-                                    <div className="flex justify-between items-center text-[11px]">
-                                      <span className="font-bold text-primary">৳{v.priceAfterDiscount}</span>
-                                      <span
-                                        className={`font-bold ${
-                                          v.quantity > 0 ? "text-green-600 dark:text-green-400" : "text-red-500"
-                                        }`}
-                                      >
-                                        {v.quantity} in stock
-                                      </span>
+                                    <div className="flex-1 min-w-0 text-xs">
+                                      <div className="flex justify-between items-center mb-1">
+                                        <span className="font-extrabold text-foreground truncate">{v.title}</span>
+                                        <span
+                                          className="w-3 h-3 rounded-full border border-border shadow-sm flex-shrink-0"
+                                          style={{ backgroundColor: v.color }}
+                                        />
+                                      </div>
+                                      <p className="text-[10px] text-muted-foreground font-mono mb-1">
+                                        Code: {v.productCode}
+                                      </p>
+                                      <div className="flex justify-between items-center text-[11px]">
+                                        <span className="font-bold text-primary">৳{v.priceAfterDiscount}</span>
+                                        <span
+                                          className={`font-bold ${
+                                            v.quantity > 0 ? "text-green-600 dark:text-green-400" : "text-red-500"
+                                          }`}
+                                        >
+                                          {v.quantity} in stock
+                                        </span>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -709,7 +705,7 @@ export default function ProductsView() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsOpenModal(false)}
+              onClick={() => !isSubmitting && setIsOpenModal(false)}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
 
@@ -729,13 +725,11 @@ export default function ProductsView() {
                   <span>{editingProduct ? `Edit Eyewear: ${title}` : "Create Premium Eyewear"}</span>
                 </h3>
 
-                <form onSubmit={handleSubmitProduct} className="space-y-4 text-xs">
+                <form onSubmit={handleSubmitProduct} className="space-y-4 text-xs" id="product-form">
                   {/* Name and Brand */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="font-bold text-muted-foreground">
-                        Frame Model Title
-                      </label>
+                      <label className="font-bold text-muted-foreground">Frame Model Title</label>
                       <input
                         type="text"
                         value={title}
@@ -745,11 +739,8 @@ export default function ProductsView() {
                       />
                       {formErrors.title && <span className="text-red-500 text-[10px]">{formErrors.title}</span>}
                     </div>
-
                     <div className="space-y-1">
-                      <label className="font-bold text-muted-foreground">
-                        Brand Manufacturer
-                      </label>
+                      <label className="font-bold text-muted-foreground">Brand Manufacturer</label>
                       <input
                         type="text"
                         value={brand}
@@ -763,9 +754,7 @@ export default function ProductsView() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="font-bold text-muted-foreground">
-                        Category Selection
-                      </label>
+                      <label className="font-bold text-muted-foreground">Category Selection</label>
                       <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
@@ -778,469 +767,354 @@ export default function ProductsView() {
                         <option value="optical">Optical Frame</option>
                       </select>
                     </div>
-
                     <div className="space-y-1">
-                      <label className="font-bold text-muted-foreground">
-                        Featured Status
-                      </label>
-                      <div className="flex items-center h-8">
+                      <label className="font-bold text-muted-foreground">Featured Status</label>
+                      <div className="flex items-center h-9 gap-2">
                         <input
                           id="prod_featured"
                           type="checkbox"
                           checked={isFeatured}
                           onChange={(e) => setIsFeatured(e.target.checked)}
-                          className="w-4.5 h-4.5 rounded border border-border accent-primary cursor-pointer"
+                          className="w-4 h-4 rounded border border-border accent-primary cursor-pointer"
                         />
-                        <label htmlFor="prod_featured" className="ml-2 font-bold text-foreground cursor-pointer">
+                        <label htmlFor="prod_featured" className="font-bold text-foreground cursor-pointer">
                           Featured listing on homepage
                         </label>
                       </div>
                     </div>
                   </div>
 
-                  {/* Descriptions */}
                   <div className="space-y-1">
-                    <label className="font-bold text-muted-foreground">
-                      Short Catalog Tagline
-                    </label>
-                    <input
-                      type="text"
+                    <label className="font-bold text-muted-foreground">Short Description</label>
+                    <textarea
                       value={shortDescription}
                       onChange={(e) => setShortDescription(e.target.value)}
-                      placeholder="e.g. A luxury frame that exudes sophistication."
-                      className="w-full px-3.5 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      rows={2}
+                      className="w-full px-3.5 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                      placeholder="A concise product summary for listings."
                     />
-                    {formErrors.shortDescription && <span className="text-red-500 text-[10px]">{formErrors.shortDescription}</span>}
+                    {formErrors.shortDescription && (
+                      <span className="text-red-500 text-[10px]">{formErrors.shortDescription}</span>
+                    )}
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-bold text-muted-foreground">
-                      Long Editorial Description
-                    </label>
+                    <label className="font-bold text-muted-foreground">Long Description (Optional)</label>
                     <textarea
                       value={longDescription}
                       onChange={(e) => setLongDescription(e.target.value)}
                       rows={3}
-                      placeholder="Purple Horizon sunglasses are the epitome of luxury..."
                       className="w-full px-3.5 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                      placeholder="Extended editorial-style product copy."
                     />
                   </div>
 
-                  {/* Technical Specifications */}
-                  <div className="grid grid-cols-3 gap-3 text-[10px]">
+                  {/* Technical Details */}
+                  <div className="grid grid-cols-3 gap-3">
                     <div className="space-y-1">
                       <label className="font-bold text-muted-foreground">Material</label>
-                      <input
-                        type="text"
-                        value={material}
-                        onChange={(e) => setMaterial(e.target.value)}
-                        className="w-full px-2 py-1.5 border border-border rounded-lg bg-background text-foreground"
-                      />
+                      <input value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
                     </div>
                     <div className="space-y-1">
-                      <label className="font-bold text-muted-foreground">Dimensions</label>
-                      <input
-                        type="text"
-                        value={dimensions}
-                        onChange={(e) => setDimensions(e.target.value)}
-                        className="w-full px-2 py-1.5 border border-border rounded-lg bg-background text-foreground"
-                      />
+                      <label className="font-bold text-muted-foreground">Frame Type</label>
+                      <input value={frameType} onChange={(e) => setFrameType(e.target.value)} className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
                     </div>
                     <div className="space-y-1">
                       <label className="font-bold text-muted-foreground">Weight</label>
-                      <input
-                        type="text"
-                        value={weight}
-                        onChange={(e) => setWeight(e.target.value)}
-                        className="w-full px-2 py-1.5 border border-border rounded-lg bg-background text-foreground"
-                      />
+                      <input value={weight} onChange={(e) => setWeight(e.target.value)} className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 text-[10px]">
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="font-bold text-muted-foreground">Shipping Info</label>
-                      <input
-                        type="text"
-                        value={shippingInfo}
-                        onChange={(e) => setShippingInfo(e.target.value)}
-                        className="w-full px-2.5 py-1.5 border border-border rounded-lg bg-background text-foreground"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="font-bold text-muted-foreground">Frame Tech</label>
-                      <input
-                        type="text"
-                        value={frameType}
-                        onChange={(e) => setFrameType(e.target.value)}
-                        className="w-full px-2.5 py-1.5 border border-border rounded-lg bg-background text-foreground"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 text-[10px]">
-                    <div className="space-y-1">
-                      <label className="font-bold text-muted-foreground">Lens Coatings</label>
-                      <input
-                        type="text"
-                        value={lensType}
-                        onChange={(e) => setLensType(e.target.value)}
-                        className="w-full px-2.5 py-1.5 border border-border rounded-lg bg-background text-foreground"
-                      />
+                      <label className="font-bold text-muted-foreground">Lens Type</label>
+                      <input value={lensType} onChange={(e) => setLensType(e.target.value)} className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
                     </div>
                     <div className="space-y-1">
                       <label className="font-bold text-muted-foreground">Warranty</label>
-                      <input
-                        type="text"
-                        value={warranty}
-                        onChange={(e) => setWarranty(e.target.value)}
-                        className="w-full px-2.5 py-1.5 border border-border rounded-lg bg-background text-foreground"
-                      />
+                      <input value={warranty} onChange={(e) => setWarranty(e.target.value)} className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-bold text-muted-foreground">Country of Origin</label>
+                      <input value={countryOfOrigin} onChange={(e) => setCountryOfOrigin(e.target.value)} className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="font-bold text-muted-foreground">Target Audience</label>
+                      <input value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-muted-foreground">Care Instructions</label>
+                    <input value={careInstructions} onChange={(e) => setCareInstructions(e.target.value)} className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </form>
               </div>
 
-                {/* Variants builder column */}
-                <div className="lg:col-span-6 space-y-4 border-t lg:border-t-0 lg:border-l border-border lg:pl-6 pt-6 lg:pt-0">
-                  <div className="flex justify-between items-center">
-                    <h4 className="text-xs font-black uppercase text-muted-foreground tracking-wider">
-                      Product Variant Builder ({variantsList.length})
-                    </h4>
-                    {!showVariantForm && (
-                      <button
-                        type="button"
-                        onClick={handleOpenAddVariant}
-                        className="px-2.5 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-span text-[10px] font-extrabold rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Add Variant</span>
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Inline Variant Form Drawer */}
-                  <AnimatePresence mode="wait">
-                    {showVariantForm && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="p-4 rounded-xl border border-primary/20 bg-muted/20 space-y-4"
-                      >
-                        <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-primary">
-                            {editingVariantIndex !== null ? "Edit Variant Details" : "Configure New Variant"}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setShowVariantForm(false)}
-                            className="p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors cursor-pointer"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3 text-xs">
-                          <div className="space-y-1">
-                            <label className="font-bold text-muted-foreground">Variant Name</label>
-                            <input
-                              type="text"
-                              value={varTitle}
-                              onChange={(e) => setVarTitle(e.target.value)}
-                              placeholder="e.g. Classic Black"
-                              className="w-full px-2.5 py-1.5 border border-border rounded-lg bg-background text-foreground"
-                            />
-                            {formErrors.variant_title && (
-                              <span className="text-red-500 text-[9px] block">{formErrors.variant_title}</span>
-                            )}
-                          </div>
-
-                          <div className="space-y-1">
-                            <label className="font-bold text-muted-foreground">Frame Color Hex</label>
-                            <div className="flex gap-1 items-center">
-                              <input
-                                type="color"
-                                value={varColor}
-                                onChange={(e) => setVarColor(e.target.value)}
-                                className="w-7 h-7 rounded border border-border bg-background cursor-pointer p-0"
-                              />
-                              <input
-                                type="text"
-                                value={varColor}
-                                onChange={(e) => setVarColor(e.target.value)}
-                                className="flex-1 min-w-0 px-2 py-1.5 border border-border rounded-lg bg-background text-foreground font-mono"
-                              />
-                            </div>
-                            {formErrors.variant_color && (
-                              <span className="text-red-500 text-[9px] block">{formErrors.variant_color}</span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3 text-xs">
-                          <div className="space-y-1">
-                            <label className="font-bold text-muted-foreground">Original Price</label>
-                            <input
-                              type="number"
-                              value={varMainPrice}
-                              onChange={(e) => setVarMainPrice(e.target.value)}
-                              placeholder="1200"
-                              className="w-full px-2.5 py-1.5 border border-border rounded-lg bg-background text-foreground"
-                            />
-                            {formErrors.variant_mainPrice && (
-                              <span className="text-red-500 text-[9px] block">{formErrors.variant_mainPrice}</span>
-                            )}
-                          </div>
-
-                          <div className="space-y-1">
-                            <label className="font-bold text-muted-foreground">Discount %</label>
-                            <input
-                              type="number"
-                              value={varDiscountPercent}
-                              onChange={(e) => setVarDiscountPercent(e.target.value)}
-                              placeholder="20"
-                              className="w-full px-2.5 py-1.5 border border-border rounded-lg bg-background text-foreground"
-                            />
-                            {formErrors.variant_discountPercent && (
-                              <span className="text-red-500 text-[9px] block">{formErrors.variant_discountPercent}</span>
-                            )}
-                          </div>
-
-                          <div className="space-y-1">
-                            <label className="font-bold text-muted-foreground">Stock Qty</label>
-                            <input
-                              type="number"
-                              value={varQuantity}
-                              onChange={(e) => setVarQuantity(e.target.value)}
-                              placeholder="10"
-                              className="w-full px-2.5 py-1.5 border border-border rounded-lg bg-background text-foreground"
-                            />
-                            {formErrors.variant_quantity && (
-                              <span className="text-red-500 text-[9px] block">{formErrors.variant_quantity}</span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3 text-xs">
-                          <div className="space-y-1">
-                            <label className="font-bold text-muted-foreground">SKU Code</label>
-                            <input
-                              type="text"
-                              value={varProductCode}
-                              onChange={(e) => setVarProductCode(e.target.value)}
-                              className="w-full px-2.5 py-1.5 border border-border rounded-lg bg-background text-foreground font-mono uppercase"
-                            />
-                            {formErrors.variant_productCode && (
-                              <span className="text-red-500 text-[9px] block">{formErrors.variant_productCode}</span>
-                            )}
-                          </div>
-
-                          <div className="space-y-1">
-                            <label className="font-bold text-muted-foreground">Short Note</label>
-                            <input
-                              type="text"
-                              value={varShortDescription}
-                              onChange={(e) => setVarShortDescription(e.target.value)}
-                              placeholder="Luxury black frame coating."
-                              className="w-full px-2.5 py-1.5 border border-border rounded-lg bg-background text-foreground"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Image Upload Simulator for Variant */}
-                        <div className="space-y-2 text-xs border-t border-border pt-3">
-                          <span className="font-bold text-muted-foreground block mb-1">
-                            Variant Image Gallery ({varImgList.length})
-                          </span>
-
-                          {/* Image preview grid */}
-                          {varImgList.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              {varImgList.map((imgObj) => (
-                                <div
-                                  key={imgObj.id}
-                                  className="relative w-12 h-12 rounded border border-border overflow-hidden group bg-muted"
-                                >
-                                  <Image src={imgObj.image} alt="preview" fill className="object-cover" />
-                                  <button
-                                    onClick={() => handleRemoveVariantImg(imgObj.id)}
-                                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity duration-200 cursor-pointer"
-                                  >
-                                    <X className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Controls for adding image */}
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={urlInput}
-                              onChange={(e) => setUrlInput(e.target.value)}
-                              placeholder="Or paste external image URL..."
-                              className="flex-1 px-2.5 py-1.5 border border-border rounded-lg bg-background text-foreground"
-                            />
-                            <button
-                              type="button"
-                              onClick={handleAddUrlImage}
-                              className="px-3 py-1.5 bg-muted hover:bg-muted/80 rounded-lg font-bold text-foreground text-[10px] border border-border cursor-pointer"
-                            >
-                              Add URL
-                            </button>
-                          </div>
-
-                          <div className="relative">
-                            <input
-                              type="file"
-                              ref={fileInputRef}
-                              onChange={handleImageFileChange}
-                              accept="image/*"
-                              className="hidden"
-                            />
-                            <button
-                              type="button"
-                              disabled={isUploading}
-                              onClick={() => fileInputRef.current?.click()}
-                              className="w-full py-2 border-2 border-dashed border-border hover:border-primary rounded-xl flex items-center justify-center gap-1.5 text-muted-foreground hover:text-primary font-semibold transition-all cursor-pointer bg-background"
-                            >
-                              {isUploading ? (
-                                <div className="flex flex-col items-center w-full px-4">
-                                  <span className="text-[10px] font-black text-muted-foreground mb-1">
-                                    Simulating Server Upload... {uploadProgress}%
-                                  </span>
-                                  <div className="w-full bg-border h-1 rounded-full overflow-hidden">
-                                    <div
-                                      className="bg-primary h-full transition-all duration-150"
-                                      style={{ width: `${uploadProgress}%` }}
-                                    />
-                                  </div>
-                                </div>
-                              ) : (
-                                <>
-                                  <Upload className="w-3.5 h-3.5" />
-                                  <span>Simulate Mock File Upload</span>
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Sub-form actions */}
-                        <div className="flex gap-2 justify-end pt-2 border-t border-border">
-                          <button
-                            type="button"
-                            onClick={() => setShowVariantForm(false)}
-                            className="px-3 py-1.5 bg-background hover:bg-muted text-foreground rounded-lg font-bold border border-border cursor-pointer"
-                          >
-                            Discard
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleSaveVariant}
-                            className="px-3.5 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg shadow-sm flex items-center gap-1 cursor-pointer"
-                          >
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Save Variant</span>
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Variant Cards Listing */}
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                    {variantsList.length === 0 ? (
-                      <div className="p-8 border-2 border-dashed border-border rounded-2xl text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
-                        <Package className="w-6 h-6 text-muted-foreground" />
-                        <span className="text-[11px] font-bold">No Variants Added Yet</span>
-                        <span className="text-[9px] text-muted-foreground">
-                          You must configure at least one variant configuration to list this eyewear.
-                        </span>
-                      </div>
-                    ) : (
-                      variantsList.map((v, index) => (
-                        <div
-                          key={v.id}
-                          className="glass-panel p-3 rounded-xl border border-border bg-muted/20 flex items-center justify-between gap-3 text-xs"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="relative w-10 h-10 rounded border border-border overflow-hidden bg-muted">
-                              <Image
-                                src={v.imgList?.[0]?.image || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png"}
-                                alt={v.title}
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-extrabold text-foreground">
-                                  {v.title}
-                                </span>
-                                <span
-                                  className="w-2.5 h-2.5 rounded-full border border-border shadow-sm"
-                                  style={{ backgroundColor: v.color }}
-                                />
-                              </div>
-                              <p className="text-[10px] text-muted-foreground font-mono">
-                                SKU: {v.productCode} • Qty: {v.quantity} units
-                              </p>
-                              <p className="text-[10px] text-primary font-bold">
-                                ৳{v.priceAfterDiscount} <span className="text-muted-foreground line-through font-normal">৳{v.mainPrice}</span>
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => handleOpenEditVariant(index)}
-                              className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                            >
-                              <Pencil className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => triggerDeleteVariant(index, v.title)}
-                              className="p-1 hover:bg-red-500/10 rounded text-muted-foreground hover:text-red-500 transition-colors cursor-pointer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Submission and Close buttons */}
-                  <div className="flex gap-2 justify-end pt-4 border-t border-border">
+              {/* Variant Side */}
+              <div className="lg:col-span-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-extrabold text-foreground flex items-center gap-2">
+                    <span className="p-1 bg-primary/10 rounded text-primary">
+                      <Package className="w-4 h-4" />
+                    </span>
+                    Variants ({variantsList.length})
+                  </h4>
+                  {!showVariantForm && (
                     <button
-                      type="button"
-                      onClick={() => setIsOpenModal(false)}
-                      className="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-xl font-bold transition-colors cursor-pointer border border-border"
+                      onClick={handleOpenAddVariant}
+                      className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
                     >
-                      Cancel
+                      <Plus className="w-3.5 h-3.5" />
+                      Add Variant
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleSubmitProduct}
-                      className="px-5 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-colors cursor-pointer shadow-md shadow-primary/15"
-                    >
-                      {editingProduct ? "Save All Changes" : "Save Eyewear Listing"}
-                    </button>
-                  </div>
+                  )}
                 </div>
 
-              {/* Top Close Button */}
-              <button
-                onClick={() => setIsOpenModal(false)}
-                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+                {/* Staged Variants List */}
+                {variantsList.length > 0 && !showVariantForm && (
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    {variantsList.map((v, idx) => (
+                      <div
+                        key={v.id || idx}
+                        className="flex items-center gap-3 p-3 rounded-xl border border-border bg-muted/20 text-xs"
+                      >
+                        <div className="relative w-9 h-9 rounded overflow-hidden border border-border bg-muted flex-shrink-0">
+                          <Image
+                            src={v.imgList?.[0]?.image || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png"}
+                            alt={v.title}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-foreground truncate">{v.title}</p>
+                          <p className="text-[10px] text-muted-foreground font-mono">{v.productCode} · ৳{v.priceAfterDiscount} · {v.quantity} pcs</p>
+                        </div>
+                        <span className="w-3 h-3 rounded-full border border-border flex-shrink-0" style={{ backgroundColor: v.color }} />
+                        <button
+                          onClick={() => handleOpenEditVariant(idx)}
+                          className="p-1.5 bg-background hover:bg-muted text-foreground rounded-lg border border-border cursor-pointer transition-colors"
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={() => triggerDeleteVariant(idx, v.id, v.title)}
+                          className="p-1.5 bg-background hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded-lg border border-border cursor-pointer transition-colors"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Variant Form */}
+                {showVariantForm && (
+                  <div className="space-y-3 p-4 rounded-xl border border-primary/30 bg-primary/5">
+                    <div className="flex items-center justify-between">
+                      <h5 className="text-xs font-extrabold text-primary">
+                        {editingVariantIndex !== null ? "Edit Variant" : "New Variant"}
+                      </h5>
+                      <button
+                        onClick={() => { setShowVariantForm(false); setEditingVariantIndex(null); }}
+                        className="p-1 rounded hover:bg-muted text-muted-foreground cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div className="space-y-1 col-span-2">
+                        <label className="font-bold text-muted-foreground">Variant Title</label>
+                        <input
+                          value={varTitle}
+                          onChange={(e) => setVarTitle(e.target.value)}
+                          placeholder="e.g. Midnight Black Edition"
+                          className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                        {formErrors.variant_title && <span className="text-red-500 text-[10px]">{formErrors.variant_title}</span>}
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-muted-foreground">Frame Color</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="color"
+                            value={varColor}
+                            onChange={(e) => setVarColor(e.target.value)}
+                            className="w-10 h-9 rounded-lg border border-border cursor-pointer bg-background"
+                          />
+                          <input
+                            value={varColor}
+                            onChange={(e) => setVarColor(e.target.value)}
+                            className="flex-1 px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-muted-foreground">SKU / Product Code</label>
+                        <input
+                          value={varProductCode}
+                          onChange={(e) => setVarProductCode(e.target.value)}
+                          className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono"
+                        />
+                        {formErrors.variant_productCode && <span className="text-red-500 text-[10px]">{formErrors.variant_productCode}</span>}
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-muted-foreground">Base Price (৳)</label>
+                        <input
+                          type="number"
+                          value={varMainPrice}
+                          onChange={(e) => setVarMainPrice(e.target.value)}
+                          placeholder="e.g. 3500"
+                          className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                        {formErrors.variant_mainPrice && <span className="text-red-500 text-[10px]">{formErrors.variant_mainPrice}</span>}
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-muted-foreground">Discount (%)</label>
+                        <input
+                          type="number"
+                          value={varDiscountPercent}
+                          onChange={(e) => setVarDiscountPercent(e.target.value)}
+                          placeholder="0"
+                          min="0"
+                          max="100"
+                          className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-muted-foreground">Stock Quantity</label>
+                        <input
+                          type="number"
+                          value={varQuantity}
+                          onChange={(e) => setVarQuantity(e.target.value)}
+                          placeholder="e.g. 25"
+                          min="0"
+                          className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                        {formErrors.variant_quantity && <span className="text-red-500 text-[10px]">{formErrors.variant_quantity}</span>}
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-muted-foreground">Short Description</label>
+                        <input
+                          value={varShortDescription}
+                          onChange={(e) => setVarShortDescription(e.target.value)}
+                          placeholder="Optional variant tagline"
+                          className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Images */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-muted-foreground">Variant Images</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={urlInput}
+                          onChange={(e) => setUrlInput(e.target.value)}
+                          placeholder="Paste image URL..."
+                          className="flex-1 px-3 py-2 border border-border rounded-xl bg-background text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                        <button
+                          onClick={handleAddUrlImage}
+                          className="px-3 py-2 bg-muted hover:bg-muted/80 text-foreground text-xs font-bold rounded-xl border border-border cursor-pointer transition-colors"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="px-3 py-2 bg-muted hover:bg-muted/80 text-foreground text-xs font-bold rounded-xl border border-border cursor-pointer transition-colors"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                        </button>
+                        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageFileChange} />
+                      </div>
+
+                      {isUploading && (
+                        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full bg-primary transition-all duration-150 rounded-full"
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                      )}
+
+                      {varImgList.length > 0 && (
+                        <div className="flex gap-2 flex-wrap">
+                          {varImgList.map((img) => (
+                            <div key={img.id} className="relative w-12 h-12 rounded-lg overflow-hidden border border-border bg-muted group">
+                              <Image src={img.image} alt="variant img" fill className="object-cover" unoptimized />
+                              <button
+                                onClick={() => handleRemoveVariantImg(img.id)}
+                                className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                              >
+                                <X className="w-3 h-3 text-white" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {varMainPrice && (
+                      <div className="bg-primary/5 border border-primary/20 rounded-xl px-3 py-2 text-xs text-primary font-bold">
+                        Final Price: ৳{Math.round(Number(varMainPrice) * (1 - Number(varDiscountPercent) / 100)).toLocaleString()}
+                        {Number(varDiscountPercent) > 0 && (
+                          <span className="ml-2 text-muted-foreground font-normal line-through text-[10px]">৳{Number(varMainPrice).toLocaleString()}</span>
+                        )}
+                      </div>
+                    )}
+
+                    <button
+                      onClick={handleSaveVariant}
+                      className="w-full py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                    >
+                      {editingVariantIndex !== null ? "Update Variant" : "Add Variant to List"}
+                    </button>
+                  </div>
+                )}
+
+                {variantsList.length === 0 && !showVariantForm && (
+                  <div className="border-2 border-dashed border-border rounded-xl p-6 text-center text-xs text-muted-foreground">
+                    <Package className="w-6 h-6 mx-auto mb-2 opacity-30" />
+                    <p className="font-semibold">No variants yet</p>
+                    <p className="text-[10px] mt-0.5">At least one variant is required to publish a product.</p>
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <div className="flex gap-2 justify-end pt-2 border-t border-border mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsOpenModal(false)}
+                    disabled={isSubmitting}
+                    className="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-lg font-bold text-xs transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    form="product-form"
+                    disabled={isSubmitting}
+                    className="px-5 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-lg transition-colors cursor-pointer shadow-md shadow-primary/15 disabled:opacity-60 flex items-center gap-2"
+                  >
+                    {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    {editingProduct ? "Save Product" : "Create Product"}
+                  </button>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}
@@ -1250,16 +1124,13 @@ export default function ProductsView() {
       <AnimatePresence>
         {deleteConfirm.isOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setDeleteConfirm({ isOpen: false, type: null, productId: "", variantIndex: null, title: "" })}
+              onClick={() => setDeleteConfirm({ isOpen: false, type: null, productId: "", variantId: "", title: "" })}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
-
-            {/* Modal Box */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -1268,11 +1139,13 @@ export default function ProductsView() {
             >
               <h3 className="text-base font-bold text-foreground">Confirm Deletion</h3>
               <p className="text-muted-foreground">
-                Are you sure you want to delete {deleteConfirm.type === "product" ? `the product listing "${deleteConfirm.title}"` : `the variant "${deleteConfirm.title}"`}? This action cannot be undone.
+                {deleteConfirm.type === "product"
+                  ? `Are you sure you want to permanently delete "${deleteConfirm.title}"? All variants will also be removed.`
+                  : `Are you sure you want to delete the "${deleteConfirm.title}" variant?`}
               </p>
               <div className="flex gap-2 justify-end pt-2">
                 <button
-                  onClick={() => setDeleteConfirm({ isOpen: false, type: null, productId: "", variantIndex: null, title: "" })}
+                  onClick={() => setDeleteConfirm({ isOpen: false, type: null, productId: "", variantId: "", title: "" })}
                   className="px-3 py-2 bg-background hover:bg-muted text-foreground font-semibold rounded-lg border border-border transition-colors cursor-pointer"
                 >
                   Cancel

@@ -514,7 +514,7 @@ export default function Testimonials() {
                     <div className="flex items-center gap-3 mb-3">
                       <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#007C74]/20">
                         <Image
-                          src={review.avatar}
+                          src={review.avatar ?? review.profileImage ?? "/placeholder.svg"}
                           alt={review.name}
                           fill
                           className="object-cover"

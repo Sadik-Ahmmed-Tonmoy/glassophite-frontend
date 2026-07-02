@@ -28,7 +28,7 @@ export default function HeroParallaxDemo() {
     .map((product, index) => {
       // Check if product has a valid loaded URL, otherwise fall back to a working asset URL
       const hasValidImage = product.img && (product.img.includes("jkktXJFP") || product.img.includes("qMPcw4zJ") || product.img.includes("pexels.com"));
-      const thumbnail = hasValidImage ? product.img : workingImages[index % workingImages.length];
+      const thumbnail: string = (hasValidImage ? product.img : workingImages[index % workingImages.length]) ?? workingImages[index % workingImages.length];
 
       return {
         title: product.title,

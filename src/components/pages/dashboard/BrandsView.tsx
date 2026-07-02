@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle, ExternalLink, Globe, ImageIcon, Loader2, Pencil, Plus, Search, Star, Tag, Trash2 } from "lucide-react";
+import { CheckCircle, ExternalLink, Globe, ImageIcon, Pencil, Plus, Search, Star, Tag, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { slugify, TBrandProfile } from "@/lib/contentMockData";
@@ -30,7 +32,7 @@ const brandSchema = z.object({
 
 export default function BrandsView() {
   const { data, isLoading } = useGetAllBrandsQuery({});
-  const brands = (data?.data || []) as TBrandProfile[];
+  const brands = useMemo(() => (data?.data || []) as TBrandProfile[], [data]);
   const [createBrand] = useCreateBrandMutation();
   const [updateBrand] = useUpdateBrandMutation();
   const [deleteBrand] = useDeleteBrandMutation();
@@ -99,7 +101,7 @@ export default function BrandsView() {
     setIsModalOpen(true);
   };
 
-  const handleSaveBrand = (event: React.FormEvent) => {
+  const handleSaveBrand = async (event: React.FormEvent) => {
     event.preventDefault();
 
     const payload = {
@@ -147,8 +149,9 @@ export default function BrandsView() {
       try {
         await createBrand({ ...payload, featured }).unwrap();
         toast.success("Brand created", { description: `${payload.name} is now available.` });
-      } catch (err: any) {
-        toast.error("Failed to create brand", { description: err?.data?.message || "Slug may already exist" });
+      } catch (err) {
+        const error = err as { data?: { message?: string } };
+        toast.error("Failed to create brand", { description: error?.data?.message || "Slug may already exist" });
       }
     }
     setIsModalOpen(false);

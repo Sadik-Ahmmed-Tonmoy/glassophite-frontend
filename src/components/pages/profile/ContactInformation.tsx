@@ -1,7 +1,8 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Save, Edit, Phone, MapPin, X } from "lucide-react";
@@ -9,11 +10,11 @@ import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-// Custom form components
 import MyFormWrapper from "@/components/ui/MyForm/MyFormWrapper/MyFormWrapper";
 import MyFormInputAceternity from "@/components/ui/MyForm/MyFormInputAceternity/MyFormInputAceternity";
+import { useGetMeQuery, useUpdateMeMutation } from "@/redux/features/user/userApi";
+import { toast } from "sonner";
 
-// Validation schema
 const contactInfoSchema = z.object({
   phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
   address: z.object({
@@ -31,18 +32,37 @@ export default function ContactInformation() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [isEditing, setIsEditing] = useState(false);
+  const { data: meData } = useGetMeQuery(undefined);
+  const [updateMe, { isLoading }] = useUpdateMeMutation();
+
+  const user = meData?.data || meData;
+
   const [formData, setFormData] = useState<ContactInfoValues>({
-    phoneNumber: "+1 (555) 123-4567",
+    phoneNumber: "",
     address: {
-      street: "123 Main Street",
-      city: "New York",
-      state: "NY",
-      zipCode: "10001",
-      country: "United States",
+      street: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      country: "",
     },
   });
 
-  // Theme styles
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        phoneNumber: user.phoneNumber || "",
+        address: {
+          street: user.address?.street || "",
+          city: user.address?.city || "",
+          state: user.address?.state || "",
+          zipCode: user.address?.zipCode || "",
+          country: user.address?.country || "",
+        },
+      });
+    }
+  }, [user]);
+
   const themeStyles = {
     dark: {
       card: "bg-white/5 border-white/10",
@@ -72,15 +92,20 @@ export default function ContactInformation() {
 
   const styles = isDark ? themeStyles.dark : themeStyles.light;
 
-  // Handle form submission
-  const handleSubmit = (data: ContactInfoValues, ) => {
-    console.log("Updated contact information:", data);
-    setFormData(data);
-    setIsEditing(false);
-    // Optionally call API here
+  const handleSubmit = async (data: ContactInfoValues) => {
+    try {
+      await updateMe({
+        phoneNumber: data.phoneNumber,
+        address: data.address,
+      }).unwrap();
+      toast.success("Contact information updated");
+      setFormData(data);
+      setIsEditing(false);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to update");
+    }
   };
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -89,7 +114,6 @@ export default function ContactInformation() {
       transition: { duration: 0.4, ease: "easeOut" as const },
     },
   };
-
 
   return (
     <motion.div
@@ -102,9 +126,7 @@ export default function ContactInformation() {
       )}
     >
       <div className="flex justify-between items-center mb-6">
-        <h2 className={cn("text-lg font-semibold", styles.text)} data-translate="profile.contactInfo.title">
-          Contact Information
-        </h2>
+        <h2 className={cn("text-lg font-semibold", styles.text)}>Contact Information</h2>
         <motion.button
           type="button"
           onClick={() => setIsEditing(!isEditing)}
@@ -114,25 +136,17 @@ export default function ContactInformation() {
           )}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          data-translate={isEditing ? "common.cancel" : "common.edit"}
         >
           {isEditing ? (
-            <>
-              <X size={16} className="mr-1.5" />
-              Cancel
-            </>
+            <><X size={16} className="mr-1.5" /> Cancel</>
           ) : (
-            <>
-              <Edit size={16} className="mr-1.5" />
-              Edit
-            </>
+            <><Edit size={16} className="mr-1.5" /> Edit</>
           )}
         </motion.button>
       </div>
 
       <AnimatePresence mode="wait">
         {isEditing ? (
-          // Edit Mode: Form with MyFormWrapper
           <motion.div
             key="edit"
             initial={{ opacity: 0, y: 10 }}
@@ -146,29 +160,22 @@ export default function ContactInformation() {
               defaultValues={formData}
               className="space-y-6"
             >
-              {/* Phone Number */}
               <div>
                 <div className="flex items-center mb-4">
                   <Phone size={18} className={cn("mr-2", styles.icon)} />
-                  <h3 className={cn("text-md font-medium", styles.textMuted)} data-translate="profile.contactInfo.phone">
-                    Phone Number
-                  </h3>
+                  <h3 className={cn("text-md font-medium", styles.textMuted)}>Phone Number</h3>
                 </div>
                 <MyFormInputAceternity
                   name="phoneNumber"
                   label=""
                   placeholder="+1 (555) 123-4567"
-                  data-translate="profile.contactInfo.phonePlaceholder"
                 />
               </div>
 
-              {/* Address */}
               <div>
                 <div className="flex items-center mb-4">
                   <MapPin size={18} className={cn("mr-2", styles.icon)} />
-                  <h3 className={cn("text-md font-medium", styles.textMuted)} data-translate="profile.contactInfo.address">
-                    Address
-                  </h3>
+                  <h3 className={cn("text-md font-medium", styles.textMuted)}>Address</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
@@ -176,32 +183,27 @@ export default function ContactInformation() {
                       name="address.street"
                       label="Street Address"
                       placeholder="123 Main Street"
-                      data-translate="profile.contactInfo.street"
                     />
                   </div>
                   <MyFormInputAceternity
                     name="address.city"
                     label="City"
                     placeholder="New York"
-                    data-translate="profile.contactInfo.city"
                   />
                   <MyFormInputAceternity
                     name="address.state"
                     label="State / Province"
                     placeholder="NY"
-                    data-translate="profile.contactInfo.state"
                   />
                   <MyFormInputAceternity
                     name="address.zipCode"
                     label="ZIP / Postal Code"
                     placeholder="10001"
-                    data-translate="profile.contactInfo.zipCode"
                   />
                   <MyFormInputAceternity
                     name="address.country"
                     label="Country"
                     placeholder="United States"
-                    data-translate="profile.contactInfo.country"
                   />
                 </div>
               </div>
@@ -209,20 +211,20 @@ export default function ContactInformation() {
               <div className="flex justify-end">
                 <button
                   type="submit"
+                  disabled={isLoading}
                   className={cn(
                     "inline-flex items-center px-4 py-2 rounded-md transition-colors",
-                    styles.saveButton
+                    styles.saveButton,
+                    isLoading && "opacity-50 cursor-not-allowed"
                   )}
-                  data-translate="profile.contactInfo.save"
                 >
                   <Save size={16} className="mr-1.5" />
-                  Save Changes
+                  {isLoading ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </MyFormWrapper>
           </motion.div>
         ) : (
-          // View Mode: Display data
           <motion.div
             key="view"
             initial={{ opacity: 0 }}
@@ -231,31 +233,29 @@ export default function ContactInformation() {
             transition={{ duration: 0.3 }}
             className="space-y-6"
           >
-            {/* Phone */}
             <div>
               <div className="flex items-center mb-4">
                 <Phone size={18} className={cn("mr-2", styles.icon)} />
-                <h3 className={cn("text-md font-medium", styles.textMuted)} data-translate="profile.contactInfo.phone">
-                  Phone Number
-                </h3>
+                <h3 className={cn("text-md font-medium", styles.textMuted)}>Phone Number</h3>
               </div>
-              <p className={cn("text-base", styles.text)}>{formData.phoneNumber}</p>
+              <p className={cn("text-base", styles.text)}>{formData.phoneNumber || "Not provided"}</p>
             </div>
 
-            {/* Address */}
             <div>
               <div className="flex items-center mb-4">
                 <MapPin size={18} className={cn("mr-2", styles.icon)} />
-                <h3 className={cn("text-md font-medium", styles.textMuted)} data-translate="profile.contactInfo.address">
-                  Address
-                </h3>
+                <h3 className={cn("text-md font-medium", styles.textMuted)}>Address</h3>
               </div>
               <div className={cn("text-base", styles.text)}>
-                <p>{formData.address.street}</p>
-                <p>
-                  {formData.address.city}, {formData.address.state} {formData.address.zipCode}
-                </p>
-                <p>{formData.address.country}</p>
+                {formData.address.street ? (
+                  <>
+                    <p>{formData.address.street}</p>
+                    <p>{formData.address.city}, {formData.address.state} {formData.address.zipCode}</p>
+                    <p>{formData.address.country}</p>
+                  </>
+                ) : (
+                  <p>Not provided</p>
+                )}
               </div>
             </div>
           </motion.div>

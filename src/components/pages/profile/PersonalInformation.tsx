@@ -1,7 +1,8 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Save, Edit, X } from "lucide-react";
@@ -9,15 +10,14 @@ import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-// Custom form components
 import MyFormWrapper from "@/components/ui/MyForm/MyFormWrapper/MyFormWrapper";
 import MyFormInputAceternity from "@/components/ui/MyForm/MyFormInputAceternity/MyFormInputAceternity";
 import MyFormDatePickerAceternity from "@/components/ui/MyForm/MyFormDatePickerAceternity/MyFormDatePickerAceternity";
+import { useGetMeQuery, useUpdateMeMutation } from "@/redux/features/user/userApi";
+import { toast } from "sonner";
 
-// Validation schema
 const personalInfoSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  fullName: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
   dateOfBirth: z.string().optional(),
 });
@@ -28,14 +28,27 @@ export default function PersonalInformation() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [isEditing, setIsEditing] = useState(false);
+  const { data: meData } = useGetMeQuery(undefined);
+  const [updateMe, { isLoading }] = useUpdateMeMutation();
+
+  const user = meData?.data || meData;
+
   const [formData, setFormData] = useState<PersonalInfoValues>({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    dateOfBirth: "1990-01-01",
+    fullName: "",
+    email: "",
+    dateOfBirth: "",
   });
 
-  // Theme styles
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.fullName || "",
+        email: user.email || "",
+        dateOfBirth: user.dateOfBirth || "",
+      });
+    }
+  }, [user]);
+
   const themeStyles = {
     dark: {
       card: "bg-white/5 border-white/10",
@@ -63,15 +76,20 @@ export default function PersonalInformation() {
 
   const styles = isDark ? themeStyles.dark : themeStyles.light;
 
-  // Handle form submission
-  const handleSubmit = (data: PersonalInfoValues) => {
-    console.log("Updated personal information:", data);
-    setFormData(data); // Update local state for display
-    setIsEditing(false);
-    // Optionally call API here
+  const handleSubmit = async (data: PersonalInfoValues) => {
+    try {
+      await updateMe({
+        fullName: data.fullName,
+        dateOfBirth: data.dateOfBirth || undefined,
+      }).unwrap();
+      toast.success("Personal information updated");
+      setFormData(data);
+      setIsEditing(false);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to update");
+    }
   };
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -101,12 +119,7 @@ export default function PersonalInformation() {
       )}
     >
       <div className="flex justify-between items-center mb-6">
-        <h2
-          className={cn("text-lg font-semibold", styles.text)}
-          data-translate="profile.personalInfo.title"
-        >
-          Personal Information
-        </h2>
+        <h2 className={cn("text-lg font-semibold", styles.text)}>Personal Information</h2>
         <motion.button
           type="button"
           onClick={() => setIsEditing(!isEditing)}
@@ -116,25 +129,17 @@ export default function PersonalInformation() {
           )}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          data-translate={isEditing ? "common.cancel" : "common.edit"}
         >
           {isEditing ? (
-            <>
-              <X size={16} className="mr-1.5" />
-              Cancel
-            </>
+            <><X size={16} className="mr-1.5" /> Cancel</>
           ) : (
-            <>
-              <Edit size={16} className="mr-1.5" />
-              Edit
-            </>
+            <><Edit size={16} className="mr-1.5" /> Edit</>
           )}
         </motion.button>
       </div>
 
       <AnimatePresence mode="wait">
         {isEditing ? (
-          // Edit Mode: Form with MyFormWrapper
           <motion.div
             key="edit"
             initial={{ opacity: 0, y: 10 }}
@@ -150,49 +155,41 @@ export default function PersonalInformation() {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <MyFormInputAceternity
-                  name="firstName"
-                  label="First Name"
-                  placeholder="Enter your first name"
-                  data-translate="profile.personalInfo.firstName"
-                />
-                <MyFormInputAceternity
-                  name="lastName"
-                  label="Last Name"
-                  placeholder="Enter your last name"
-                  data-translate="profile.personalInfo.lastName"
+                  name="fullName"
+                  label="Full Name"
+                  placeholder="Enter your full name"
                 />
                 <MyFormInputAceternity
                   name="email"
                   label="Email Address"
                   placeholder="Enter your email"
                   type="email"
-                  data-translate="profile.personalInfo.email"
+                  disabled
                 />
                 <MyFormDatePickerAceternity
                   name="dateOfBirth"
                   label="Date of Birth"
                   placeholder="yyyy-mm-dd"
-                  data-translate="profile.personalInfo.dateOfBirth"
                 />
               </div>
 
               <div className="flex justify-end">
                 <button
                   type="submit"
+                  disabled={isLoading}
                   className={cn(
                     "inline-flex items-center px-4 py-2 rounded-md transition-colors",
                     styles.saveButton,
+                    isLoading && "opacity-50 cursor-not-allowed"
                   )}
-                  data-translate="profile.personalInfo.save"
                 >
                   <Save size={16} className="mr-1.5" />
-                  Save Changes
+                  {isLoading ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </MyFormWrapper>
           </motion.div>
         ) : (
-          // View Mode: Display data
           <motion.div
             key="view"
             initial={{ opacity: 0 }}
@@ -202,12 +199,7 @@ export default function PersonalInformation() {
             className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
             {[
-              {
-                label: "First Name",
-                value: formData.firstName,
-                key: "firstName",
-              },
-              { label: "Last Name", value: formData.lastName, key: "lastName" },
+              { label: "Full Name", value: formData.fullName || "Not set", key: "fullName" },
               { label: "Email Address", value: formData.email, key: "email" },
               {
                 label: "Date of Birth",
@@ -224,12 +216,7 @@ export default function PersonalInformation() {
                 initial="hidden"
                 animate="visible"
               >
-                <p
-                  className={cn("text-sm font-medium mb-1", styles.label)}
-                  data-translate={`profile.personalInfo.${field.key}`}
-                >
-                  {field.label}
-                </p>
+                <p className={cn("text-sm font-medium mb-1", styles.label)}>{field.label}</p>
                 <p className={cn("text-base", styles.text)}>{field.value}</p>
               </motion.div>
             ))}

@@ -5,10 +5,15 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "next-themes"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { UserCircle, Settings, ShoppingBag, Bell, ChevronRight, Menu, X, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
+import { useGetMeQuery } from "@/redux/features/user/userApi"
+import { useLogoutMutation } from "@/redux/features/auth/authApi"
+import { useAppDispatch } from "@/redux/hooks"
+import { logout } from "@/redux/features/auth/authSlice"
+import { toast } from "sonner"
 
 const sidebarItems = [
   {
@@ -43,7 +48,6 @@ export default function ProfileSidebar() {
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  // Theme styles
   const themeStyles = {
     dark: {
       bg: "bg-black",
@@ -89,7 +93,6 @@ export default function ProfileSidebar() {
 
   const styles = isDark ? themeStyles.dark : themeStyles.light
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = "hidden"
@@ -109,7 +112,6 @@ export default function ProfileSidebar() {
     setIsMobileMenuOpen(false)
   }
 
-  // Animation variants
   const sidebarVariants = {
     hidden: { x: "-100%" },
     visible: { x: 0, transition: { type: "spring" as const, stiffness: 300, damping: 30 } },
@@ -124,7 +126,6 @@ export default function ProfileSidebar() {
 
   return (
     <>
-      {/* Mobile Menu Button */}
       <motion.button
         onClick={toggleMobileMenu}
         className={cn(
@@ -139,10 +140,8 @@ export default function ProfileSidebar() {
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </motion.button>
 
-      {/* Sidebar - Desktop always visible, mobile animated */}
       <AnimatePresence mode="wait">
         {isMobileMenuOpen ? (
-          // Mobile version (animated)
           <motion.aside
             key="mobile-sidebar"
             variants={sidebarVariants}
@@ -162,7 +161,6 @@ export default function ProfileSidebar() {
             />
           </motion.aside>
         ) : (
-          // Desktop version (always visible)
           <aside
             className={cn(
               "hidden lg:block w-64 flex-shrink-0 rounded-xl border shadow-sm",
@@ -173,13 +171,12 @@ export default function ProfileSidebar() {
             <SidebarContent
               pathname={pathname}
               styles={styles}
-              onLinkClick={() => {}} // no-op on desktop
+              onLinkClick={() => {}}
             />
           </aside>
         )}
       </AnimatePresence>
 
-      {/* Overlay for mobile */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
@@ -197,7 +194,6 @@ export default function ProfileSidebar() {
   )
 }
 
-// Separate component to avoid code duplication
 function SidebarContent({
   pathname,
   styles,
@@ -207,17 +203,36 @@ function SidebarContent({
   styles: any
   onLinkClick: () => void
 }) {
-
-    const { theme } = useTheme()
+  const { theme } = useTheme()
   const isDark = theme === "dark"
+  const { data: meData } = useGetMeQuery(undefined)
+  const [logoutApi] = useLogoutMutation()
+  const dispatch = useAppDispatch()
+  const router = useRouter()
+
+  const user = meData?.data || meData
+  const fullName = user?.fullName || "User"
+  const email = user?.email || ""
+  const profileImage = user?.profileImage || "/placeholder.svg?height=48&width=48"
+
+  const handleLogout = async () => {
+    try {
+      await logoutApi(undefined).unwrap()
+    } catch {
+      // proceed with local logout regardless
+    }
+    dispatch(logout())
+    toast.success("Logged out successfully")
+    router.push("/auth/login")
+  }
+
   return (
     <div className="flex flex-col h-full">
-      {/* Profile Summary */}
       <div className={cn("p-6 border-b", styles.border)}>
         <div className="flex items-center space-x-3">
           <div className={cn("relative w-12 h-12 rounded-full overflow-hidden", isDark ? "bg-white/10" : "bg-primary/10")}>
             <Image
-              src="/placeholder.svg?height=48&width=48"
+              src={profileImage}
               alt="Profile"
               fill
               sizes="48px"
@@ -225,13 +240,12 @@ function SidebarContent({
             />
           </div>
           <div>
-            <h2 className={cn("font-semibold", styles.text)} data-translate="profile.name">John Doe</h2>
-            <p className={cn("text-sm", styles.textMutedLighter)} data-translate="profile.email">john.doe@example.com</p>
+            <h2 className={cn("font-semibold", styles.text)}>{fullName}</h2>
+            <p className={cn("text-sm", styles.textMutedLighter)}>{email}</p>
           </div>
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto scrollbar-hide">
         {sidebarItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
@@ -247,7 +261,7 @@ function SidebarContent({
             >
               <div className="flex items-center space-x-3">
                 <item.icon size={20} className={isActive ? "text-white" : styles.icon} />
-                <span data-translate={item.translateKey}>{item.title}</span>
+                <span>{item.title}</span>
               </div>
               <ChevronRight size={16} className={cn(isActive ? "text-white/70" : styles.icon)} />
             </Link>
@@ -255,16 +269,15 @@ function SidebarContent({
         })}
       </nav>
 
-      {/* Logout Button */}
       <div className={cn("p-4 border-t", styles.border)}>
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
+          onClick={handleLogout}
           className={cn(
             "flex items-center w-full px-4 py-3 text-left rounded-lg transition-colors duration-300",
             styles.logout
           )}
-          data-translate="profile.logout"
         >
           <LogOut size={20} className="mr-3" />
           <span>Logout</span>

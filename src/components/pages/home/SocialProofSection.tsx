@@ -1,6 +1,8 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { mockProducts, reviewsData } from "@/lib/productMockData";
+import { useGetAllProductsQuery } from "@/redux/features/product/productApi";
+import { useGetAllReviewsQuery } from "@/redux/features/review/reviewApi";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
   Award,
@@ -27,6 +29,11 @@ export default function SocialProofSection() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [activeReview, setActiveReview] = useState(0);
+  const { data: allProductsData } = useGetAllProductsQuery(undefined);
+
+  const { data: reviewsData } = useGetAllReviewsQuery(undefined);
+  const reviews = Array.isArray(reviewsData) ? reviewsData : reviewsData?.data || [];
+  const allProducts = Array.isArray(allProductsData) ? allProductsData : allProductsData?.data || [];
 
   const isInView = useInView(containerRef, { once: true, amount: 0.2 });
 
@@ -43,22 +50,22 @@ export default function SocialProofSection() {
   // Auto-rotate reviews
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveReview((prev) => (prev + 1) % reviewsData.length);
+      setActiveReview((prev) => (prev + 1) % reviews.length);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
 
   // Calculate average ratings
   const averageRating = (
-    reviewsData.reduce((acc, review) => acc + review.rating, 0) /
-    reviewsData.length
+    reviews.reduce((acc, review) => acc + review.rating, 0) /
+    reviews.length
   ).toFixed(1);
 
-  const totalReviews = reviewsData.length;
-  const verifiedReviews = reviewsData.filter((r) => r.verified).length;
+  const totalReviews = reviews.length;
+  const verifiedReviews = reviews.filter((r) => r.verified).length;
 
   // Get customer images from products
-  const customerImages = mockProducts
+  const customerImages = allProducts
     .flatMap((p) =>
       p.variants.flatMap((v) => v.imgList.map((img) => img.image)),
     )
@@ -297,7 +304,7 @@ export default function SocialProofSection() {
                   {/* Avatar Placeholder with Initials */}
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] flex items-center justify-center mb-4">
                     <span className="text-xl sm:text-2xl font-bold text-white">
-                      {(reviewsData[activeReview].name ?? "")
+                      {(reviews[activeReview].name ?? "")
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}
@@ -307,7 +314,7 @@ export default function SocialProofSection() {
                   <h3
                     className={`text-lg sm:text-xl font-semibold ${styles.text} mb-1`}
                   >
-                    {reviewsData[activeReview].name}
+                    {reviews[activeReview].name}
                   </h3>
 
                   <div className="flex items-center gap-2 mb-2">
@@ -316,14 +323,14 @@ export default function SocialProofSection() {
                         <Star
                           key={i}
                           className={`w-3 h-3 sm:w-4 sm:h-4 ${
-                            i < reviewsData[activeReview].rating
+                            i < reviews[activeReview].rating
                               ? `fill-current ${styles.star}`
                               : "text-gray-400"
                           }`}
                         />
                       ))}
                     </div>
-                    {reviewsData[activeReview].verified && (
+                    {reviews[activeReview].verified && (
                       <div className="flex items-center gap-1">
                         <Verified
                           className={`w-3 h-3 sm:w-4 sm:h-4 ${styles.verified}`}
@@ -339,7 +346,7 @@ export default function SocialProofSection() {
                   </div>
 
                   <p className={`text-xs ${styles.textMutedLighter} mb-2`}>
-                    {reviewsData[activeReview].date}
+                    {reviews[activeReview].date}
                   </p>
 
                   {/* Helpful Count */}
@@ -347,7 +354,7 @@ export default function SocialProofSection() {
                     <div className="flex items-center gap-1">
                       <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4 text-[#007C74]" />
                       <span className={`text-xs ${styles.textMutedLighter}`}>
-                        {reviewsData[activeReview].helpful}
+                        {reviews[activeReview].helpful}
                       </span>
                     </div>
                   </div>
@@ -361,7 +368,7 @@ export default function SocialProofSection() {
                 onClick={() =>
                   setActiveReview(
                     (prev) =>
-                      (prev - 1 + reviewsData.length) % reviewsData.length,
+                      (prev - 1 + reviews.length) % reviews.length,
                   )
                 }
                 className={`p-2 rounded-full border ${styles.border} hover:bg-[#007C74]/10 transition-colors`}
@@ -371,7 +378,7 @@ export default function SocialProofSection() {
               </button>
 
               <div className="flex gap-2">
-                {reviewsData.map((_, index) => (
+                {reviews.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setActiveReview(index)}
@@ -387,7 +394,7 @@ export default function SocialProofSection() {
 
               <button
                 onClick={() =>
-                  setActiveReview((prev) => (prev + 1) % reviewsData.length)
+                  setActiveReview((prev) => (prev + 1) % reviews.length)
                 }
                 className={`p-2 rounded-full border ${styles.border} hover:bg-[#007C74]/10 transition-colors`}
                 aria-label="Next review"
@@ -451,7 +458,7 @@ export default function SocialProofSection() {
             </h4>
 
             {[5, 4, 3, 2, 1].map((rating) => {
-              const count = reviewsData.filter(
+              const count = reviews.filter(
                 (r) => r.rating === rating,
               ).length;
               const percentage = (count / totalReviews) * 100;

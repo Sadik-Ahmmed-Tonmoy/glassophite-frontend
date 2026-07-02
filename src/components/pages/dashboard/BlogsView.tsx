@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { TBlogPost, slugify } from "@/lib/contentMockData";
+import { slugify } from "@/lib/utils";
 import {
   useCreatePostMutation,
   useDeletePostMutation,
@@ -47,14 +47,14 @@ const blogSchema = z.object({
 
 export default function BlogsView() {
   const { data, isLoading } = useGetAllPostsQuery({});
-  const posts = useMemo(() => (data?.data || []) as TBlogPost[], [data]);
+  const posts = useMemo(() => (data?.data || []), [data]);
   const [createPost] = useCreatePostMutation();
   const [updatePost] = useUpdatePostMutation();
   const [deletePost] = useDeletePostMutation();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState<TBlogPost | null>(null);
+  const [editingPost, setEditingPost] = useState<any | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState({
     isOpen: false,
     id: "",
@@ -109,7 +109,7 @@ export default function BlogsView() {
     setIsModalOpen(true);
   };
 
-  const handleOpenEdit = (post: TBlogPost) => {
+  const handleOpenEdit = (post: any) => {
     setEditingPost(post);
     setTitle(post.title);
     setSlug(post.slug);

@@ -15,7 +15,11 @@ import Button from "@/components/ui/buttons/Button/Button";
 import BottomGradient from "@/components/ui/BottomGradient";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
+import { useLoginMutation } from "@/redux/features/auth/authApi";
+import { useAppDispatch } from "@/redux/hooks";
+import { setUser } from "@/redux/features/auth/authSlice";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const validationSchema = z.object({
   email: z
@@ -24,7 +28,7 @@ const validationSchema = z.object({
     })
     .email("Invalid email address"),
 
-    password: z
+  password: z
     .string({
       required_error: "Password is required",
     })
@@ -33,9 +37,38 @@ const validationSchema = z.object({
 
 export function LoginWithEmail() {
   const [checked, setChecked] = React.useState(false);
-  const handleSubmit = (data: FieldValues, reset: any) => {
-    console.log("Form Data:", data, checked);
-    reset(); // Uncomment this line to reset the form after submission
+  const [login, { isLoading }] = useLoginMutation();
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+
+  const handleSubmit = async (data: FieldValues) => {
+    try {
+      const res = await login({
+        email: data.email,
+        password: data.password,
+        keepMeLogin: checked,
+      }).unwrap();
+
+      if (!res?.success) {
+        toast.error(res?.message || "Login failed");
+        return;
+      }
+
+      if (res.data?.isVerified) {
+        dispatch(setUser({
+          user: { role: res.data.role, email: data.email },
+          access_token: res.data.accessToken,
+          refresh_token: res.data.refreshToken,
+        }));
+        toast.success("Welcome back!");
+        router.push("/");
+      } else {
+        toast.info("Please verify your email first");
+        router.push(`/auth/verify-otp?email=${data.email}&purpose=EMAIL_VERIFICATION`);
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || err?.message || "Something went wrong");
+    }
   };
 
   return (
@@ -84,23 +117,20 @@ export function LoginWithEmail() {
             handleCheckboxChange={setChecked}
           />
 
-          <Link href={"/forgot-password"}>
+          <Link href={"/auth/forgot-password"}>
             <p className="text-black-80 font-inter text-[14px] font-normal leading-normal tracking-[-0.14px]">
               Forgot Password?
             </p>
           </Link>
         </div>
 
-        {/* <button
-          className="bg-gradient-to-br relative group/btn from-[#00a76b] dark:from-zinc-900 dark:to-zinc-900 to-[#187c57] block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+        <Button
           type="submit"
+          disabled={isLoading}
+          className="bg-gradient-to-br relative group/btn from-[#00a76b] dark:from-zinc-900 dark:to-zinc-900 to-[#187c57] block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
         >
-          Log in &rarr;
+          {isLoading ? "Logging in..." : "Log in \u2192"}
           <BottomGradient />
-        </button> */}
-        <Button className="bg-gradient-to-br relative group/btn from-[#00a76b] dark:from-zinc-900 dark:to-zinc-900 to-[#187c57] block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]">
-        Log in &rarr;
-        <BottomGradient />
         </Button>
         <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-4 h-[1px] w-full" />
 
@@ -129,11 +159,7 @@ export function LoginWithEmail() {
       </MyFormWrapper>
 
       <div className="mb-2 lg:mb-10 text-center text-neutral-600  dark:text-neutral-300 text-opacity-75 font-inter text-[14px] font-normal leading-normal">
-        Don&apos; have an account?
-        {/* <Link to={"/sign-up"}>
-                                {" "}
-                                <span className="text-black font-semibold">Register</span>
-                            </Link> */}
+        Don&apos;t have an account?
         <LinkPreview
           url="/auth/register"
           imageSrc="https://i.ibb.co/T8z2p8G/banner-img.webp"
@@ -142,17 +168,7 @@ export function LoginWithEmail() {
         >
           Register
         </LinkPreview>
-        {/* <LinkPreview
-           url="/templates"
-           imageSrc="/../../../assets/banner-img.webp"
-           isStatic
-          className="font-bold bg-clip-text text-transparent bg-gradient-to-br from-[#00a76b] to-[#00a76b] dark:text-[#00a76b]"
-        >
-          Login
-        </LinkPreview> */}
       </div>
     </div>
   );
 }
-
-

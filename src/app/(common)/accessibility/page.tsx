@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Accessibility Statement | Glassophite - Premium Eyewear Label",
     description: "Review Glassophite's accessibility statement and WCAG 2.1 compliance parameters.",
-    images: ["https://www.gemini.com/images/twitter-image.jpg"],
+    images: ["https://www.glassophite.com/images/og-image.jpg"],
   },
   alternates: {
     canonical: "https://www.glassophite.com/accessibility",

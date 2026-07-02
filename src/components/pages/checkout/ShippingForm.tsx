@@ -121,10 +121,7 @@ export default function ShippingForm({
 
   // Handle form submission from MyFormWrapper
   const handleFormSubmit = (data: any) => {
-    console.log(data, saveAddress);
-    // The data will match the schema because MyFormWrapper uses react-hook-form with our resolver
-    // We just need to call the parent onSubmit
-    onSubmit(data as any);
+    onSubmit(data);
 
     // If save address is checked, save to localStorage
     if (saveAddress) {

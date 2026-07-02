@@ -855,7 +855,7 @@ export default function SEOContentSection() {
               },
               "contactPoint": {
                 "@type": "ContactPoint",
-                "telephone": "+8801XXXXXXXXX",
+                "telephone": "+8801234567890",
                 "contactType": "customer service"
               },
               "sameAs": [

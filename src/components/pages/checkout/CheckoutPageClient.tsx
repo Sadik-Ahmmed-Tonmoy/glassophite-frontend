@@ -20,7 +20,7 @@ import Link from "next/link"
 export default function CheckoutPageClient() {
   const { items, totalPrice, clearCart } = useCart()
   const { toast } = useToast()
-  const [validateCoupon, { isLoading: isValidatingCoupon }] = useValidateCouponMutation()
+  const [validateCoupon] = useValidateCouponMutation()
   const [createOrder] = useCreateOrderMutation()
   const [createStripeSession] = useCreateStripeSessionMutation()
   const [currentStep, setCurrentStep] = useState(1)
@@ -80,7 +80,6 @@ export default function CheckoutPageClient() {
 
   // Handle form submissions
   const handleShippingSubmit = (data: any) => {
-    console.log(data);
     setShippingDetails(data)
     nextStep()
   }

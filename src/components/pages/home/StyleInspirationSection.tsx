@@ -1,6 +1,6 @@
 "use client";
 
-import { mockProducts } from "@/lib/productMockData";
+import { useGetAllProductsQuery } from "@/redux/features/product/productApi";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
     ArrowRight,
@@ -35,6 +35,9 @@ export default function StyleInspirationSection() {
 
   const isInView = useInView(containerRef, { once: true, amount: 0.2 });
 
+  const { data: allProductsData } = useGetAllProductsQuery(undefined);
+  const products = (Array.isArray(allProductsData) ? allProductsData : allProductsData?.data || []).slice(0, 9);
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
@@ -66,7 +69,7 @@ export default function StyleInspirationSection() {
       season: "All Year",
       likes: 234,
       saves: 89,
-      products: [mockProducts[0], mockProducts[2], mockProducts[4]],
+      products: [products[0], products[2], products[4]],
       image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=800&auto=format&fit=crop",
       modelImage: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop",
       colors: ["#232323", "#1d81c8", "#d4af37"],
@@ -80,7 +83,7 @@ export default function StyleInspirationSection() {
       season: "Summer",
       likes: 567,
       saves: 123,
-      products: [mockProducts[1], mockProducts[3], mockProducts[5]],
+      products: [products[1], products[3], products[5]],
       image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop",
       modelImage: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&auto=format&fit=crop",
       colors: ["#c0c0c0", "#b0b0b0", "#000000"],
@@ -94,7 +97,7 @@ export default function StyleInspirationSection() {
       season: "All Year",
       likes: 892,
       saves: 345,
-      products: [mockProducts[4], mockProducts[0], mockProducts[7]],
+      products: [products[4], products[0], products[7]],
       image: "https://images.unsplash.com/photo-1509630777415-8f002921b7c3?w=800&auto=format&fit=crop",
       modelImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop",
       colors: ["#d4af37", "#232323", "#c0c0c0"],
@@ -108,7 +111,7 @@ export default function StyleInspirationSection() {
       season: "All Year",
       likes: 445,
       saves: 167,
-      products: [mockProducts[5], mockProducts[2], mockProducts[8]],
+      products: [products[5], products[2], products[8]],
       image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop",
       modelImage: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop",
       colors: ["#000000", "#e0241b", "#232323"],
@@ -122,7 +125,7 @@ export default function StyleInspirationSection() {
       season: "All Year",
       likes: 678,
       saves: 234,
-      products: [mockProducts[6], mockProducts[1], mockProducts[3]],
+      products: [products[6], products[1], products[3]],
       image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop",
       modelImage: "https://images.unsplash.com/photo-1494790108777-466fd103a773?w=400&auto=format&fit=crop",
       colors: ["#f4f4f4", "#c0c0c0", "#b0b0b0"],

@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Shield, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function SecuritySettings() {
   const { theme } = useTheme();
@@ -60,8 +61,7 @@ export default function SecuritySettings() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Updated security settings:", settings);
-    alert("Security settings updated successfully!");
+    toast.success("Security settings updated");
   };
 
   // Animation variants

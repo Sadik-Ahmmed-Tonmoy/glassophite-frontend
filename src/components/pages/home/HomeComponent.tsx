@@ -22,7 +22,7 @@ const HomeComponent = () => {
       <BestSellerCarouselSection />
       <WhyChooseGlassophiteSection />
       <FeaturedCollectionSection />
-      <HeroParallaxDemo />
+      {/* <HeroParallaxDemo /> */}
       <Testimonials />
       {/* <VirtualTryOn /> */}
       {/* <StyleInspirationSection /> */}

@@ -7,7 +7,7 @@ import { ChevronDown, ChevronUp, Tag } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import { useState } from "react";
-import { getCoupons } from "@/lib/couponMockData";
+import { useGetAllCouponsQuery } from "@/redux/features/coupon/couponApi";
 
 interface CheckoutSummaryProps {
   items: CartItem[];
@@ -36,9 +36,9 @@ export default function CheckoutSummary({
   const [couponInput, setCouponInput] = useState("");
   const [isCouponExpanded, setIsCouponExpanded] = useState(false);
 
-  // Dynamic coupon lookup
-  const coupons = getCoupons();
-  const appliedCouponObj = coupons.find((c) => c.code === couponCode);
+  const { data: couponsData } = useGetAllCouponsQuery(undefined);
+  const coupons = couponsData || [];
+  const appliedCouponObj = coupons.find((c: { code: string; discount: number }) => c.code === couponCode);
   const discountRate = appliedCouponObj ? appliedCouponObj.discount : 10;
 
   // Theme styles

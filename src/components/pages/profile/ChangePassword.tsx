@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type React from "react";
 import { useState } from "react";
@@ -6,10 +7,19 @@ import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Eye, EyeOff, Save, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useChangePasswordMutation } from "@/redux/features/user/userApi";
+import { toast } from "sonner";
+import { useAppDispatch } from "@/redux/hooks";
+import { logout } from "@/redux/features/auth/authSlice";
+import { useRouter } from "next/navigation";
 
 export default function ChangePassword() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const [changePassword, { isLoading }] = useChangePasswordMutation();
+
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -28,7 +38,6 @@ export default function ChangePassword() {
     confirmPassword: "",
   });
 
-  // Theme styles
   const themeStyles = {
     dark: {
       card: "bg-white/5 border-white/10",
@@ -63,8 +72,6 @@ export default function ChangePassword() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Clear errors when typing
     if (errors[name as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -104,20 +111,24 @@ export default function ChangePassword() {
     return isValid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log("Password change request:", formData);
-      setFormData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-      alert("Password changed successfully!");
+    if (!validateForm()) return;
+
+    try {
+      await changePassword({
+        oldPassword: formData.currentPassword,
+        newPassword: formData.newPassword,
+      }).unwrap();
+      toast.success("Password changed successfully. Please login again.");
+      setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      dispatch(logout());
+      router.push("/auth/login");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to change password");
     }
   };
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -139,18 +150,13 @@ export default function ChangePassword() {
     >
       <div className="flex items-center mb-6">
         <Lock size={20} className={cn("mr-2", styles.icon)} />
-        <h2 className={cn("text-lg font-semibold", styles.text)} data-translate="profile.changePassword.title">
-          Change Password
-        </h2>
+        <h2 className={cn("text-lg font-semibold", styles.text)}>Change Password</h2>
       </div>
 
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
-          {/* Current Password */}
           <div>
-            <label htmlFor="currentPassword" className={cn("block text-sm font-medium mb-1", styles.label)} data-translate="profile.changePassword.current">
-              Current Password
-            </label>
+            <label htmlFor="currentPassword" className={cn("block text-sm font-medium mb-1", styles.label)}>Current Password</label>
             <div className="relative">
               <input
                 type={showPasswords.currentPassword ? "text" : "password"}
@@ -173,17 +179,12 @@ export default function ChangePassword() {
               </button>
             </div>
             {errors.currentPassword && (
-              <p className={cn("mt-1 text-sm", styles.error)} data-translate="profile.changePassword.error.current">
-                {errors.currentPassword}
-              </p>
+              <p className={cn("mt-1 text-sm", styles.error)}>{errors.currentPassword}</p>
             )}
           </div>
 
-          {/* New Password */}
           <div>
-            <label htmlFor="newPassword" className={cn("block text-sm font-medium mb-1", styles.label)} data-translate="profile.changePassword.new">
-              New Password
-            </label>
+            <label htmlFor="newPassword" className={cn("block text-sm font-medium mb-1", styles.label)}>New Password</label>
             <div className="relative">
               <input
                 type={showPasswords.newPassword ? "text" : "password"}
@@ -206,20 +207,13 @@ export default function ChangePassword() {
               </button>
             </div>
             {errors.newPassword && (
-              <p className={cn("mt-1 text-sm", styles.error)} data-translate="profile.changePassword.error.new">
-                {errors.newPassword}
-              </p>
+              <p className={cn("mt-1 text-sm", styles.error)}>{errors.newPassword}</p>
             )}
-            <p className={cn("mt-1 text-xs", styles.helper)} data-translate="profile.changePassword.helper">
-              Password must be at least 8 characters and include a mix of letters, numbers, and symbols.
-            </p>
+            <p className={cn("mt-1 text-xs", styles.helper)}>Password must be at least 8 characters.</p>
           </div>
 
-          {/* Confirm Password */}
           <div>
-            <label htmlFor="confirmPassword" className={cn("block text-sm font-medium mb-1", styles.label)} data-translate="profile.changePassword.confirm">
-              Confirm New Password
-            </label>
+            <label htmlFor="confirmPassword" className={cn("block text-sm font-medium mb-1", styles.label)}>Confirm New Password</label>
             <div className="relative">
               <input
                 type={showPasswords.confirmPassword ? "text" : "password"}
@@ -242,9 +236,7 @@ export default function ChangePassword() {
               </button>
             </div>
             {errors.confirmPassword && (
-              <p className={cn("mt-1 text-sm", styles.error)} data-translate="profile.changePassword.error.confirm">
-                {errors.confirmPassword}
-              </p>
+              <p className={cn("mt-1 text-sm", styles.error)}>{errors.confirmPassword}</p>
             )}
           </div>
         </div>
@@ -252,13 +244,17 @@ export default function ChangePassword() {
         <div className="mt-6 flex justify-end">
           <motion.button
             type="submit"
-            className={cn("inline-flex items-center px-4 py-2 rounded-md transition-colors", styles.button)}
+            disabled={isLoading}
+            className={cn(
+              "inline-flex items-center px-4 py-2 rounded-md transition-colors",
+              styles.button,
+              isLoading && "opacity-50 cursor-not-allowed"
+            )}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            data-translate="profile.changePassword.submit"
           >
             <Save size={16} className="mr-1.5" />
-            Update Password
+            {isLoading ? "Updating..." : "Update Password"}
           </motion.button>
         </div>
       </form>

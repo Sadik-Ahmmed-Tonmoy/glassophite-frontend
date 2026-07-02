@@ -1,30 +1,32 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { motion } from "framer-motion";
 import { ArrowRight, User } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { getBlogPosts, TBlogPost } from "@/lib/contentMockData";
+import { useGetAllPostsQuery } from "@/redux/features/blog/blogApi";
 
 export default function BlogPage() {
-  const [blogPosts, setBlogPosts] = useState<TBlogPost[]>([]);
+  const { data: blogData, isLoading } = useGetAllPostsQuery({});
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   useEffect(() => {
-    setBlogPosts(getBlogPosts());
     const params = new URLSearchParams(window.location.search);
     setCategoryFilter(params.get("category"));
   }, []);
 
+  const blogPosts = blogData?.data || [];
+
   const publishedPosts = useMemo(() => {
     return blogPosts
-      .filter((post) => post.status === "Published")
-      .filter((post) => !categoryFilter || post.category.toLowerCase() === categoryFilter.toLowerCase())
-      .sort((a, b) => Number(b.featured) - Number(a.featured) || new Date(b.date).getTime() - new Date(a.date).getTime());
+      .filter((post: any) => post.status === "Published")
+      .filter((post: any) => !categoryFilter || post.category?.toLowerCase() === categoryFilter.toLowerCase())
+      .sort((a: any, b: any) => Number(b.featured) - Number(a.featured) || new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [blogPosts, categoryFilter]);
 
-  const featuredPost = publishedPosts.find((post) => post.featured) || publishedPosts[0];
-  const standardPosts = publishedPosts.filter((post) => post.id !== featuredPost?.id);
+  const featuredPost = publishedPosts[0];
+  const standardPosts = publishedPosts.filter((post: any) => post.id !== featuredPost?.id);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -36,121 +38,97 @@ export default function BlogPage() {
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.6, ease: "easeOut" as const },
-    },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
   };
 
-  return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-[#0a0a0a] dark:via-neutral-900 dark:to-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-500 py-12">
-      <div className="container mx-auto px-4 md:px-6 max-w-4xl space-y-12">
-        <div className="text-center max-w-2xl mx-auto space-y-4 pt-8">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-[#007C74] via-[#00A693] to-[#3C55A5] bg-clip-text text-transparent">
-            <span data-translate="blog.title">Glassophite Editorial</span>
-          </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 font-medium" data-translate="blog.subtitle">
-            Curated articles on styling secrets, material craftsmanship, lens innovations, and fashion trends.
-          </p>
-        </div>
-
-        {featuredPost && (
-          <div className="glass-panel rounded-2xl bg-gradient-to-r from-[#007c74]/10 via-transparent to-[#3c55a5]/10 border border-[#007c74]/15 grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch overflow-hidden">
-            <div className="md:col-span-7 p-6 md:p-8 space-y-3">
-              <div className="flex items-center gap-3 text-xs font-bold text-[#007C74]">
-                <span className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-md">
-                  Featured Article
-                </span>
-                <span>/</span>
-                <span>{featuredPost.readTime}</span>
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold text-neutral-900 dark:text-white leading-snug">
-                {featuredPost.title}
-              </h2>
-              <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-xl">
-                {featuredPost.excerpt}
-              </p>
-              <div className="pt-2">
-                <a
-                  href={`/blogs?category=${encodeURIComponent(featuredPost.category)}`}
-                  className="px-4 py-2 bg-[#007C74] hover:bg-[#006059] text-white text-xs font-bold rounded-lg shadow-md hover:shadow-[#007c74]/10 transition-colors inline-flex items-center gap-2 group cursor-pointer"
-                >
-                  <span>Read More</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </a>
-              </div>
-            </div>
-            <div className="md:col-span-5 relative min-h-[240px] bg-neutral-100 dark:bg-neutral-850">
-              <Image
-                src={featuredPost.imageUrl}
-                alt={featuredPost.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 360px"
-              />
-            </div>
-          </div>
-        )}
-
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={containerVariants}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
-        >
-          {standardPosts.map((post) => (
-            <motion.div
-              key={post.id}
-              variants={itemVariants}
-              className="glass-panel rounded-xl flex flex-col justify-between hover:border-[#007C74]/30 hover:shadow-lg transition-all duration-300 group min-h-[360px] overflow-hidden"
-            >
-              <div className="relative h-32 bg-neutral-100 dark:bg-neutral-850">
-                <Image
-                  src={post.imageUrl}
-                  alt={post.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                />
-              </div>
-              <div className="p-6 pb-0 space-y-3">
-                <div className="flex justify-between items-center text-[10px] font-bold text-[#007C74]">
-                  <span className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-md">{post.category}</span>
-                  <span>{post.readTime}</span>
-                </div>
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-3 group-hover:text-[#007C74] transition-colors">
-                  {post.title}
-                </h3>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-4">
-                  {post.excerpt}
-                </p>
-              </div>
-
-              <div className="m-6 mt-4 pt-3 border-t border-neutral-150 dark:border-neutral-800 flex justify-between items-center text-[10px] text-neutral-500">
-                <div className="flex items-center gap-1">
-                  <User className="w-3 h-3 text-neutral-450" />
-                  <span>{post.author}</span>
-                </div>
-                <a
-                  href={`/blogs?category=${encodeURIComponent(post.category)}`}
-                  className="flex items-center gap-1 font-semibold text-[#007C74]"
-                >
-                  <span>Details</span>
-                  <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                </a>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {publishedPosts.length === 0 && (
-          <div className="rounded-xl border border-dashed border-neutral-300 dark:border-neutral-800 p-10 text-center text-sm text-neutral-500">
-            No published blogs found.
-          </div>
-        )}
+  if (isLoading) {
+    return (
+      <div className="w-full min-h-screen bg-neutral-50 dark:bg-[#090909] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007C74]" />
       </div>
+    );
+  }
+
+  return (
+    <div className="w-full min-h-screen bg-neutral-50 dark:bg-[#090909] text-neutral-900 dark:text-neutral-100 transition-colors duration-500">
+      <section className="px-4 md:px-6 pt-12 pb-8 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black">
+        <div className="container mx-auto max-w-6xl">
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#007C74]/10 text-[#007C74] text-[11px] font-extrabold uppercase tracking-wider">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#007C74]" />
+              Our Journal
+            </div>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight">Blog & Stories</h1>
+            <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl leading-relaxed">
+              Discover the latest trends in premium eyewear, style guides, expert tips, and brand stories.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      <motion.section variants={containerVariants} initial="hidden" animate="visible" className="px-4 md:px-6 py-16">
+        <div className="container mx-auto max-w-6xl space-y-12">
+          {featuredPost && (
+            <motion.article variants={itemVariants} className="group cursor-pointer">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center bg-white dark:bg-black rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-lg transition-all duration-500">
+                <div className="relative aspect-[4/3] lg:aspect-auto lg:h-full overflow-hidden">
+                  <Image src={featuredPost.imageUrl || "/placeholder.svg"} alt={featuredPost.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/90 dark:bg-black/80 text-xs font-bold backdrop-blur-sm">
+                    {featuredPost.category}
+                  </div>
+                </div>
+                <div className="p-8 lg:py-12 lg:pr-12 space-y-4">
+                  <div className="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
+                    <span className="flex items-center gap-1"><User className="w-3 h-3" />{featuredPost.author}</span>
+                    <span>{new Date(featuredPost.date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</span>
+                    <span className="px-2 py-0.5 rounded bg-[#007C74]/10 text-[#007C74] text-[10px] font-bold uppercase">{featuredPost.readTime}</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-bold leading-tight group-hover:text-[#007C74] transition-colors">{featuredPost.title}</h2>
+                  <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">{featuredPost.excerpt}</p>
+                  <div className="pt-2">
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#007C74] group-hover:gap-3 transition-all">
+                      Read More <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.article>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {standardPosts.map((post: any) => (
+              <motion.article key={post.id} variants={itemVariants} className="group cursor-pointer bg-white dark:bg-black rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-400">
+                <div className="relative aspect-[16/10] overflow-hidden">
+                  <Image src={post.imageUrl || "/placeholder.svg"} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-white/90 dark:bg-black/80 text-[10px] font-bold backdrop-blur-sm">
+                    {post.category}
+                  </div>
+                </div>
+                <div className="p-5 space-y-3">
+                  <div className="flex items-center gap-2 text-[10px] text-neutral-500 dark:text-neutral-400">
+                    <span className="flex items-center gap-1"><User className="w-2.5 h-2.5" />{post.author}</span>
+                    <span>{new Date(post.date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</span>
+                    <span className="px-1.5 py-0.5 rounded bg-[#007C74]/10 text-[#007C74] text-[9px] font-bold uppercase">{post.readTime}</span>
+                  </div>
+                  <h3 className="text-base font-bold leading-snug group-hover:text-[#007C74] transition-colors">{post.title}</h3>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">{post.excerpt}</p>
+                  <div className="pt-1">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007C74] group-hover:gap-2.5 transition-all">
+                      Read More <ArrowRight className="w-3 h-3" />
+                    </span>
+                  </div>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+
+          {publishedPosts.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-neutral-500 dark:text-neutral-400">No blog posts found.</p>
+            </div>
+          )}
+        </div>
+      </motion.section>
     </div>
   );
 }

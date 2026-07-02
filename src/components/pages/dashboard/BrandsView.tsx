@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle, ExternalLink, Globe, ImageIcon, Pencil, Plus, Search, Star, Tag, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { slugify, TBrandProfile } from "@/lib/contentMockData";
+import { slugify } from "@/lib/utils";
 import {
   useGetAllBrandsQuery,
   useCreateBrandMutation,
@@ -32,14 +32,14 @@ const brandSchema = z.object({
 
 export default function BrandsView() {
   const { data, isLoading } = useGetAllBrandsQuery({});
-  const brands = useMemo(() => (data?.data || []) as TBrandProfile[], [data]);
+  const brands = useMemo(() => (data?.data || []), [data]);
   const [createBrand] = useCreateBrandMutation();
   const [updateBrand] = useUpdateBrandMutation();
   const [deleteBrand] = useDeleteBrandMutation();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingBrand, setEditingBrand] = useState<TBrandProfile | null>(null);
+  const [editingBrand, setEditingBrand] = useState<any | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, id: "", name: "" });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -85,7 +85,7 @@ export default function BrandsView() {
     setIsModalOpen(true);
   };
 
-  const handleOpenEdit = (brand: TBrandProfile) => {
+  const handleOpenEdit = (brand: any) => {
     setEditingBrand(brand);
     setName(brand.name);
     setSlug(brand.slug);

@@ -7,8 +7,6 @@ import {
 } from "@reduxjs/toolkit/query/react";
 import { RootState } from "../store";
 import { logout, setUser } from "../features/auth/authSlice";
-import Swal from "sweetalert2";
-import { signOut } from "next-auth/react";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
@@ -34,17 +32,11 @@ const baseQueryWithRefreshToken: BaseQueryFn<
     try {
       const refreshToken = (api.getState() as RootState).auth.refresh_token;
 
-      // if (!refreshToken) {
-      //   api.dispatch(logout());
-      //   Swal.fire({
-      //     icon: "error",
-      //     title: "Session Expired",
-      //     text: "Please login again to continue",
-      //   });
-      //   return result;
-      // }
+      if (!refreshToken) {
+        api.dispatch(logout());
+        return result;
+      }
 
-      // Make a request to refresh the token
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}auth/refresh-token`,
         {
@@ -56,39 +48,19 @@ const baseQueryWithRefreshToken: BaseQueryFn<
           },
         }
       );
- 
+
       const data = await res.json();
       if (data?.success) {
         const user = (api.getState() as RootState).auth.user;
         api.dispatch(
           setUser({ user, token: data.data.token, refresh_token: refreshToken })
         );
-
-        // Retry the original query with the new token
         result = await baseQuery(args, api, extraOptions);
       } else {
-        // Swal.fire({
-        //   icon: "error",
-        //   title: "Session Expired",
-        //   text: "Please login again to continue",
-        //   showConfirmButton: false,
-        //   showCancelButton: true,
-        //   cancelButtonText: "Stay Logged Out",
-        // }).then((result) => {
-        //   if (result.isConfirmed) {
-        //     api.dispatch(logout());
-        //     signOut();
-        //   }
-        //   else if (result.isDismissed) {
-        //     api.dispatch(logout());
-        //     signOut();
-        //   }
-        // });
-            //  api.dispatch(logout());
-            // signOut();
+        api.dispatch(logout());
       }
-    } catch (error) {
-      console.error("Error during token refresh:", error);
+    } catch {
+      api.dispatch(logout());
     }
   }
 
@@ -107,6 +79,7 @@ export const baseApi = createApi({
     "wishlist",
     "reviews", "review",
     "orders", "order",
+    "cart",
   ],
   endpoints: () => ({}),
 });

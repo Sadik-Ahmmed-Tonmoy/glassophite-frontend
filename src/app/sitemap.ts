@@ -1,10 +1,8 @@
 import { MetadataRoute } from "next";
-import { mockProducts } from "@/lib/productMockData";
+
+const baseUrl = "https://www.glassophite.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://www.glassophite.com";
-
-  // Static routes configuration
   const staticRoutes = [
     "",
     "/product-filter",
@@ -20,6 +18,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/privacy",
     "/terms",
     "/shipping-returns",
+    "/best-sellers",
+    "/new-arrivals",
+    "/limited-edition",
+    "/shop",
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
@@ -27,13 +29,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === "" ? 1.0 : 0.8,
   }));
 
-  // Dynamic product routes compilation
-  const productRoutes = mockProducts.map((product) => ({
-    url: `${baseUrl}/product/${product.id}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
-
-  return [...staticRoutes, ...productRoutes];
+  return [...staticRoutes];
 }

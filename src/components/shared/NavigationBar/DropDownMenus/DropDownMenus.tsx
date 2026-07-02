@@ -5,7 +5,8 @@ import MyFormInputAceternity from "@/components/ui/MyForm/MyFormInputAceternity/
 import MyFormWrapper from "@/components/ui/MyForm/MyFormWrapper/MyFormWrapper";
 import { Menu, MenuItem } from "@/components/ui/navbar-menu";
 import ScrollButton from "@/components/ui/ScrollButton/ScrollButton";
-import { getBlogPosts, getBrandProfiles } from "@/lib/contentMockData";
+import { useGetAllPostsQuery } from "@/redux/features/blog/blogApi";
+import { useGetAllBrandsQuery } from "@/redux/features/brand/brandApi";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -37,6 +38,11 @@ const DropDownMenus = () => {
   const [active, setActive] = useState<string | null>(null);
   console.log(active);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const { data: brandsData } = useGetAllBrandsQuery({});
+  const { data: blogsData } = useGetAllPostsQuery({});
+  const brandProfiles = Array.isArray(brandsData) ? brandsData : brandsData?.data || [];
+  const blogPosts = Array.isArray(blogsData) ? blogsData : blogsData?.data || [];
 
   const handleSubmit = (data: FieldValues, reset: any) => {
     console.log("Form Data:", data);
@@ -291,9 +297,9 @@ const DropDownMenus = () => {
   ], []);
 
   useEffect(() => {
-    const activeBrands = getBrandProfiles().filter((brand) => brand.status === "Active");
+    const activeBrands = brandProfiles.filter((brand: any) => brand.status === "Active") as any[];
     const groupedBrands = activeBrands
-      .reduce<Brand[]>((groups, brand) => {
+      .reduce<Brand[]>((groups, brand: any) => {
         const caption = brand.name.charAt(0).toUpperCase();
         const existingGroup = groups.find((group) => group.caption === caption);
         const brandItem = {
@@ -316,9 +322,9 @@ const DropDownMenus = () => {
     setBrandList(groupedBrands);
     setTopBrandListArr(
       activeBrands
-        .filter((brand) => brand.featured)
+        .filter((brand: any) => brand.featured)
         .slice(0, 10)
-        .map((brand) => ({
+        .map((brand: any) => ({
           id: brand.slug,
           title: brand.name,
           imageUrl: brand.logoUrl,
@@ -327,9 +333,9 @@ const DropDownMenus = () => {
     );
 
     const blogCategories = new Map<string, SubMenu>();
-    getBlogPosts()
-      .filter((post) => post.status === "Published")
-      .forEach((post) => {
+    blogPosts
+      .filter((post: any) => post.status === "Published")
+      .forEach((post: any) => {
         if (!blogCategories.has(post.category)) {
           blogCategories.set(post.category, {
             subMenuTitle: post.category,
@@ -340,7 +346,7 @@ const DropDownMenus = () => {
         }
       });
     setBlogMenuList(Array.from(blogCategories.values()));
-  }, []);
+  }, [brandProfiles, blogPosts]);
 
   const alphabetList = [
     "A",

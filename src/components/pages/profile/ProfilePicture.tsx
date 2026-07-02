@@ -1,4 +1,5 @@
 "use client"
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type React from "react"
 import { useState, useRef } from "react"
@@ -7,11 +8,16 @@ import { useTheme } from "next-themes"
 import { Camera, Upload, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
+import { useGetMeQuery, useUpdateMeMutation } from "@/redux/features/user/userApi"
+import { toast } from "sonner"
 
 export default function ProfilePicture() {
   const { theme } = useTheme()
   const isDark = theme === "dark"
-  const [profileImage, setProfileImage] = useState<string | null>(null)
+  const { data: meData } = useGetMeQuery(undefined)
+  const [updateMe] = useUpdateMeMutation()
+  const user = meData?.data || meData
+  const [profileImage, setProfileImage] = useState<string | null>(user?.profileImage || null)
   const [isHovering, setIsHovering] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -55,25 +61,43 @@ export default function ProfilePicture() {
 
   const styles = isDark ? themeStyles.dark : themeStyles.light
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB")
+      return
     }
+
+    const reader = new FileReader()
+    reader.onloadend = async () => {
+      const base64 = reader.result as string
+      try {
+        await updateMe({ profileImage: base64 }).unwrap()
+        setProfileImage(base64)
+        toast.success("Profile picture updated")
+      } catch (err: any) {
+        toast.error(err?.data?.message || "Failed to upload image")
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   const handleUploadClick = () => {
     fileInputRef.current?.click()
   }
 
-  const handleRemoveImage = () => {
-    setProfileImage(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+  const handleRemoveImage = async () => {
+    try {
+      await updateMe({ profileImage: null }).unwrap()
+      setProfileImage(null)
+      toast.success("Profile picture removed")
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to remove image")
     }
   }
 

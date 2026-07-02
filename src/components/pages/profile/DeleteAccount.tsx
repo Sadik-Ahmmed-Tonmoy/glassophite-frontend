@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type React from "react";
 import { useState } from "react";
@@ -6,15 +7,21 @@ import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDeleteAccountMutation } from "@/redux/features/user/userApi";
+import { useAppDispatch } from "@/redux/hooks";
+import { logout } from "@/redux/features/auth/authSlice";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function DeleteAccount() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmText, setConfirmText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteAccount, { isLoading: isDeleting }] = useDeleteAccountMutation();
+  const dispatch = useAppDispatch();
+  const router = useRouter();
 
-  // Theme styles
   const themeStyles = {
     dark: {
       card: "bg-white/5 border-white/10",
@@ -65,19 +72,16 @@ export default function DeleteAccount() {
 
   const handleDeleteConfirm = async () => {
     if (confirmText !== "DELETE") return;
-    setIsDeleting(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log("Account deletion confirmed");
-      window.location.href = "/";
-    } catch (error) {
-      console.error("Error deleting account:", error);
-      setIsDeleting(false);
+      await deleteAccount(undefined).unwrap();
+      toast.success("Account deleted permanently");
+      dispatch(logout());
+      router.push("/");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to delete account");
     }
   };
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -99,14 +103,12 @@ export default function DeleteAccount() {
     >
       <div className="flex items-center mb-6">
         <Trash2 size={20} className="text-red-500 mr-2" />
-        <h2 className={cn("text-lg font-semibold", styles.text)} data-translate="profile.deleteAccount.title">
-          Delete Account
-        </h2>
+        <h2 className={cn("text-lg font-semibold", styles.text)}>Delete Account</h2>
       </div>
 
       {!showConfirmation ? (
         <div>
-          <p className={cn("mb-4", styles.textMuted)} data-translate="profile.deleteAccount.warning">
+          <p className={cn("mb-4", styles.textMuted)}>
             Once you delete your account, there is no going back. This action is permanent and cannot be undone.
           </p>
           <motion.button
@@ -114,7 +116,6 @@ export default function DeleteAccount() {
             className={cn("inline-flex items-center px-4 py-2 rounded-md transition-colors", styles.buttonDanger)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            data-translate="profile.deleteAccount.button"
           >
             <Trash2 size={16} className="mr-1.5" />
             Delete Account
@@ -129,17 +130,15 @@ export default function DeleteAccount() {
           <div className="flex items-start mb-4">
             <AlertTriangle size={24} className="text-red-500 mr-2 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className={cn("text-md font-semibold", styles.warningTitle)} data-translate="profile.deleteAccount.confirmTitle">
-                Warning: This action cannot be undone
-              </h3>
-              <p className={cn("text-sm mt-1", styles.warningText)} data-translate="profile.deleteAccount.confirmDesc">
+              <h3 className={cn("text-md font-semibold", styles.warningTitle)}>Warning: This action cannot be undone</h3>
+              <p className={cn("text-sm mt-1", styles.warningText)}>
                 This will permanently delete your account, all your data, and remove your access to all services.
               </p>
             </div>
           </div>
 
           <div className="mb-4">
-            <label className={cn("block text-sm font-medium mb-1", styles.label)} data-translate="profile.deleteAccount.confirmLabel">
+            <label className={cn("block text-sm font-medium mb-1", styles.label)}>
               To confirm, type &quot;DELETE&quot; in the field below:
             </label>
             <input
@@ -167,15 +166,9 @@ export default function DeleteAccount() {
               whileTap={confirmText === "DELETE" && !isDeleting ? { scale: 0.95 } : {}}
             >
               {isDeleting ? (
-                <>
-                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                  <span data-translate="profile.deleteAccount.deleting">Deleting...</span>
-                </>
+                <><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" /> Deleting...</>
               ) : (
-                <>
-                  <Trash2 size={16} className="mr-1.5" />
-                  <span data-translate="profile.deleteAccount.confirmButton">Permanently Delete Account</span>
-                </>
+                <><Trash2 size={16} className="mr-1.5" /> Permanently Delete Account</>
               )}
             </motion.button>
 
@@ -185,7 +178,6 @@ export default function DeleteAccount() {
               className={cn("px-4 py-2 border rounded-md transition-colors", styles.buttonSecondary)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              data-translate="common.cancel"
             >
               Cancel
             </motion.button>

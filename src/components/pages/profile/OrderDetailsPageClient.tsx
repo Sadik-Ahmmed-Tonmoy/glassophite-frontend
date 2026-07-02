@@ -2,39 +2,23 @@
 
 import OrderDetails from "@/components/pages/profile/OrderDetails"
 import ProfileHeader from "@/components/pages/profile/ProfileHeader"
-import { getOrderById } from "@/lib/data"
-import { TOrder } from "@/types/types"
+import { useGetOrderByIdQuery } from "@/redux/features/order/orderApi"
 import { useParams, useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
 
 export default function OrderDetailsPageClient() {
   const params = useParams()
   const router = useRouter()
-  const [order, setOrder] = useState<TOrder | null>(null)
-  const [loading, setLoading] = useState(true)
+  const orderId = params.id as string
+  const { data: orderData, isLoading, error } = useGetOrderByIdQuery(orderId, { skip: !orderId })
 
-  useEffect(() => {
-    const orderId = params.id as string
-    if (!orderId) {
-      router.push("/my-profile/order-history")
-      return
-    }
+  const order = orderData?.data || orderData
 
-    const fetchOrder = async () => {
-      try {
-        const orderData = await getOrderById(orderId)
-        setOrder(orderData)
-      } catch (error) {
-        console.error("Failed to fetch order:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
+  if (!orderId) {
+    router.push("/my-profile/order-history")
+    return null
+  }
 
-    fetchOrder()
-  }, [params.id, router])
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto">
         <ProfileHeader title="Order Details" description="Loading order information..." />
@@ -45,7 +29,7 @@ export default function OrderDetailsPageClient() {
     )
   }
 
-  if (!order) {
+  if (!order || error) {
     return (
       <div className="max-w-5xl mx-auto">
         <ProfileHeader title="Order Not Found" description="The requested order could not be found" />
@@ -67,7 +51,6 @@ export default function OrderDetailsPageClient() {
         title={`Order #${order.orderNumber}`}
         description={`Placed on ${new Date(order.orderDate ?? order.createdAt ?? 0).toLocaleDateString()}`}
       />
-
       <div className="mt-8">
         <OrderDetails order={order} />
       </div>

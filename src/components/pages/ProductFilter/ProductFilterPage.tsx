@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
 import Head from "next/head"
 import Script from "next/script"
 import { useTheme } from "next-themes"
-import {  SlidersHorizontal, X } from "lucide-react"
+import { SlidersHorizontal, X } from "lucide-react"
 import MobileFilterDrawer from "./mobile-filter-drawer"
 import type { FilterOptionCounts, FilterState, SortOption } from "@/types/filter-types"
-import { mockProducts } from "@/lib/productMockData"
+import { useGetAllProductsQuery } from "@/redux/features/product/productApi"
 import Breadcrumb from "./breadcrumb"
 import FilterSection from "./filter-section"
 import ProductSection from "./product-section"
@@ -33,11 +33,6 @@ const getInitialCategoriesFromParams = (searchParams: Pick<URLSearchParams, "get
   return searchParams.get("category")?.split(",").filter(Boolean) || []
 }
 
-const isSaleProduct = (product: (typeof mockProducts)[number]) => {
-  const discount = Number.parseInt(String(product.discountPercent || "0"))
-  return discount > 0 || Boolean(product.priceAfterDiscount && product.mainPrice && product.priceAfterDiscount < product.mainPrice)
-}
-
 export default function ProductFilterPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -45,7 +40,6 @@ export default function ProductFilterPage() {
   const { theme } = useTheme()
   const isDark = theme === "dark"
 
-  // Parse initial filters from URL
   const initialFilters: FilterState = {
     priceRange: [
       Number.parseInt(searchParams.get("minPrice") || "0"),
@@ -61,89 +55,72 @@ export default function ProductFilterPage() {
     inStock: searchParams.get("inStock") === "true" ? true : null,
   }
 
-  // State for filters
   const [filters, setFilters] = useState<FilterState>(initialFilters)
-
-  // State for sorting
   const [sortOption, setSortOption] = useState<SortOption>((searchParams.get("sort") as SortOption) || "featured")
-
-  // State for mobile filter visibility
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
-
-  // State for pagination
   const [currentPage, setCurrentPage] = useState(Number.parseInt(searchParams.get("page") || "1"))
-  const [productsPerPage, setProductsPerPage] = useState(Number.parseInt(searchParams.get("limit") || "6"))
+  const [productsPerPage, setProductsPerPage] = useState(Number.parseInt(searchParams.get("limit") || "12"))
 
-  // State for loading
-  const [isLoading, setIsLoading] = useState(false)
+  const { data: productsData, isLoading } = useGetAllProductsQuery({
+    page: currentPage,
+    limit: productsPerPage,
+    sortBy: sortOption === "price-low" ? "price_asc" : sortOption === "price-high" ? "price_desc" : sortOption === "newest" ? "newest" : sortOption === "rating" ? "rating" : undefined,
+    category: filters.categories.length === 1 ? filters.categories[0] : undefined,
+    brand: filters.brands.length === 1 ? filters.brands[0] : undefined,
+    frameType: filters.frameTypes.length === 1 ? filters.frameTypes[0] : undefined,
+    lensType: filters.lensTypes.length === 1 ? filters.lensTypes[0] : undefined,
+    inStock: filters.inStock ?? undefined,
+    priceMin: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
+    priceMax: filters.priceRange[1] < 5000 ? filters.priceRange[1] : undefined,
+  })
 
-  // State for filtered products
-  const [filteredProducts, setFilteredProducts] = useState(mockProducts)
+  const products = productsData?.data || []
+  const total = productsData?.meta?.total || 0
+  const totalPages = Math.ceil(total / productsPerPage)
 
-  // Get all available filter options from products
-  const allBrands = Array.from(new Set(mockProducts.map((product) => product.brand || "")))
-  const allFrameTypes = Array.from(new Set(mockProducts.map((product) => product.frameType || "")))
-  const allLensTypes = Array.from(new Set(mockProducts.map((product) => product.lensType || "")))
-    .flatMap((lensType) => (lensType ? lensType.split(", ") : []))
-    .filter((value, index, self) => self.indexOf(value) === index)
-  const allColors = Array.from(
-    new Set(
-      mockProducts
-        .flatMap((product) =>
-          product.variants.map((variant) => ({ color: variant.color, title: variant.title.split(" ")[0] })),
-        )
-        .map((item) => JSON.stringify(item)),
-    ),
-  ).map((item) => JSON.parse(item))
+  const allBrands: string[] = useMemo(() => Array.from(new Set(products.map((p: any) => p.brand).filter(Boolean))) as string[], [products])
+  const allFrameTypes: string[] = useMemo(() => Array.from(new Set(products.map((p: any) => p.frameType).filter(Boolean))) as string[], [products])
+  const allLensTypes: string[] = useMemo(() =>
+    Array.from(new Set(products.flatMap((p: any) => p.lensType ? p.lensType.split(", ") : []))) as string[],
+  [products])
+  const allColors: { color: string; title: string }[] = useMemo(() =>
+    Array.from(new Set(products.flatMap((p: any) => p.variants?.map((v: any) => JSON.stringify({ color: v.color, title: v.title.split(" ")[0] })) || [])))
+      .map((item: any) => JSON.parse(item)),
+  [products])
 
-  const optionCounts: FilterOptionCounts = {
-    collections: collectionOptions.reduce<Record<string, number>>((counts, option) => {
+  const minPrice = useMemo(() => {
+    const prices = products.flatMap((p: any) => p.variants?.map((v: any) => v.priceAfterDiscount) || [])
+    return prices.length ? Math.min(...prices) : 0
+  }, [products])
+
+  const maxPrice = useMemo(() => {
+    const prices = products.flatMap((p: any) => p.variants?.map((v: any) => v.priceAfterDiscount) || [])
+    return prices.length ? Math.max(...prices) : 5000
+  }, [products])
+
+  const optionCounts: FilterOptionCounts = useMemo(() => {
+    const collections: Record<string, number> = {}
+    collectionOptions.forEach((option) => {
       if (option.type === "sale") {
-        counts[option.value] = mockProducts.filter(isSaleProduct).length
-        return counts
+        collections[option.value] = products.filter((p: any) =>
+          p.variants?.some((v: any) => v.discountPercent > 0 || (v.priceAfterDiscount && v.mainPrice && v.priceAfterDiscount < v.mainPrice))
+        ).length
+      } else {
+        collections[option.value] = products.filter((p: any) => p.category?.toLowerCase() === option.value).length
       }
+    })
 
-      counts[option.value] =
-        option.value === "sunglasses"
-          ? mockProducts.length
-          : mockProducts.filter((product) => product.category?.toLowerCase() === option.value).length
+    return {
+      collections,
+      brands: Object.fromEntries(allBrands.map((b: string) => [b, products.filter((p: any) => p.brand === b).length])),
+      frameTypes: Object.fromEntries(allFrameTypes.map((f: string) => [f, products.filter((p: any) => p.frameType === f).length])),
+      lensTypes: Object.fromEntries(allLensTypes.map((l: string) => [l, products.filter((p: any) => p.lensType?.includes(l)).length])),
+      colors: Object.fromEntries(allColors.map((c: any) => [c.color, products.filter((p: any) => p.variants?.some((v: any) => v.color === c.color)).length])),
+      ratings: Object.fromEntries([5, 4, 3, 2, 1].map((r) => [r, products.filter((p: any) => Math.floor(p.averageRating || 0) === r).length])),
+      inStock: products.filter((p: any) => p.variants?.some((v: any) => v.inStock)).length,
+    }
+  }, [products, allBrands, allFrameTypes, allLensTypes, allColors])
 
-      return counts
-    }, {}),
-    brands: allBrands.reduce<Record<string, number>>((counts, brand) => {
-      counts[brand] = mockProducts.filter((product) => product.brand === brand).length
-      return counts
-    }, {}),
-    frameTypes: allFrameTypes.reduce<Record<string, number>>((counts, frameType) => {
-      counts[frameType] = mockProducts.filter((product) => product.frameType === frameType).length
-      return counts
-    }, {}),
-    lensTypes: allLensTypes.reduce<Record<string, number>>((counts, lensType) => {
-      counts[lensType] = mockProducts.filter((product) => product.lensType?.split(", ").includes(lensType)).length
-      return counts
-    }, {}),
-    colors: allColors.reduce<Record<string, number>>((counts, colorObj: { color: string; title: string }) => {
-      counts[colorObj.color] = mockProducts.filter((product) =>
-        product.variants.some((variant) => variant.color === colorObj.color)
-      ).length
-      return counts
-    }, {}),
-    ratings: [5, 4, 3, 2, 1].reduce<Record<number, number>>((counts, rating) => {
-      counts[rating] = mockProducts.filter((product) => Math.floor(product.averageRating || 0) === rating).length
-      return counts
-    }, {}),
-    inStock: mockProducts.filter((product) => product.variants.some((variant) => variant.inStock)).length,
-  }
-
-  // Price range
-  const minPrice = Math.min(
-    ...mockProducts.flatMap((product) => product.variants.map((variant) => variant.priceAfterDiscount)),
-  )
-  const maxPrice = Math.max(
-    ...mockProducts.flatMap((product) => product.variants.map((variant) => variant.priceAfterDiscount)),
-  )
-
-  // Sync URL search params to React state
   useEffect(() => {
     const minP = Number.parseInt(searchParams.get("minPrice") || "0")
     const maxP = Number.parseInt(searchParams.get("maxPrice") || "5000")
@@ -157,58 +134,33 @@ export default function ProductFilterPage() {
     const inStock = searchParams.get("inStock") === "true" ? true : searchParams.get("inStock") === "false" ? false : null
 
     setFilters((prev) => {
-      if (
-        prev.priceRange[0] === minP &&
-        prev.priceRange[1] === maxP &&
+      if (prev.priceRange[0] === minP && prev.priceRange[1] === maxP &&
         prev.categories.length === categories.length && prev.categories.every((v, i) => v === categories[i]) &&
-        prev.saleOnly === saleOnly &&
-        prev.brands.length === brands.length && prev.brands.every((v, i) => v === brands[i]) &&
+        prev.saleOnly === saleOnly && prev.brands.length === brands.length && prev.brands.every((v, i) => v === brands[i]) &&
         prev.frameTypes.length === frameTypes.length && prev.frameTypes.every((v, i) => v === frameTypes[i]) &&
         prev.lensTypes.length === lensTypes.length && prev.lensTypes.every((v, i) => v === lensTypes[i]) &&
         prev.colors.length === colors.length && prev.colors.every((v, i) => v === colors[i]) &&
-        prev.ratings.length === ratings.length && prev.ratings.every((v, i) => v === ratings[i]) &&
-        prev.inStock === inStock
-      ) {
-        return prev
-      }
-      return {
-        priceRange: [minP, maxP],
-        categories,
-        saleOnly,
-        brands,
-        frameTypes,
-        lensTypes,
-        colors,
-        ratings,
-        inStock,
-      }
+        prev.ratings.length === ratings.length && prev.ratings.every((v, i) => v === ratings[i]) && prev.inStock === inStock
+      ) return prev
+      return { priceRange: [minP, maxP], categories, saleOnly, brands, frameTypes, lensTypes, colors, ratings, inStock }
     })
 
     const sort = (searchParams.get("sort") as SortOption) || "featured"
-    setSortOption((prev) => (prev === sort ? prev : sort))
-
+    setSortOption((prev) => prev === sort ? prev : sort)
     const page = Number.parseInt(searchParams.get("page") || "1")
-    setCurrentPage((prev) => (prev === page ? prev : page))
-
-    const limit = Number.parseInt(searchParams.get("limit") || "6")
-    setProductsPerPage((prev) => (prev === limit ? prev : limit))
+    setCurrentPage((prev) => prev === page ? prev : page)
+    const limit = Number.parseInt(searchParams.get("limit") || "12")
+    setProductsPerPage((prev) => prev === limit ? prev : limit)
   }, [searchParams])
 
-  // Update URL when filters change
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString())
-
-    const updateParam = (key: string, value: string | null, defaultValue?: string) => {
-      if (value && value !== defaultValue) {
-        params.set(key, value)
-      } else {
-        params.delete(key)
-      }
+    const updateParam = (key: string, value: string | null) => {
+      if (value) params.set(key, value)
+      else params.delete(key)
     }
-
-    updateParam("minPrice", filters.priceRange[0] > minPrice ? filters.priceRange[0].toString() : null)
-    updateParam("maxPrice", filters.priceRange[1] < maxPrice ? filters.priceRange[1].toString() : null)
-
+    updateParam("minPrice", filters.priceRange[0] > 0 ? filters.priceRange[0].toString() : null)
+    updateParam("maxPrice", filters.priceRange[1] < 5000 ? filters.priceRange[1].toString() : null)
     updateParam("category", filters.categories.length > 0 ? filters.categories.join(",") : null)
     updateParam("sale", filters.saleOnly ? "true" : null)
     params.delete("brand")
@@ -218,173 +170,52 @@ export default function ProductFilterPage() {
     updateParam("colors", filters.colors.length > 0 ? filters.colors.join(",") : null)
     updateParam("ratings", filters.ratings.length > 0 ? filters.ratings.join(",") : null)
     updateParam("inStock", filters.inStock !== null ? filters.inStock.toString() : null)
-
-    updateParam("sort", sortOption, "featured")
+    updateParam("sort", sortOption !== "featured" ? sortOption : null)
     updateParam("page", currentPage > 1 ? currentPage.toString() : null)
-    updateParam("limit", productsPerPage !== 6 ? productsPerPage.toString() : null)
+    updateParam("limit", productsPerPage !== 12 ? productsPerPage.toString() : null)
 
     const newSearch = params.toString()
     const currentSearch = searchParams.toString()
-
     if (newSearch !== currentSearch) {
       router.push(`${pathname}?${newSearch}`, { scroll: false })
     }
-  }, [filters, sortOption, currentPage, pathname, router, minPrice, maxPrice, productsPerPage, searchParams])
-
-  // Apply filters and sorting
-  useEffect(() => {
-    setIsLoading(true)
-
-    const timer = setTimeout(() => {
-      let result = [...mockProducts]
-
-      if (filters.categories.length > 0) {
-        result = result.filter((product) => {
-          const productCategory = product.category?.toLowerCase()
-          return filters.categories.some((category) => {
-            if (category === "sunglasses") return true
-            return productCategory === category.toLowerCase()
-          })
-        })
-      }
-
-      if (filters.saleOnly) {
-        result = result.filter((product) => {
-          const discount = Number.parseInt(String(product.discountPercent || "0"))
-          return discount > 0 || (product.priceAfterDiscount && product.mainPrice && product.priceAfterDiscount < product.mainPrice)
-        })
-      }
-
-      result = result.filter((product) => {
-        const productPrice = product.variants[0].priceAfterDiscount
-        return productPrice >= filters.priceRange[0] && productPrice <= filters.priceRange[1]
-      })
-
-      if (filters.brands.length > 0) {
-        result = result.filter((product) => filters.brands.includes(product.brand || ""))
-      }
-
-      if (filters.frameTypes.length > 0) {
-        result = result.filter((product) => filters.frameTypes.includes(product.frameType || ""))
-      }
-
-      if (filters.lensTypes.length > 0) {
-        result = result.filter((product) => {
-          const productLensTypes = product.lensType ? product.lensType.split(", ") : []
-          return filters.lensTypes.some((lensType) => productLensTypes.includes(lensType))
-        })
-      }
-
-      if (filters.colors.length > 0) {
-        result = result.filter((product) => product.variants.some((variant) => filters.colors.includes(variant.color)))
-      }
-
-      if (filters.ratings.length > 0) {
-        result = result.filter((product) => {
-          const rating = Math.floor(product.averageRating || 0)
-          return filters.ratings.includes(rating)
-        })
-      }
-
-      if (filters.inStock !== null) {
-        result = result.filter((product) => product.variants.some((variant) => variant.inStock === filters.inStock))
-      }
-
-      switch (sortOption) {
-        case "price-low":
-          result.sort((a, b) => a.variants[0].priceAfterDiscount - b.variants[0].priceAfterDiscount)
-          break
-        case "price-high":
-          result.sort((a, b) => b.variants[0].priceAfterDiscount - a.variants[0].priceAfterDiscount)
-          break
-        case "rating":
-          result.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0))
-          break
-        case "newest":
-          result.sort((a, b) => Number(b.id) - Number(a.id))
-          break
-        default:
-          result.sort(
-            (a, b) => (b.averageRating || 0) * (b.totalReviews || 0) - (a.averageRating || 0) * (a.totalReviews || 0),
-          )
-      }
-
-      setFilteredProducts(result)
-      setIsLoading(false)
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [filters, sortOption, searchParams])
+  }, [filters, sortOption, currentPage, pathname, router, productsPerPage, searchParams])
 
   const handleFilterChange = (filterType: keyof FilterState, value: any) => {
     setFilters((prev) => {
       const newFilters = { ...prev }
-
-      if (filterType === "priceRange") {
-        newFilters.priceRange = value
-      } else if (filterType === "inStock") {
-        newFilters.inStock = value
-      } else if (filterType === "saleOnly") {
-        newFilters.saleOnly = value
-      } else if (Array.isArray(newFilters[filterType])) {
-        if (Array.isArray(value)) {
-          newFilters[filterType] = value as any
-          return newFilters
-        }
-
-        const filterArray = newFilters[filterType] as any[]
-        if (filterArray.includes(value)) {
-          newFilters[filterType] = filterArray.filter((item) => item !== value) as any
-        } else {
-          newFilters[filterType] = [...filterArray, value] as any
-        }
+      if (filterType === "priceRange") newFilters.priceRange = value
+      else if (filterType === "inStock") newFilters.inStock = value
+      else if (filterType === "saleOnly") newFilters.saleOnly = value
+      else if (Array.isArray(newFilters[filterType])) {
+        const arr = newFilters[filterType] as any[]
+        if (Array.isArray(value)) { newFilters[filterType] = value as any }
+        else { newFilters[filterType] = (arr.includes(value) ? arr.filter((i) => i !== value) : [...arr, value]) as any }
       }
-
       return newFilters
     })
-
     if (currentPage !== 1) setCurrentPage(1)
   }
 
   const clearAllFilters = () => {
-    setFilters({
-      priceRange: [minPrice, maxPrice],
-      categories: [],
-      saleOnly: false,
-      brands: [],
-      frameTypes: [],
-      lensTypes: [],
-      colors: [],
-      ratings: [],
-      inStock: null,
-    })
+    setFilters({ priceRange: [0, 5000], categories: [], saleOnly: false, brands: [], frameTypes: [], lensTypes: [], colors: [], ratings: [], inStock: null })
     setSortOption("featured")
     setCurrentPage(1)
-
-    // Clear only managed filters from the URL, preserving others
     const params = new URLSearchParams(searchParams.toString())
     const managedKeys = ["minPrice", "maxPrice", "category", "sale", "brand", "brands", "frameTypes", "lensTypes", "colors", "ratings", "inStock", "sort", "page", "limit"]
     managedKeys.forEach((key) => params.delete(key))
-
     const newSearch = params.toString()
     router.push(newSearch ? `${pathname}?${newSearch}` : pathname, { scroll: false })
   }
 
   const removeFilter = (filterType: keyof FilterState, value: any) => {
     setFilters((prev) => {
-      const newFilters = { ...prev }
-
-      if (filterType === "priceRange") {
-        newFilters.priceRange = [minPrice, maxPrice]
-      } else if (filterType === "inStock") {
-        newFilters.inStock = null
-      } else if (filterType === "saleOnly") {
-        newFilters.saleOnly = false
-      } else if (Array.isArray(newFilters[filterType])) {
-        newFilters[filterType] = (newFilters[filterType] as any[]).filter((item) => item !== value) as any
-      }
-
-      return newFilters
+      const n = { ...prev }
+      if (filterType === "priceRange") n.priceRange = [0, 5000]
+      else if (filterType === "inStock") n.inStock = null
+      else if (filterType === "saleOnly") n.saleOnly = false
+      else if (Array.isArray(n[filterType])) n[filterType] = (n[filterType] as any[]).filter((i) => i !== value) as any
+      return n
     })
   }
 
@@ -393,40 +224,19 @@ export default function ProductFilterPage() {
     setCurrentPage(1)
   }
 
-  const indexOfLastProduct = currentPage * productsPerPage
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct)
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage)
-
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
 
-  const hasActiveFilters = () => {
-    return (
-      filters.brands.length > 0 ||
-      filters.categories.length > 0 ||
-      filters.saleOnly ||
-      filters.frameTypes.length > 0 ||
-      filters.lensTypes.length > 0 ||
-      filters.colors.length > 0 ||
-      filters.ratings.length > 0 ||
-      filters.inStock !== null ||
-      filters.priceRange[0] > minPrice ||
-      filters.priceRange[1] < maxPrice
-    )
-  }
+  const hasActiveFilters = () => filters.brands.length > 0 || filters.categories.length > 0 || filters.saleOnly ||
+    filters.frameTypes.length > 0 || filters.lensTypes.length > 0 || filters.colors.length > 0 ||
+    filters.ratings.length > 0 || filters.inStock !== null || filters.priceRange[0] > 0 || filters.priceRange[1] < 5000
 
   const getActiveFilterCount = () => {
-    let count = 0
-    count += filters.brands.length
-    count += filters.categories.length
-    if (filters.saleOnly) count += 1
-    count += filters.frameTypes.length
-    count += filters.lensTypes.length
-    count += filters.colors.length
-    count += filters.ratings.length
-    if (filters.inStock !== null) count += 1
-    if (filters.priceRange[0] > minPrice || filters.priceRange[1] < maxPrice) count += 1
-    return count
+    let c = 0
+    c += filters.brands.length + filters.categories.length + filters.frameTypes.length + filters.lensTypes.length + filters.colors.length + filters.ratings.length
+    if (filters.saleOnly) c++
+    if (filters.inStock !== null) c++
+    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 5000) c++
+    return c
   }
 
   const getMetaTitle = () => {
@@ -445,404 +255,135 @@ export default function ProductFilterPage() {
 
   const getMetaDescription = () => {
     let description = "Browse our premium collection of eyewear including sunglasses and prescription glasses."
-    const filterParts = []
-    if (filters.categories.length > 0) {
-      const labels = filters.categories.map((category) => collectionOptions.find((item) => item.value === category)?.label || category)
-      filterParts.push(`collections like ${labels.join(", ")}`)
-    }
-    if (filters.saleOnly) filterParts.push("sale items")
-    if (filters.brands.length > 0) filterParts.push(`brands like ${filters.brands.join(", ")}`)
-    if (filters.frameTypes.length > 0) filterParts.push(`${filters.frameTypes.join(", ")} frames`)
-    if (filters.lensTypes.length > 0) filterParts.push(`${filters.lensTypes.join(", ")} lenses`)
-    if (filterParts.length > 0) description = `Discover our selection of eyewear with ${filterParts.join(" and ")}. ${description}`
+    const parts: string[] = []
+    if (filters.categories.length > 0) parts.push(`collections like ${filters.categories.map((c) => collectionOptions.find((o) => o.value === c)?.label || c).join(", ")}`)
+    if (filters.saleOnly) parts.push("sale items")
+    if (filters.brands.length > 0) parts.push(`brands like ${filters.brands.join(", ")}`)
+    if (filters.frameTypes.length > 0) parts.push(`${filters.frameTypes.join(", ")} frames`)
+    if (filters.lensTypes.length > 0) parts.push(`${filters.lensTypes.join(", ")} lenses`)
+    if (parts.length > 0) description = `Discover our selection of eyewear with ${parts.join(" and ")}. ${description}`
     return description
   }
 
-  const getCanonicalUrl = () => {
-    const baseUrl = "https://yourdomain.com"
-    if (!hasActiveFilters() && currentPage === 1) return `${baseUrl}${pathname}`
-    if (hasActiveFilters() && currentPage > 1) {
-      const params = new URLSearchParams(searchParams.toString())
-      params.delete("page")
-      return `${baseUrl}${pathname}?${params.toString()}`
-    }
-    return `${baseUrl}${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`
-  }
-
-  const generateStructuredData = () => {
-    const itemListElement = currentProducts.map((product, index) => ({
+  const generateStructuredData = () => ({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: products.slice(0, productsPerPage).map((product: any, index: number) => ({
       "@type": "ListItem",
-      position: indexOfFirstProduct + index + 1,
+      position: (currentPage - 1) * productsPerPage + index + 1,
       item: {
         "@type": "Product",
-        name: product.variants[0].title,
-        image: product.variants[0].imgList[0].image,
-        description: product.variants[0].shortDescription,
+        name: product.title,
+        image: product.variants?.[0]?.imgList?.[0]?.image || "",
+        description: product.shortDescription,
         brand: { "@type": "Brand", name: product.brand },
         offers: {
           "@type": "Offer",
-          price: product.variants[0].priceAfterDiscount,
+          price: product.variants?.[0]?.priceAfterDiscount || 0,
           priceCurrency: "USD",
-          availability: product.variants[0].inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          availability: product.variants?.[0]?.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
         },
-        aggregateRating: product.averageRating ? {
-          "@type": "AggregateRating",
-          ratingValue: product.averageRating,
-          reviewCount: product.totalReviews,
-        } : undefined,
       },
-    }))
+    })),
+  })
 
-    return {
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      itemListElement,
-      numberOfItems: currentProducts.length,
-      itemListOrder: "https://schema.org/ItemListOrderDescending",
-    }
-  }
-
-  const structuredData = generateStructuredData()
-  const metaTitle = getMetaTitle()
-  const metaDescription = getMetaDescription()
-  const canonicalUrl = getCanonicalUrl()
-
-  // Theme styles
   const themeStyles = {
-    dark: {
-      bg: "bg-black",
-      card: "bg-white/5 border-white/10",
-      cardHover: "hover:bg-white/10",
-      text: "text-white",
-      textMuted: "text-neutral-300",
-      textMutedLighter: "text-neutral-400",
-      border: "border-white/10",
-      gradient: "from-[#007C74] to-[#3C55A5]",
-      button: "bg-white/10 hover:bg-white/20 text-white",
-      activeFilter: "bg-[#007C74]/20 text-[#007C74] border-[#007C74]/30",
-    },
-    light: {
-      bg: "bg-neutral-50",
-      card: "bg-white border-neutral-200",
-      cardHover: "hover:bg-neutral-50",
-      text: "text-neutral-900",
-      textMuted: "text-neutral-600",
-      textMutedLighter: "text-neutral-500",
-      border: "border-neutral-200",
-      gradient: "from-[#007C74] to-[#3C55A5]",
-      button: "bg-neutral-200 hover:bg-neutral-300 text-neutral-900",
-      activeFilter: "bg-[#007C74]/10 text-[#007C74] border-[#007C74]/30",
-    },
+    dark: { bg: "bg-black", card: "bg-white/5 border-white/10", cardHover: "hover:bg-white/10", text: "text-white", textMuted: "text-neutral-300", textMutedLighter: "text-neutral-400", border: "border-white/10", gradient: "from-[#007C74] to-[#3C55A5]", button: "bg-white/10 hover:bg-white/20 text-white", activeFilter: "bg-[#007C74]/20 text-[#007C74] border-[#007C74]/30" },
+    light: { bg: "bg-neutral-50", card: "bg-white border-neutral-200", cardHover: "hover:bg-neutral-50", text: "text-neutral-900", textMuted: "text-neutral-600", textMutedLighter: "text-neutral-500", border: "border-neutral-200", gradient: "from-[#007C74] to-[#3C55A5]", button: "bg-neutral-200 hover:bg-neutral-300 text-neutral-900", activeFilter: "bg-[#007C74]/10 text-[#007C74] border-[#007C74]/30" },
   }
-
-  const styles = isDark ? themeStyles.dark : themeStyles.light
-
-  // Filter props
-  const filterProps = {
-    filters,
-    collectionOptions,
-    optionCounts,
-    allBrands,
-    allFrameTypes,
-    allLensTypes,
-    allColors,
-    minPrice,
-    maxPrice,
-    handleFilterChange,
-    removeFilter,
-    clearAllFilters,
-    hasActiveFilters: hasActiveFilters(),
-  }
-
-  // Product props
-  const productProps = {
-    products: currentProducts,
-    filteredProducts,
-    isLoading,
-    sortOption,
-    setSortOption,
-    currentPage,
-    totalPages,
-    paginate,
-    indexOfFirstProduct,
-    indexOfLastProduct,
-    totalProducts: filteredProducts.length,
-    productsPerPage,
-    onProductsPerPageChange: handleProductsPerPageChange,
-    clearAllFilters,
-    getActiveFilterCount: getActiveFilterCount(),
-    setMobileFiltersOpen,
-  }
-
-  // Breadcrumb props
-  const breadcrumbProps = { filters }
+  const s = isDark ? themeStyles.dark : themeStyles.light
 
   return (
     <>
       <Head>
-        <title>{metaTitle}</title>
-        <meta name="description" content={metaDescription} />
-        <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={canonicalUrl} />
-        <meta property="og:title" content={metaTitle} />
-        <meta property="og:description" content={metaDescription} />
-        <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:type" content="website" />
-        <meta property="og:image" content="/og-image.jpg" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={metaTitle} />
-        <meta name="twitter:description" content={metaDescription} />
-        <meta name="twitter:image" content="/twitter-image.jpg" />
+        <title>{getMetaTitle()}</title>
+        <meta name="description" content={getMetaDescription()} />
+        <link rel="canonical" href={`https://glassophite.com${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`} />
       </Head>
-
-      <Script
-        id="structured-data"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className={`min-h-screen transition-colors duration-500 ${styles.bg}`}
-      >
-        {/* Background Pattern */}
+      <Script id="structured-data" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateStructuredData()) }} />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`min-h-screen transition-colors duration-500 ${s.bg}`}>
         <div className="absolute inset-0 opacity-5 pointer-events-none">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `radial-gradient(circle at 2px 2px, ${isDark ? "#007C74" : "#007C74"} 1px, transparent 0)`,
-              backgroundSize: "40px 40px",
-            }}
-          />
+          <div className="absolute inset-0" style={{ backgroundImage: `radial-gradient(circle at 2px 2px, ${isDark ? "#007C74" : "#007C74"} 1px, transparent 0)`, backgroundSize: "40px 40px" }} />
         </div>
-
-        {/* Floating Orbs */}
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.1, 0.2, 0.1],
-          }}
-          transition={{ duration: 8, repeat: Infinity }}
-          className="fixed top-20 left-20 w-96 h-96 bg-[#007C74]/10 rounded-full blur-[120px] -z-10"
-        />
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.1, 0.15, 0.1],
-          }}
-          transition={{ duration: 10, repeat: Infinity }}
-          className="fixed bottom-20 right-20 w-[500px] h-[500px] bg-[#3C55A5]/10 rounded-full blur-[150px] -z-10"
-        />
-
-        {/* Mobile filter drawer */}
         <AnimatePresence>
           {mobileFiltersOpen && (
             <MobileFilterDrawer
-              filters={filters}
-              optionCounts={optionCounts}
-              allBrands={allBrands}
-              collectionOptions={collectionOptions}
-              allFrameTypes={allFrameTypes}
-              allLensTypes={allLensTypes}
-              allColors={allColors}
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              handleFilterChange={handleFilterChange}
-              onClose={() => setMobileFiltersOpen(false)}
+              filters={filters} optionCounts={optionCounts} allBrands={allBrands}
+              collectionOptions={collectionOptions} allFrameTypes={allFrameTypes}
+              allLensTypes={allLensTypes} allColors={allColors} minPrice={minPrice} maxPrice={maxPrice}
+              handleFilterChange={handleFilterChange} onClose={() => setMobileFiltersOpen(false)}
             />
           )}
         </AnimatePresence>
-
         <main className="container relative z-10 lg:mt-28">
-          {/* Header with title and mobile filter button */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6 pt-10" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <h1 className={`text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight ${styles.text}`}>
-                {metaTitle}
-              </h1>
-              <p className={`text-sm ${styles.textMutedLighter} mt-1`} data-translate="filter.results">
-                {filteredProducts.length} products found
-              </p>
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+              <h1 className={`text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight ${s.text}`}>{getMetaTitle()}</h1>
+              <p className={`text-sm ${s.textMutedLighter} mt-1`} data-translate="filter.results">{total} products found</p>
             </motion.div>
-
-            {/* Mobile filter toggle */}
-            <motion.button
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+            <motion.button initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.3 }}
               onClick={() => setMobileFiltersOpen(true)}
-              className={`lg:hidden flex items-center gap-2 px-4 py-2 rounded-full border backdrop-blur-sm ${styles.card} ${styles.cardHover} transition-colors`}
-            >
+              className={`lg:hidden flex items-center gap-2 px-4 py-2 rounded-full border backdrop-blur-sm ${s.card} ${s.cardHover} transition-colors`}>
               <SlidersHorizontal className="w-4 h-4" />
               <span className="text-sm" data-translate="filter.filter">Filters</span>
-              {getActiveFilterCount() > 0 && (
-                <span className="px-2 py-0.5 text-xs bg-[#007C74] text-white rounded-full">
-                  {getActiveFilterCount()}
-                </span>
-              )}
+              {getActiveFilterCount() > 0 && <span className="px-2 py-0.5 text-xs bg-[#007C74] text-white rounded-full">{getActiveFilterCount()}</span>}
             </motion.button>
           </div>
-
-          {/* Breadcrumb */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="lg:py-4"
-          >
-            <Breadcrumb {...breadcrumbProps} />
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }} className="lg:py-4">
+            <Breadcrumb filters={filters} />
           </motion.div>
-
-          {/* Active filters bar (for desktop) */}
           {hasActiveFilters() && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="flex lg:hidden flex-wrap items-center gap-2 py-4"
-            >
-              <span className={`text-sm ${styles.textMutedLighter}`} data-translate="filter.active">
-                Active filters:
-              </span>
-              {filters.brands.map((brand) => (
-                <button
-                  key={brand}
-                  onClick={() => removeFilter("brands", brand)}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
-                >
-                  {brand}
-                  <X className="w-3 h-3" />
-                </button>
-              ))}
-              {filters.categories.map((category) => {
-                const option = collectionOptions.find((item) => item.value === category)
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }} className="flex lg:hidden flex-wrap items-center gap-2 py-4">
+              <span className={`text-sm ${s.textMutedLighter}`} data-translate="filter.active">Active filters:</span>
+              {filters.brands.map((b) => <ActiveFilterBtn key={b} onClick={() => removeFilter("brands", b)} s={s}>{b}</ActiveFilterBtn>)}
+              {filters.categories.map((c) => <ActiveFilterBtn key={c} onClick={() => removeFilter("categories", c)} s={s}>{collectionOptions.find((o) => o.value === c)?.label || c}</ActiveFilterBtn>)}
+              {filters.saleOnly && <ActiveFilterBtn onClick={() => removeFilter("saleOnly", null)} s={s}>Sale</ActiveFilterBtn>}
+              {filters.frameTypes.map((t) => <ActiveFilterBtn key={t} onClick={() => removeFilter("frameTypes", t)} s={s}>{t}</ActiveFilterBtn>)}
+              {filters.lensTypes.map((t) => <ActiveFilterBtn key={t} onClick={() => removeFilter("lensTypes", t)} s={s}>{t}</ActiveFilterBtn>)}
+              {filters.colors.map((clr) => {
+                const co = allColors.find((c: any) => c.color === clr)
                 return (
-                  <button
-                    key={category}
-                    onClick={() => removeFilter("categories", category)}
-                    className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
-                  >
-                    {option?.label || category}
-                    <X className="w-3 h-3" />
+                  <button key={clr} onClick={() => removeFilter("colors", clr)}
+                    className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${s.activeFilter}`}>
+                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: clr }} />
+                    {co?.title || clr}<X className="w-3 h-3" />
                   </button>
                 )
               })}
-              {filters.saleOnly && (
-                <button
-                  onClick={() => removeFilter("saleOnly", null)}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
-                >
-                  Sale
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-              {filters.frameTypes.map((type) => (
-                <button
-                  key={type}
-                  onClick={() => removeFilter("frameTypes", type)}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
-                >
-                  {type}
-                  <X className="w-3 h-3" />
-                </button>
-              ))}
-              {filters.lensTypes.map((type) => (
-                <button
-                  key={type}
-                  onClick={() => removeFilter("lensTypes", type)}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
-                >
-                  {type}
-                  <X className="w-3 h-3" />
-                </button>
-              ))}
-              {filters.colors.map((color) => {
-                const colorObj = allColors.find((c: any) => c.color === color)
-                return (
-                  <button
-                    key={color}
-                    onClick={() => removeFilter("colors", color)}
-                    className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
-                  >
-                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-                    {colorObj?.title || color}
-                    <X className="w-3 h-3" />
-                  </button>
-                )
-              })}
-              {filters.ratings.map((rating) => (
-                <button
-                  key={rating}
-                  onClick={() => removeFilter("ratings", rating)}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
-                >
-                  {rating}★
-                  <X className="w-3 h-3" />
-                </button>
-              ))}
-              {filters.inStock !== null && (
-                <button
-                  onClick={() => removeFilter("inStock", null)}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
-                >
-                  {filters.inStock ? "In Stock" : "Out of Stock"}
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-              {(filters.priceRange[0] > minPrice || filters.priceRange[1] < maxPrice) && (
-                <button
-                  onClick={() => removeFilter("priceRange", null)}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${styles.activeFilter}`}
-                >
-                  ৳{filters.priceRange[0]} - ৳{filters.priceRange[1]}
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-              <button
-                onClick={clearAllFilters}
-                className={`text-xs underline ${styles.textMutedLighter} hover:text-[#007C74] transition-colors`}
-                data-translate="filter.clearAll"
-              >
-                Clear all
-              </button>
+              {filters.ratings.map((r) => <ActiveFilterBtn key={r} onClick={() => removeFilter("ratings", r)} s={s}>{r}★</ActiveFilterBtn>)}
+              {filters.inStock !== null && <ActiveFilterBtn onClick={() => removeFilter("inStock", null)} s={s}>{filters.inStock ? "In Stock" : "Out of Stock"}</ActiveFilterBtn>}
+              {(filters.priceRange[0] > 0 || filters.priceRange[1] < 5000) && <ActiveFilterBtn onClick={() => removeFilter("priceRange", null)} s={s}>৳{filters.priceRange[0]} - ৳{filters.priceRange[1]}</ActiveFilterBtn>}
+              <button onClick={clearAllFilters} className={`text-xs underline ${s.textMutedLighter} hover:text-[#007C74] transition-colors`} data-translate="filter.clearAll">Clear all</button>
             </motion.div>
           )}
-
           <section aria-labelledby="products-heading" className="pb-24 lg:pt-6">
-            <h2 id="products-heading" className="sr-only">
-              Products
-            </h2>
-
+            <h2 id="products-heading" className="sr-only">Products</h2>
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
-              {/* Left side - Filter section (desktop) */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-                className="hidden lg:block"
-              >
-                <FilterSection {...filterProps} />
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.6 }} className="hidden lg:block">
+                <FilterSection filters={filters} collectionOptions={collectionOptions} optionCounts={optionCounts}
+                  allBrands={allBrands} allFrameTypes={allFrameTypes} allLensTypes={allLensTypes} allColors={allColors}
+                  minPrice={minPrice} maxPrice={maxPrice} handleFilterChange={handleFilterChange} removeFilter={removeFilter}
+                  clearAllFilters={clearAllFilters} hasActiveFilters={hasActiveFilters()} />
               </motion.div>
-
-              {/* Right side - Product section */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.7 }}
-                className="lg:col-span-3"
-              >
-                <ProductSection {...productProps} />
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.7 }} className="lg:col-span-3">
+                <ProductSection products={products} filteredProducts={products} isLoading={isLoading}
+                  sortOption={sortOption} setSortOption={setSortOption} currentPage={currentPage} totalPages={totalPages}
+                  paginate={paginate} indexOfFirstProduct={(currentPage - 1) * productsPerPage} indexOfLastProduct={currentPage * productsPerPage}
+                  totalProducts={total} productsPerPage={productsPerPage} onProductsPerPageChange={handleProductsPerPageChange}
+                  clearAllFilters={clearAllFilters} getActiveFilterCount={getActiveFilterCount()} setMobileFiltersOpen={setMobileFiltersOpen} />
               </motion.div>
             </div>
           </section>
         </main>
       </motion.div>
     </>
+  )
+}
+
+function ActiveFilterBtn({ children, onClick, s }: { children: React.ReactNode; onClick: () => void; s: any }) {
+  return (
+    <button onClick={onClick} className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${s.activeFilter}`}>
+      {children}<X className="w-3 h-3" />
+    </button>
   )
 }

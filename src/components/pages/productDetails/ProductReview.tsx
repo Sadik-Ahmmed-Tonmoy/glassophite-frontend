@@ -53,7 +53,7 @@ export default function ProductReview({
   productId,
   initialReviews,
 }: ProductReviewProps) {
-  console.log(  productId,);
+  void productId;
   const { theme } = useTheme();
   const isDark = theme === "dark";
 

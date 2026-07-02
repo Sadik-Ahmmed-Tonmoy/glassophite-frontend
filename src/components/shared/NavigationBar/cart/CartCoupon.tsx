@@ -1,15 +1,17 @@
 "use client"
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Tag, ChevronRight, X, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { getCoupons, TCoupon } from "@/lib/couponMockData"
+import { useGetAllCouponsQuery } from "@/redux/features/coupon/couponApi"
 
 export default function CartCoupon() {
+  const { data: couponsData } = useGetAllCouponsQuery(undefined);
   const [isExpanded, setIsExpanded] = useState(false)
   const [couponCode, setCouponCode] = useState("")
-  const [appliedCoupon, setAppliedCoupon] = useState<TCoupon | null>(null)
+  const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const handleApplyCoupon = () => {
@@ -18,9 +20,9 @@ export default function CartCoupon() {
       return
     }
 
-    const coupons = getCoupons()
+    const coupons = couponsData || []
     const found = coupons.find(
-      (c) => c.code === couponCode.toUpperCase().trim()
+      (c: { code: string }) => c.code === couponCode.toUpperCase().trim()
     )
 
     if (found) {

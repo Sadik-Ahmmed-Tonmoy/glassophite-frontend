@@ -100,9 +100,6 @@ export default function ContactPage() {
   };
 
   const handleFormSubmit = (data: Record<string, string>, reset: () => void) => {
-    console.log("Contact form submission:", data);
-    
-    // Simulate API call
     toast.success("Message Sent Successfully!", {
       description: "Thank you for reaching out. We will get back to you within 24 hours.",
       duration: 5000,

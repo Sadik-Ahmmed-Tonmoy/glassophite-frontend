@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
@@ -46,7 +47,7 @@ import "swiper/css/effect-coverflow";
 
 
 
-import { reviewsData } from "@/lib/productMockData";
+import { useGetAllReviewsQuery } from "@/redux/features/review/reviewApi";
 
 // Demo avatar images (in production, these would come from your data)
 const avatarImages = [
@@ -59,21 +60,6 @@ const avatarImages = [
   "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1531427186111-516fd60ff1bc?w=200&auto=format&fit=crop",
 ];
-
-// Enhanced reviews with additional data
-const enhancedReviews = reviewsData.map((review, index) => ({
-  ...review,
-  location: ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi"][index % 5],
-  avatar: review.profileImage || avatarImages[index % avatarImages.length],
-  helpful: review.helpful || Math.floor(Math.random() * 50) + 10,
-  unhelpful: review.unhelpful || Math.floor(Math.random() * 5),
-  date:
-    review.date ||
-    new Date(2024, index, 1).toLocaleDateString("en-US", {
-      month: "long",
-      year: "numeric",
-    }),
-}));
 
 export default function Testimonials() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -92,6 +78,24 @@ export default function Testimonials() {
   }>({});
 
   const isInView = useInView(containerRef, { once: true, amount: 0.2 });
+
+  const { data: reviewsData } = useGetAllReviewsQuery(undefined);
+  const reviews = Array.isArray(reviewsData) ? reviewsData : reviewsData?.data || [];
+
+  // Enhanced reviews with additional data
+  const enhancedReviews = reviews.map((review: any, index: number) => ({
+    ...review,
+    location: ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi"][index % 5],
+    avatar: review.profileImage || avatarImages[index % avatarImages.length],
+    helpful: review.helpful || Math.floor(Math.random() * 50) + 10,
+    unhelpful: review.unhelpful || Math.floor(Math.random() * 5),
+    date:
+      review.date ||
+      new Date(2024, index, 1).toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      }),
+  }));
 
   const { scrollYProgress } = useScroll({
     target: containerRef,

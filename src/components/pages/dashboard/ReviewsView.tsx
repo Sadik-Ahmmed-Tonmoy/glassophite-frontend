@@ -1,15 +1,26 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Star, Check, X, Loader2 } from "lucide-react";
+import { Star, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useGetAllReviewsQuery, useDeleteReviewMutation } from "@/redux/features/review/reviewApi";
+import { useGetAllReviewsQuery, useDeleteReviewMutation, useUpdateReviewMutation } from "@/redux/features/review/reviewApi";
 
 export default function ReviewsView() {
   const { data, isLoading } = useGetAllReviewsQuery({ limit: 50 });
   const reviews = data?.data || [];
   const [deleteReview] = useDeleteReviewMutation();
+  const [updateReview] = useUpdateReviewMutation();
+
+  const handleApproveReview = async (id: string) => {
+    try {
+      await updateReview({ id, verified: true }).unwrap();
+      toast.success("Review Approved", { description: "Review has been verified and approved." });
+    } catch {
+      toast.error("Failed to approve review");
+    }
+  };
 
   const handleHideReview = async (id: string) => {
     try {
@@ -75,17 +86,26 @@ export default function ReviewsView() {
                       {r.verified ? "Verified" : "Unverified"}
                     </span>
                   </td>
-                  <td className="p-4">
-                    <div className="flex items-center justify-center gap-1.5">
-                      <button
-                        onClick={() => handleHideReview(r.id)}
-                        className="p-1.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg border border-red-500/20 transition-all cursor-pointer"
-                        title="Remove review"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </td>
+                    <td className="p-4">
+                     <div className="flex items-center justify-center gap-1.5">
+                       {!r.verified && (
+                         <button
+                           onClick={() => handleApproveReview(r.id)}
+                           className="p-1.5 bg-green-500/10 text-green-600 hover:bg-green-500 hover:text-white rounded-lg border border-green-500/20 transition-all cursor-pointer"
+                           title="Approve review"
+                         >
+                           <Star className="w-3.5 h-3.5" />
+                         </button>
+                       )}
+                       <button
+                         onClick={() => handleHideReview(r.id)}
+                         className="p-1.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg border border-red-500/20 transition-all cursor-pointer"
+                         title="Remove review"
+                       >
+                         <X className="w-3.5 h-3.5" />
+                       </button>
+                     </div>
+                   </td>
                 </tr>
               ))
             )}

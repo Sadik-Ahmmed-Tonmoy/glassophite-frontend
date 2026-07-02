@@ -1,7 +1,7 @@
 "use client";
 
 import { HeroParallax } from "@/components/hero-parallax";
-import { mockProducts } from "@/lib/productMockData";
+import { useGetFeaturedProductsQuery } from "@/redux/features/product/productApi";
 import React from "react";
 
 // Curated list of actual working sunglasses images from the mock dataset and public sources
@@ -22,8 +22,13 @@ const workingImages = [
 ];
 
 export default function HeroParallaxDemo() {
-  // Ensure we have exactly 15 items by padding if mockProducts is smaller
-  const parallaxProducts = [...mockProducts, ...mockProducts, ...mockProducts]
+  const { data: featuredProducts } = useGetFeaturedProductsQuery(undefined, {
+    selectFromResult: ({ data }) => ({ data: data ?? [] }),
+  });
+
+  // Ensure we have exactly 15 items by padding if data is smaller
+  const products = featuredProducts || [];
+  const parallaxProducts = [...products, ...products, ...products]
     .slice(0, 15)
     .map((product, index) => {
       // Check if product has a valid loaded URL, otherwise fall back to a working asset URL

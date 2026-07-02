@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { mockOrders } from "@/lib/data";
+import { useGetMyOrdersQuery } from "@/redux/features/order/orderApi";
 import { TOrderItem } from "@/types/types";
 import { cn } from "@/lib/utils";
 
@@ -83,8 +83,11 @@ export default function OrderHistoryList() {
 
   const styles = isDark ? themeStyles.dark : themeStyles.light;
 
+  const { data: ordersData } = useGetMyOrdersQuery(undefined);
+  const orders = ordersData?.data || ordersData || [];
+
   // Filter and sort orders
-  const filteredOrders = mockOrders
+  const filteredOrders = orders
     .filter((order) => {
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();

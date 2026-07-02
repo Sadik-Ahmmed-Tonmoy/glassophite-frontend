@@ -1,16 +1,24 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
-import { mockProducts } from "@/lib/productMockData";
+import { useGetWishlistQuery } from "@/redux/features/wishlist/wishlistApi";
 
 export default function WishlistPage() {
-  // Use first 3 products from mockProducts as default wishlist items
-  const [wishlistItems, setWishlistItems] = useState(mockProducts.slice(0, 3));
+  const { data: wishlistData } = useGetWishlistQuery(undefined);
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (wishlistData?.items) {
+      const items = wishlistData.items.map((item: any) => item.product || item);
+      setWishlistItems(items);
+    }
+  }, [wishlistData]);
 
   const handleRemoveItem = (id: string, name: string) => {
     setWishlistItems((prev) => prev.filter((item) => item.id !== id));

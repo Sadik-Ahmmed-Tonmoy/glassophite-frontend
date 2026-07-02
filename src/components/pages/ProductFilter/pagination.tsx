@@ -70,7 +70,7 @@ export default function Pagination({
 
   // Function to generate visible page numbers with ellipsis
   const getPageNumbers = () => {
-    const pageNumbers = []
+    const pageNumbers: (number | string)[] = []
     const maxPagesToShow = 5
 
     if (totalPages <= maxPagesToShow) {

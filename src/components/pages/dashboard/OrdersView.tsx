@@ -1,12 +1,14 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Truck } from "lucide-react";
+import { Loader2, Truck, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   useGetAllOrdersQuery,
   useUpdateOrderStatusMutation,
+  useDeleteOrderMutation,
 } from "@/redux/features/order/orderApi";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -20,6 +22,17 @@ export default function OrdersView() {
   const { data, isLoading } = useGetAllOrdersQuery({ limit: 100 });
   const orders = (data?.data || []) as any[];
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
+  const [deleteOrder] = useDeleteOrderMutation();
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!window.confirm("Are you sure you want to delete this order? This action cannot be undone.")) return;
+    try {
+      await deleteOrder(orderId).unwrap();
+      toast.success("Order Deleted", { description: "Order has been permanently deleted." });
+    } catch {
+      toast.error("Failed to delete order.");
+    }
+  };
 
   // Tracking number input state — keyed by orderId
   const [trackingInputs, setTrackingInputs] = useState<Record<string, string>>({});
@@ -144,20 +157,29 @@ export default function OrdersView() {
                       )}
                     </td>
                     <td className="p-4">
-                      {updatingId === ord.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                      ) : (
-                        <select
-                          value={ord.status}
-                          onChange={(e) => handleStatusChange(ord.id, e.target.value)}
-                          className="px-2.5 py-1.5 text-[11px] font-bold rounded-lg border border-border bg-background text-foreground focus:outline-none cursor-pointer focus:ring-1 focus:ring-primary/50"
+                      <div className="flex items-center gap-1.5">
+                        {updatingId === ord.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                        ) : (
+                          <select
+                            value={ord.status}
+                            onChange={(e) => handleStatusChange(ord.id, e.target.value)}
+                            className="px-2.5 py-1.5 text-[11px] font-bold rounded-lg border border-border bg-background text-foreground focus:outline-none cursor-pointer focus:ring-1 focus:ring-primary/50"
+                          >
+                            <option value="PROCESSING">Processing</option>
+                            <option value="SHIPPED">Shipped</option>
+                            <option value="DELIVERED">Delivered</option>
+                            <option value="CANCELLED">Cancelled</option>
+                          </select>
+                        )}
+                        <button
+                          onClick={() => handleDeleteOrder(ord.id)}
+                          className="p-1.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg border border-red-500/20 transition-all cursor-pointer"
+                          title="Delete order"
                         >
-                          <option value="PROCESSING">Processing</option>
-                          <option value="SHIPPED">Shipped</option>
-                          <option value="DELIVERED">Delivered</option>
-                          <option value="CANCELLED">Cancelled</option>
-                        </select>
-                      )}
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
 

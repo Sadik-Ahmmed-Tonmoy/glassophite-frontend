@@ -5,7 +5,7 @@ import React, { useRef, useState, useMemo, useCallback, useEffect } from "react"
 import Link from "next/link";
 import { ArrowRight, Sparkles, Eye, ShoppingBag, Award, AlertCircle } from "lucide-react";
 import { useTheme } from "next-themes";
-import { mockProducts } from "@/lib/productMockData";
+import { useGetFeaturedProductsQuery } from "@/redux/features/product/productApi";
 import ProductCard from "@/components/ui/ProductCard/ProductCard";
 
 // Error Boundary Component
@@ -169,7 +169,8 @@ export default function FeaturedCollectionSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
   const [activeCategory, setActiveCategory] = useState("all");
-  const [isLoading, setIsLoading] = useState(false);
+  // ✅ Fixed: renamed to avoid conflict with query's `isLoading`
+  const [categoryLoading, setCategoryLoading] = useState(false);
   const [imageErrors] = useState<Set<string>>(new Set());
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -184,46 +185,39 @@ export default function FeaturedCollectionSection() {
 
   const styles = getThemeStyles(isDark);
 
-  // Memoized filtered products for performance
-  const featuredProducts = useMemo(() => {
-    try {
-      if (!Array.isArray(mockProducts)) {
-        console.error("mockProducts is not an array");
-        return [];
-      }
+  const {
+    data: featuredProductsData,
+    isLoading: queryLoading, // ✅ renamed to avoid conflict
+    isFetching,
+    error,
+  } = useGetFeaturedProductsQuery(undefined);
 
-      const filtered = mockProducts
-        .filter(p => p?.isFeatured === true)
-        .slice(0, 4);
-      
-      return filtered;
-    } catch (error) {
-      console.error("Error filtering products:", error);
-      return [];
-    }
-  }, []);
+  // ✅ Always ensure array
+  const featuredProducts = Array.isArray(featuredProductsData) ? featuredProductsData : [];
 
   // Category filter handler with error handling
   const handleCategoryChange = useCallback((categoryId: string) => {
     try {
-      setIsLoading(true);
+      setCategoryLoading(true);
       setActiveCategory(categoryId);
       
+      // Simulate loading for smoother UX (optional)
       setTimeout(() => {
-        setIsLoading(false);
+        setCategoryLoading(false);
       }, 300);
     } catch (error) {
       console.error("Error changing category:", error);
-      setIsLoading(false);
+      setCategoryLoading(false);
     }
   }, []);
-
-
 
   // Get current category label
   const currentCategoryLabel = useMemo(() => {
     return CATEGORIES.find(c => c.id === activeCategory)?.label || "All Premium";
   }, [activeCategory]);
+
+  // Determine loading state (query loading or category switch)
+  const isLoading = queryLoading || categoryLoading;
 
   return (
     <ErrorBoundary fallback={<ErrorFallback isDark={isDark} />}>
@@ -380,7 +374,7 @@ export default function FeaturedCollectionSection() {
                 <ProductCardSkeleton key={index} isDark={isDark} />
               ))}
             </div>
-          ) : featuredProducts.length > 0 ? (
+          ) : featuredProducts && featuredProducts.length > 0 ? (
             <motion.div
               variants={containerVariants}
               initial="hidden"

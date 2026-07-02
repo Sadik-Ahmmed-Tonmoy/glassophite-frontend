@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Bell, Mail, Smartphone, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function NotificationPreferences() {
   const { theme } = useTheme();
@@ -71,11 +72,7 @@ export default function NotificationPreferences() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Updated notification preferences:", {
-      email: emailPreferences,
-      push: pushPreferences,
-    });
-    alert("Notification preferences updated successfully!");
+    toast.success("Notification preferences updated");
   };
 
   // Animation variants

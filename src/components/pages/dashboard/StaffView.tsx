@@ -1,6 +1,7 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Shield, UserPlus, UserX, UserCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -28,16 +29,14 @@ const ROLE_ACCESS: Record<string, string> = {
 };
 
 export default function StaffView() {
-  const { data: adminData, isLoading: adminLoading } = useGetAllUsersQuery({ limit: 100, role: "ADMIN" });
-  const { data: saData, isLoading: saLoading } = useGetAllUsersQuery({ limit: 100, role: "SUPER_ADMIN" });
+  const { data, isLoading } = useGetAllUsersQuery({ limit: 100 });
   const [updateUserStatus] = useUpdateUserStatusMutation();
   const [registerStaff] = useRegisterStaffMutation();
 
-  const allStaff = [
-    ...((saData?.data || []) as any[]),
-    ...((adminData?.data || []) as any[]),
-  ];
-  const isLoading = adminLoading || saLoading;
+  const allStaff = useMemo(() => {
+    const users = (data?.data || []) as any[];
+    return users.filter((u: any) => u.role === "ADMIN" || u.role === "SUPER_ADMIN");
+  }, [data]);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newName, setNewName] = useState("");

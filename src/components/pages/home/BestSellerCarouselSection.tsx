@@ -2,7 +2,7 @@
 "use client";
 
 import ProductCard from "@/components/ui/ProductCard/ProductCard";
-import { mockProducts } from "@/lib/productMockData";
+import { useGetBestSellersQuery } from "@/redux/features/product/productApi";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
@@ -39,37 +39,53 @@ function useLargeScreen() {
   return isLarge;
 }
 
+// Skeleton loader for product cards
+function ProductCardSkeleton() {
+  return (
+    <div className="h-full rounded-2xl bg-white/5 dark:bg-white/5 border border-neutral-200/20 dark:border-neutral-800/20 overflow-hidden animate-pulse">
+      <div className="aspect-square bg-neutral-200 dark:bg-neutral-800" />
+      <div className="p-4 space-y-3">
+        <div className="h-4 bg-neutral-200 dark:bg-neutral-800 rounded w-3/4" />
+        <div className="h-3 bg-neutral-200 dark:bg-neutral-800 rounded w-1/2" />
+        <div className="flex items-center gap-2">
+          <div className="h-5 w-12 bg-neutral-200 dark:bg-neutral-800 rounded" />
+          <div className="h-4 w-16 bg-neutral-200 dark:bg-neutral-800 rounded" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function BestSellerCarouselSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
 
-  // Track dynamic swiper index in React to re-render custom dots
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const isLarge = useLargeScreen();
 
   const isInView = useInView(containerRef, { once: true, amount: 0.2 });
 
+  // ✅ FIX: Only pass target when ref is attached to avoid hydration error
   const { scrollYProgress } = useScroll({
-    target: containerRef,
+    ...(containerRef?.current ? { target: containerRef } : {}),
     offset: ["start end", "end start"],
   });
 
-  // Parallax effects
   const y1 = useTransform(scrollYProgress, [0, 1], [0, -50]);
   const y2 = useTransform(scrollYProgress, [0, 1], [0, 50]);
   const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
 
-  // Sort products by rating and reviews to get best sellers
-  const bestSellers = [...mockProducts]
-    .sort((a, b) => {
-      const aScore = (a.averageRating || 0) * (a.totalReviews || 0);
-      const bScore = (b.averageRating || 0) * (b.totalReviews || 0);
-      return bScore - aScore;
-    })
-    .slice(0, 8);
+  const {
+    data: bestSellersData,
+    isLoading,
+    isFetching,
+    error,
+  } = useGetBestSellersQuery(undefined);
+
+  const bestSellers = Array.isArray(bestSellersData) ? bestSellersData : [];
 
   const themeStyles = {
     dark: {
@@ -103,6 +119,11 @@ export default function BestSellerCarouselSection() {
 
   const styles = isDark ? themeStyles.dark : themeStyles.light;
 
+  // Error handling
+  if (error) {
+    console.error("Error fetching best sellers:", error);
+  }
+
   const handleSwiperInit = (swiper: SwiperType) => {
     setSwiperInstance(swiper);
     setActiveIndex(swiper.realIndex);
@@ -112,13 +133,8 @@ export default function BestSellerCarouselSection() {
     setActiveIndex(swiper.realIndex);
   };
 
-  const goPrev = () => {
-    swiperInstance?.slidePrev();
-  };
-
-  const goNext = () => {
-    swiperInstance?.slideNext();
-  };
+  const goPrev = () => swiperInstance?.slidePrev();
+  const goNext = () => swiperInstance?.slideNext();
 
   const toggleAutoplay = () => {
     if (swiperInstance) {
@@ -131,6 +147,77 @@ export default function BestSellerCarouselSection() {
     }
   };
 
+  // ---------- Loading state ----------
+  if (isLoading || isFetching) {
+    return (
+      <section
+        className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.bg} transition-colors duration-500 py-16 sm:py-20 lg:py-24 px-4 sm:px-6`}
+      >
+        <div className="relative z-10 max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-6 mb-8 md:mb-12">
+            <div>
+              <div className="h-6 w-40 bg-neutral-300 dark:bg-neutral-800 rounded animate-pulse mb-2" />
+              <div className="h-10 w-64 bg-neutral-300 dark:bg-neutral-800 rounded animate-pulse" />
+              <div className="h-4 w-72 bg-neutral-300 dark:bg-neutral-800 rounded animate-pulse mt-2" />
+            </div>
+            <div className="flex gap-2">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-10 w-10 bg-neutral-300 dark:bg-neutral-800 rounded-xl animate-pulse"
+                />
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ---------- Error state ----------
+  if (error) {
+    return (
+      <section
+        className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.bg} transition-colors duration-500 py-16 sm:py-20 lg:py-24 px-4 sm:px-6`}
+      >
+        <div className="relative z-10 max-w-7xl mx-auto text-center">
+          <div className="text-red-500 dark:text-red-400 text-lg font-semibold">
+            ⚠️ Failed to load best sellers.
+          </div>
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
+            Please try again later.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  // ---------- Empty state ----------
+  if (bestSellers.length === 0) {
+    return (
+      <section
+        className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.bg} transition-colors duration-500 py-16 sm:py-20 lg:py-24 px-4 sm:px-6`}
+      >
+        <div className="relative z-10 max-w-7xl mx-auto text-center">
+          <h2
+            className={`text-3xl sm:text-4xl font-extrabold ${styles.text} mb-4`}
+          >
+            No best sellers available
+          </h2>
+          <p className={`${styles.textMuted} max-w-lg mx-auto`}>
+            Check back soon for our top-selling products.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  // ---------- Main carousel (data loaded) ----------
   return (
     <motion.section
       ref={containerRef}
@@ -149,7 +236,7 @@ export default function BestSellerCarouselSection() {
         />
       </div>
 
-      {/* Floating Orbs - with conditional animation */}
+      {/* Floating Orbs */}
       <motion.div
         style={{ y: y1 }}
         animate={
@@ -187,7 +274,6 @@ export default function BestSellerCarouselSection() {
             transition={{ duration: 0.6 }}
             className="text-center md:text-left"
           >
-            {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full backdrop-blur-sm border border-neutral-200 dark:border-neutral-800 bg-white/5 mb-4">
               <Award className="w-3.5 h-3.5 text-[#007C74]" />
               <span
@@ -198,7 +284,6 @@ export default function BestSellerCarouselSection() {
               </span>
             </div>
 
-            {/* Title */}
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-2">
               <span className={styles.text}>Best</span>{" "}
               <span className="bg-gradient-to-r from-[#007C74] via-[#3C55A5] to-[#00A693] bg-clip-text text-transparent">
@@ -206,7 +291,6 @@ export default function BestSellerCarouselSection() {
               </span>
             </h2>
 
-            {/* Description */}
             <p
               className={`text-xs sm:text-sm ${styles.textMuted} max-w-xl`}
               data-translate="bestseller.description"
@@ -216,14 +300,12 @@ export default function BestSellerCarouselSection() {
             </p>
           </motion.div>
 
-          {/* Clean Top Navigation Controls */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex items-center gap-2"
           >
-            {/* Autoplay Pause/Play button */}
             <button
               onClick={toggleAutoplay}
               className={`p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-850 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center cursor-pointer bg-white/70 dark:bg-black/50 text-neutral-800 dark:text-neutral-200`}
@@ -236,7 +318,6 @@ export default function BestSellerCarouselSection() {
               )}
             </button>
 
-            {/* Prev button */}
             <button
               onClick={goPrev}
               className={`p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-850 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center cursor-pointer bg-white/70 dark:bg-black/50 text-neutral-800 dark:text-neutral-200`}
@@ -245,7 +326,6 @@ export default function BestSellerCarouselSection() {
               <ChevronLeft className="w-4 h-4" />
             </button>
 
-            {/* Next button */}
             <button
               onClick={goNext}
               className={`p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-850 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center cursor-pointer bg-white/70 dark:bg-black/50 text-neutral-800 dark:text-neutral-200`}
@@ -258,7 +338,6 @@ export default function BestSellerCarouselSection() {
 
         {/* Carousel Container */}
         <div className="relative">
-          {/* Swiper Carousel */}
           <Swiper
             modules={[Navigation, Autoplay, FreeMode]}
             loop={true}
@@ -277,33 +356,12 @@ export default function BestSellerCarouselSection() {
             onSwiper={handleSwiperInit}
             onSlideChange={handleSlideChange}
             breakpoints={{
-              380: {
-                slidesPerView: 1.3,
-                spaceBetween: 12,
-              },
-              480: {
-                slidesPerView: 1.6,
-                spaceBetween: 16,
-              },
-              640: {
-                slidesPerView: 2.2,
-                spaceBetween: 16,
-              },
-              768: {
-                slidesPerView: 2.7,
-                spaceBetween: 20,
-                freeMode: false,
-              },
-              1024: {
-                slidesPerView: 3.3,
-                spaceBetween: 24,
-                freeMode: false,
-              },
-              1280: {
-                slidesPerView: 4,
-                spaceBetween: 24,
-                freeMode: false,
-              },
+              380: { slidesPerView: 1.3, spaceBetween: 12 },
+              480: { slidesPerView: 1.6, spaceBetween: 16 },
+              640: { slidesPerView: 2.2, spaceBetween: 16 },
+              768: { slidesPerView: 2.7, spaceBetween: 20, freeMode: false },
+              1024: { slidesPerView: 3.3, spaceBetween: 24, freeMode: false },
+              1280: { slidesPerView: 4, spaceBetween: 24, freeMode: false },
             }}
             className="!px-1"
           >
@@ -346,7 +404,7 @@ export default function BestSellerCarouselSection() {
             </span>
           </motion.div>
 
-          {/* Progress Dots - Interactive and Synced */}
+          {/* Progress Dots */}
           <div className="flex items-center justify-center gap-1.5 mt-4">
             {bestSellers.map((_, index) => (
               <button

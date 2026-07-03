@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import ProductCard from "@/components/ui/ProductCard/ProductCard";
@@ -85,7 +86,7 @@ export default function BestSellerCarouselSection() {
     error,
   } = useGetBestSellersQuery(undefined);
 
-  const bestSellers = Array.isArray(bestSellersData) ? bestSellersData : [];
+  const bestSellers = (bestSellersData as any)?.data || [];
 
   const themeStyles = {
     dark: {

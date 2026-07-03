@@ -16,14 +16,13 @@ export default function BlogPage() {
     setCategoryFilter(params.get("category"));
   }, []);
 
-  const blogPosts = blogData?.data || [];
-
   const publishedPosts = useMemo(() => {
+    const blogPosts = blogData?.data || [];
     return blogPosts
       .filter((post: any) => post.status === "Published")
       .filter((post: any) => !categoryFilter || post.category?.toLowerCase() === categoryFilter.toLowerCase())
       .sort((a: any, b: any) => Number(b.featured) - Number(a.featured) || new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [blogPosts, categoryFilter]);
+  }, [blogData, categoryFilter]);
 
   const featuredPost = publishedPosts[0];
   const standardPosts = publishedPosts.filter((post: any) => post.id !== featuredPost?.id);

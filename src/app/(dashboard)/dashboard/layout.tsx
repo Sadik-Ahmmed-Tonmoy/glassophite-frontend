@@ -16,7 +16,8 @@ import {
   MessageSquare,
   Shield,
   BookOpen,
-  Store
+  Store,
+  Menu
 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -34,6 +35,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     { label: "Reviews Moderation", href: "/dashboard/reviews", icon: Star },
     { label: "Support Tickets", href: "/dashboard/support", icon: MessageSquare },
     { label: "Staff Directory", href: "/dashboard/staff", icon: Shield },
+    { label: "Navbar Menus", href: "/dashboard/navigation", icon: Menu },
     { label: "Store Settings", href: "/dashboard/settings", icon: Settings },
   ];
 

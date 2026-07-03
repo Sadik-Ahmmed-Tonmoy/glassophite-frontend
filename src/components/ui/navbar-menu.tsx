@@ -30,36 +30,55 @@ export const MenuItem = ({
   href?: string;
   className?: string;
 }) => {
+  const hasChildren = !!children;
+
+  const labelContent = (
+    <span
+      className={`${active === item ? "text-[#00a76b]" : ""} ${
+        item.toLowerCase().includes("sale") ? "text-red-500 font-extrabold" : ""
+      } relative group font-medium`}
+      onClick={() => setActive("")}
+    >
+      {item}
+      <span className="absolute left-0 -bottom-5 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
+    </span>
+  );
+
   return (
-    <div onMouseEnter={() => setActive(item)} className="relative ">
-      <motion.p transition={{ duration: 0.3 }} className="cursor-pointer text-black hover:opacity-[0.9] dark:text-white">
-        {href ? (
-          <Link href={href}>
-            <span className={`${active === item ? "text-[#00a76b]" : ""} ${item.toLowerCase().includes("sale") ? "text-red-500 font-extrabold" : ""} relative group font-medium`}>
-              {item}
-              <span className="absolute left-0 -bottom-5 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-            </span>
-          </Link>
+    <div onMouseEnter={() => setActive(item)} className="relative">
+      <motion.p
+        transition={{ duration: 0.3 }}
+        className="cursor-pointer text-black hover:opacity-[0.9] dark:text-white"
+      >
+        {/* Items without children → full Link navigation */}
+        {/* Items with children → span label (hover opens dropdown, no accidental navigation) */}
+        {href && !hasChildren ? (
+          <Link href={href}>{labelContent}</Link>
+        ) : href && hasChildren ? (
+          <Link href={href} onClick={(e) => e.stopPropagation()}>{labelContent}</Link>
         ) : (
-          <span className={`${active === item ? "text-[#00a76b]" : ""} ${item.toLowerCase().includes("sale") ? "text-red-500 font-extrabold" : ""} relative group font-medium`}>
-            {item}
-            <span className="absolute left-0 -bottom-5 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-          </span>
+          <span>{labelContent}</span>
         )}
       </motion.p>
-      {active !== null && (
-        <motion.div initial={{ opacity: 0, scale: 0.85, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={transition}>
+      {active !== null && children && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.85, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={transition}
+        >
           {active === item && (
-            <div className={cn("absolute top-[calc(100%_+_1rem)] left-1/2 transform -translate-x-1/2 pt-4", className)}>
+            <div
+              className={cn(
+                "absolute top-[calc(100%_+_1rem)] left-1/2 transform -translate-x-1/2 pt-4",
+                className
+              )}
+            >
               <motion.div
                 transition={transition}
-                layoutId="active" // layoutId ensures smooth animation
+                layoutId="active"
                 className="bg-white dark:bg-black backdrop-blur-sm rounded-2xl overflow-hidden border border-black/[0.2] dark:border-white/[0.2] shadow-xl"
               >
-                <motion.div
-                  layout // layout ensures smooth animation
-                  className="w-max h-full p-"
-                >
+                <motion.div layout className="w-max h-full p-">
                   {children}
                 </motion.div>
               </motion.div>

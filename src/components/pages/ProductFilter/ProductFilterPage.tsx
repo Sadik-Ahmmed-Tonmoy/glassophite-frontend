@@ -10,18 +10,11 @@ import { useTheme } from "next-themes"
 import { SlidersHorizontal, X } from "lucide-react"
 import MobileFilterDrawer from "./mobile-filter-drawer"
 import type { FilterOptionCounts, FilterState, SortOption } from "@/types/filter-types"
-import { useGetAllProductsQuery } from "@/redux/features/product/productApi"
+import { useGetAllProductsQuery, useGetFilterOptionsQuery } from "@/redux/features/product/productApi"
+import { useGetAllNavbarMenusQuery } from "@/redux/features/navbar/navbarApi"
 import Breadcrumb from "./breadcrumb"
 import FilterSection from "./filter-section"
 import ProductSection from "./product-section"
-
-const collectionOptions = [
-  { label: "Sunglass", value: "sunglasses", type: "category" },
-  { label: "Optical", value: "optical", type: "category" },
-  { label: "Accessories", value: "accessories", type: "category" },
-  { label: "Sale", value: "sale", type: "sale" },
-  { label: "Contact Lens", value: "contact-lens", type: "category" },
-] as const
 
 const getInitialBrandsFromParams = (searchParams: Pick<URLSearchParams, "get">) => {
   const brands = searchParams.get("brands")?.split(",").filter(Boolean) || []
@@ -46,6 +39,8 @@ export default function ProductFilterPage() {
       Number.parseInt(searchParams.get("maxPrice") || "5000"),
     ],
     categories: getInitialCategoriesFromParams(searchParams),
+    subCategories: searchParams.get("subCategory")?.split(",").filter(Boolean) || [],
+    types: searchParams.get("type")?.split(",").filter(Boolean) || [],
     saleOnly: searchParams.get("sale") === "true",
     brands: getInitialBrandsFromParams(searchParams),
     frameTypes: searchParams.get("frameTypes")?.split(",").filter(Boolean) || [],
@@ -61,11 +56,13 @@ export default function ProductFilterPage() {
   const [currentPage, setCurrentPage] = useState(Number.parseInt(searchParams.get("page") || "1"))
   const [productsPerPage, setProductsPerPage] = useState(Number.parseInt(searchParams.get("limit") || "12"))
 
-  const { data: productsData, isLoading } = useGetAllProductsQuery({
+  const { data: productsData, isLoading, isFetching } = useGetAllProductsQuery({
     page: currentPage,
     limit: productsPerPage,
     sortBy: sortOption === "price-low" ? "price_asc" : sortOption === "price-high" ? "price_desc" : sortOption === "newest" ? "newest" : sortOption === "rating" ? "rating" : undefined,
-    category: filters.categories.length === 1 ? filters.categories[0] : undefined,
+    categories: filters.categories.length > 0 ? filters.categories.join(",") : undefined,
+    subCategories: filters.subCategories.length > 0 ? filters.subCategories.join(",") : undefined,
+    types: filters.types.length > 0 ? filters.types.join(",") : undefined,
     brand: filters.brands.length === 1 ? filters.brands[0] : undefined,
     frameType: filters.frameTypes.length === 1 ? filters.frameTypes[0] : undefined,
     lensType: filters.lensTypes.length === 1 ? filters.lensTypes[0] : undefined,
@@ -74,15 +71,63 @@ export default function ProductFilterPage() {
     priceMax: filters.priceRange[1] < 5000 ? filters.priceRange[1] : undefined,
   })
 
-  const products = productsData?.data || []
+  const { data: filterOptionsData } = useGetFilterOptionsQuery(undefined)
+  const backendFilterOptions = useMemo(() => filterOptionsData?.data || {}, [filterOptionsData])
+
+  const { data: navbarData } = useGetAllNavbarMenusQuery(undefined)
+  const navbarMenus = useMemo(() => navbarData?.data || [], [navbarData])
+
+  const navbarCategoryOptions = useMemo(() => {
+    const options = navbarMenus.map((menu: any) => ({
+      label: menu.menu,
+      value: menu.menu,
+      type: "category" as const,
+    }))
+    options.push({ label: "Sale", value: "sale", type: "sale" as const })
+    return options
+  }, [navbarMenus])
+
+  const products = useMemo(() => productsData?.data || [], [productsData])
   const total = productsData?.meta?.total || 0
   const totalPages = Math.ceil(total / productsPerPage)
 
-  const allBrands: string[] = useMemo(() => Array.from(new Set(products.map((p: any) => p.brand).filter(Boolean))) as string[], [products])
-  const allFrameTypes: string[] = useMemo(() => Array.from(new Set(products.map((p: any) => p.frameType).filter(Boolean))) as string[], [products])
-  const allLensTypes: string[] = useMemo(() =>
-    Array.from(new Set(products.flatMap((p: any) => p.lensType ? p.lensType.split(", ") : []))) as string[],
-  [products])
+  const allBrands: string[] = useMemo(() => {
+    const fromBackend = (backendFilterOptions.brands || []) as string[]
+    const fromFilters = filters.brands.filter((b) => b && !fromBackend.includes(b))
+    return [...fromBackend, ...fromFilters]
+  }, [backendFilterOptions, filters.brands])
+  const allSubCategories: string[] = useMemo(() => {
+    const subs = new Set<string>()
+    navbarMenus.forEach((menu: any) => {
+      ;(menu.subMenu || []).forEach((sub: any) => {
+        if (sub.subMenuTitle) subs.add(sub.subMenuTitle)
+      })
+    })
+    const active = filters.subCategories.filter((sc) => sc && !subs.has(sc))
+    return [...Array.from(subs), ...active]
+  }, [navbarMenus, filters.subCategories])
+  const allTypes: string[] = useMemo(() => {
+    const types = new Set<string>()
+    navbarMenus.forEach((menu: any) => {
+      ;(menu.subMenu || []).forEach((sub: any) => {
+        ;(sub.chieldMenu || []).forEach((child: any) => {
+          if (child.chieldMenuTitle) types.add(child.chieldMenuTitle)
+        })
+      })
+    })
+    const active = filters.types.filter((t) => t && !types.has(t))
+    return [...Array.from(types), ...active]
+  }, [navbarMenus, filters.types])
+  const allFrameTypes: string[] = useMemo(() => {
+    const fromBackend = (backendFilterOptions.frameTypes || []) as string[]
+    const fromFilters = filters.frameTypes.filter((f) => f && !fromBackend.includes(f))
+    return [...fromBackend, ...fromFilters]
+  }, [backendFilterOptions, filters.frameTypes])
+  const allLensTypes: string[] = useMemo(() => {
+    const fromBackend = (backendFilterOptions.lensTypes || []) as string[]
+    const fromFilters = filters.lensTypes.filter((l) => l && !fromBackend.includes(l))
+    return [...fromBackend, ...fromFilters]
+  }, [backendFilterOptions, filters.lensTypes])
   const allColors: { color: string; title: string }[] = useMemo(() =>
     Array.from(new Set(products.flatMap((p: any) => p.variants?.map((v: any) => JSON.stringify({ color: v.color, title: v.title.split(" ")[0] })) || [])))
       .map((item: any) => JSON.parse(item)),
@@ -100,18 +145,20 @@ export default function ProductFilterPage() {
 
   const optionCounts: FilterOptionCounts = useMemo(() => {
     const collections: Record<string, number> = {}
-    collectionOptions.forEach((option) => {
+    navbarCategoryOptions.forEach((option) => {
       if (option.type === "sale") {
         collections[option.value] = products.filter((p: any) =>
           p.variants?.some((v: any) => v.discountPercent > 0 || (v.priceAfterDiscount && v.mainPrice && v.priceAfterDiscount < v.mainPrice))
         ).length
       } else {
-        collections[option.value] = products.filter((p: any) => p.category?.toLowerCase() === option.value).length
+        collections[option.value] = products.filter((p: any) => p.categories?.includes(option.value)).length
       }
     })
 
     return {
       collections,
+      subCategories: Object.fromEntries(allSubCategories.map((s: string) => [s, products.filter((p: any) => p.subCategories?.includes(s)).length])),
+      types: Object.fromEntries(allTypes.map((t: string) => [t, products.filter((p: any) => p.types?.includes(t)).length])),
       brands: Object.fromEntries(allBrands.map((b: string) => [b, products.filter((p: any) => p.brand === b).length])),
       frameTypes: Object.fromEntries(allFrameTypes.map((f: string) => [f, products.filter((p: any) => p.frameType === f).length])),
       lensTypes: Object.fromEntries(allLensTypes.map((l: string) => [l, products.filter((p: any) => p.lensType?.includes(l)).length])),
@@ -119,12 +166,14 @@ export default function ProductFilterPage() {
       ratings: Object.fromEntries([5, 4, 3, 2, 1].map((r) => [r, products.filter((p: any) => Math.floor(p.averageRating || 0) === r).length])),
       inStock: products.filter((p: any) => p.variants?.some((v: any) => v.inStock)).length,
     }
-  }, [products, allBrands, allFrameTypes, allLensTypes, allColors])
+  }, [products, allBrands, allSubCategories, allTypes, allFrameTypes, allLensTypes, allColors, navbarCategoryOptions])
 
   useEffect(() => {
     const minP = Number.parseInt(searchParams.get("minPrice") || "0")
     const maxP = Number.parseInt(searchParams.get("maxPrice") || "5000")
     const categories = getInitialCategoriesFromParams(searchParams)
+    const subCategories = searchParams.get("subCategory")?.split(",").filter(Boolean) || []
+    const types = searchParams.get("type")?.split(",").filter(Boolean) || []
     const saleOnly = searchParams.get("sale") === "true"
     const brands = getInitialBrandsFromParams(searchParams)
     const frameTypes = searchParams.get("frameTypes")?.split(",").filter(Boolean) || []
@@ -136,13 +185,15 @@ export default function ProductFilterPage() {
     setFilters((prev) => {
       if (prev.priceRange[0] === minP && prev.priceRange[1] === maxP &&
         prev.categories.length === categories.length && prev.categories.every((v, i) => v === categories[i]) &&
+        prev.subCategories.length === subCategories.length && prev.subCategories.every((v, i) => v === subCategories[i]) &&
+        prev.types.length === types.length && prev.types.every((v, i) => v === types[i]) &&
         prev.saleOnly === saleOnly && prev.brands.length === brands.length && prev.brands.every((v, i) => v === brands[i]) &&
         prev.frameTypes.length === frameTypes.length && prev.frameTypes.every((v, i) => v === frameTypes[i]) &&
         prev.lensTypes.length === lensTypes.length && prev.lensTypes.every((v, i) => v === lensTypes[i]) &&
         prev.colors.length === colors.length && prev.colors.every((v, i) => v === colors[i]) &&
         prev.ratings.length === ratings.length && prev.ratings.every((v, i) => v === ratings[i]) && prev.inStock === inStock
       ) return prev
-      return { priceRange: [minP, maxP], categories, saleOnly, brands, frameTypes, lensTypes, colors, ratings, inStock }
+      return { priceRange: [minP, maxP], categories, subCategories, types, saleOnly, brands, frameTypes, lensTypes, colors, ratings, inStock }
     })
 
     const sort = (searchParams.get("sort") as SortOption) || "featured"
@@ -154,7 +205,15 @@ export default function ProductFilterPage() {
   }, [searchParams])
 
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams()
+
+    // ── Preserve pass-through params the filter state doesn't manage ──
+    const passThrough = ["search", "q"]
+    passThrough.forEach((key) => {
+      const val = searchParams.get(key)
+      if (val) params.set(key, val)
+    })
+
     const updateParam = (key: string, value: string | null) => {
       if (value) params.set(key, value)
       else params.delete(key)
@@ -162,8 +221,9 @@ export default function ProductFilterPage() {
     updateParam("minPrice", filters.priceRange[0] > 0 ? filters.priceRange[0].toString() : null)
     updateParam("maxPrice", filters.priceRange[1] < 5000 ? filters.priceRange[1].toString() : null)
     updateParam("category", filters.categories.length > 0 ? filters.categories.join(",") : null)
+    updateParam("subCategory", filters.subCategories.length > 0 ? filters.subCategories.join(",") : null)
+    updateParam("type", filters.types.length > 0 ? filters.types.join(",") : null)
     updateParam("sale", filters.saleOnly ? "true" : null)
-    params.delete("brand")
     updateParam("brands", filters.brands.length > 0 ? filters.brands.join(",") : null)
     updateParam("frameTypes", filters.frameTypes.length > 0 ? filters.frameTypes.join(",") : null)
     updateParam("lensTypes", filters.lensTypes.length > 0 ? filters.lensTypes.join(",") : null)
@@ -177,9 +237,11 @@ export default function ProductFilterPage() {
     const newSearch = params.toString()
     const currentSearch = searchParams.toString()
     if (newSearch !== currentSearch) {
-      router.push(`${pathname}?${newSearch}`, { scroll: false })
+      router.replace(`${pathname}?${newSearch}`, { scroll: false })
     }
-  }, [filters, sortOption, currentPage, pathname, router, productsPerPage, searchParams])
+    // NOTE: searchParams intentionally excluded from deps to prevent infinite loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, sortOption, currentPage, pathname, router, productsPerPage])
 
   const handleFilterChange = (filterType: keyof FilterState, value: any) => {
     setFilters((prev) => {
@@ -198,11 +260,11 @@ export default function ProductFilterPage() {
   }
 
   const clearAllFilters = () => {
-    setFilters({ priceRange: [0, 5000], categories: [], saleOnly: false, brands: [], frameTypes: [], lensTypes: [], colors: [], ratings: [], inStock: null })
+    setFilters({ priceRange: [0, 5000], categories: [], subCategories: [], types: [], saleOnly: false, brands: [], frameTypes: [], lensTypes: [], colors: [], ratings: [], inStock: null })
     setSortOption("featured")
     setCurrentPage(1)
     const params = new URLSearchParams(searchParams.toString())
-    const managedKeys = ["minPrice", "maxPrice", "category", "sale", "brand", "brands", "frameTypes", "lensTypes", "colors", "ratings", "inStock", "sort", "page", "limit"]
+    const managedKeys = ["minPrice", "maxPrice", "category", "subCategory", "type", "sale", "brand", "brands", "frameTypes", "lensTypes", "colors", "ratings", "inStock", "sort", "page", "limit"]
     managedKeys.forEach((key) => params.delete(key))
     const newSearch = params.toString()
     router.push(newSearch ? `${pathname}?${newSearch}` : pathname, { scroll: false })
@@ -226,13 +288,13 @@ export default function ProductFilterPage() {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
 
-  const hasActiveFilters = () => filters.brands.length > 0 || filters.categories.length > 0 || filters.saleOnly ||
+  const hasActiveFilters = () => filters.brands.length > 0 || filters.categories.length > 0 || filters.subCategories.length > 0 || filters.types.length > 0 || filters.saleOnly ||
     filters.frameTypes.length > 0 || filters.lensTypes.length > 0 || filters.colors.length > 0 ||
     filters.ratings.length > 0 || filters.inStock !== null || filters.priceRange[0] > 0 || filters.priceRange[1] < 5000
 
   const getActiveFilterCount = () => {
     let c = 0
-    c += filters.brands.length + filters.categories.length + filters.frameTypes.length + filters.lensTypes.length + filters.colors.length + filters.ratings.length
+    c += filters.brands.length + filters.categories.length + filters.subCategories.length + filters.types.length + filters.frameTypes.length + filters.lensTypes.length + filters.colors.length + filters.ratings.length
     if (filters.saleOnly) c++
     if (filters.inStock !== null) c++
     if (filters.priceRange[0] > 0 || filters.priceRange[1] < 5000) c++
@@ -242,7 +304,7 @@ export default function ProductFilterPage() {
   const getMetaTitle = () => {
     let title = "Eyewear Collection"
     if (filters.categories.length === 1) {
-      const option = collectionOptions.find((item) => item.value === filters.categories[0])
+      const option = navbarCategoryOptions.find((item) => item.value === filters.categories[0])
       title = `${option?.label || filters.categories[0]} Eyewear`
     }
     if (filters.saleOnly) title = `Sale ${title}`
@@ -256,7 +318,7 @@ export default function ProductFilterPage() {
   const getMetaDescription = () => {
     let description = "Browse our premium collection of eyewear including sunglasses and prescription glasses."
     const parts: string[] = []
-    if (filters.categories.length > 0) parts.push(`collections like ${filters.categories.map((c) => collectionOptions.find((o) => o.value === c)?.label || c).join(", ")}`)
+    if (filters.categories.length > 0) parts.push(`collections like ${filters.categories.map((c) => navbarCategoryOptions.find((o) => o.value === c)?.label || c).join(", ")}`)
     if (filters.saleOnly) parts.push("sale items")
     if (filters.brands.length > 0) parts.push(`brands like ${filters.brands.join(", ")}`)
     if (filters.frameTypes.length > 0) parts.push(`${filters.frameTypes.join(", ")} frames`)
@@ -309,7 +371,7 @@ export default function ProductFilterPage() {
           {mobileFiltersOpen && (
             <MobileFilterDrawer
               filters={filters} optionCounts={optionCounts} allBrands={allBrands}
-              collectionOptions={collectionOptions} allFrameTypes={allFrameTypes}
+              collectionOptions={navbarCategoryOptions} allSubCategories={allSubCategories} allTypes={allTypes} allFrameTypes={allFrameTypes}
               allLensTypes={allLensTypes} allColors={allColors} minPrice={minPrice} maxPrice={maxPrice}
               handleFilterChange={handleFilterChange} onClose={() => setMobileFiltersOpen(false)}
             />
@@ -336,7 +398,9 @@ export default function ProductFilterPage() {
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }} className="flex lg:hidden flex-wrap items-center gap-2 py-4">
               <span className={`text-sm ${s.textMutedLighter}`} data-translate="filter.active">Active filters:</span>
               {filters.brands.map((b) => <ActiveFilterBtn key={b} onClick={() => removeFilter("brands", b)} s={s}>{b}</ActiveFilterBtn>)}
-              {filters.categories.map((c) => <ActiveFilterBtn key={c} onClick={() => removeFilter("categories", c)} s={s}>{collectionOptions.find((o) => o.value === c)?.label || c}</ActiveFilterBtn>)}
+              {filters.categories.map((c) => <ActiveFilterBtn key={c} onClick={() => removeFilter("categories", c)} s={s}>{navbarCategoryOptions.find((o) => o.value === c)?.label || c}</ActiveFilterBtn>)}
+              {filters.subCategories.map((sc) => <ActiveFilterBtn key={sc} onClick={() => removeFilter("subCategories", sc)} s={s}>{sc}</ActiveFilterBtn>)}
+              {filters.types.map((t) => <ActiveFilterBtn key={t} onClick={() => removeFilter("types", t)} s={s}>{t}</ActiveFilterBtn>)}
               {filters.saleOnly && <ActiveFilterBtn onClick={() => removeFilter("saleOnly", null)} s={s}>Sale</ActiveFilterBtn>}
               {filters.frameTypes.map((t) => <ActiveFilterBtn key={t} onClick={() => removeFilter("frameTypes", t)} s={s}>{t}</ActiveFilterBtn>)}
               {filters.lensTypes.map((t) => <ActiveFilterBtn key={t} onClick={() => removeFilter("lensTypes", t)} s={s}>{t}</ActiveFilterBtn>)}
@@ -360,13 +424,13 @@ export default function ProductFilterPage() {
             <h2 id="products-heading" className="sr-only">Products</h2>
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
               <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.6 }} className="hidden lg:block">
-                <FilterSection filters={filters} collectionOptions={collectionOptions} optionCounts={optionCounts}
-                  allBrands={allBrands} allFrameTypes={allFrameTypes} allLensTypes={allLensTypes} allColors={allColors}
+                <FilterSection filters={filters} collectionOptions={navbarCategoryOptions} optionCounts={optionCounts}
+                  allBrands={allBrands} allSubCategories={allSubCategories} allTypes={allTypes} allFrameTypes={allFrameTypes} allLensTypes={allLensTypes} allColors={allColors}
                   minPrice={minPrice} maxPrice={maxPrice} handleFilterChange={handleFilterChange} removeFilter={removeFilter}
                   clearAllFilters={clearAllFilters} hasActiveFilters={hasActiveFilters()} />
               </motion.div>
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.7 }} className="lg:col-span-3">
-                <ProductSection products={products} filteredProducts={products} isLoading={isLoading}
+                <ProductSection products={products} filteredProducts={products} isLoading={isLoading || isFetching}
                   sortOption={sortOption} setSortOption={setSortOption} currentPage={currentPage} totalPages={totalPages}
                   paginate={paginate} indexOfFirstProduct={(currentPage - 1) * productsPerPage} indexOfLastProduct={currentPage * productsPerPage}
                   totalProducts={total} productsPerPage={productsPerPage} onProductsPerPageChange={handleProductsPerPageChange}

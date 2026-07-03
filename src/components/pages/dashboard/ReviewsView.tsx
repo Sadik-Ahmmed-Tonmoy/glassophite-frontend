@@ -1,15 +1,27 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Star, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useGetAllReviewsQuery, useDeleteReviewMutation, useUpdateReviewMutation } from "@/redux/features/review/reviewApi";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 export default function ReviewsView() {
-  const { data, isLoading } = useGetAllReviewsQuery({ limit: 50 });
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 20;
+  const { data, isLoading, isFetching } = useGetAllReviewsQuery({ page: currentPage, limit });
   const reviews = data?.data || [];
+  const totalItems = data?.meta?.total || 0;
+  const totalPages = Math.ceil(totalItems / limit);
   const [deleteReview] = useDeleteReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
 
@@ -56,7 +68,7 @@ export default function ReviewsView() {
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-            {isLoading ? (
+            {isLoading || isFetching ? (
               <tr>
                 <td colSpan={6} className="p-8 text-center">
                   <Loader2 className="w-5 h-5 animate-spin mx-auto text-neutral-400" />
@@ -111,6 +123,52 @@ export default function ReviewsView() {
             )}
           </tbody>
         </table>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+            <p className="text-xs text-muted-foreground">
+              Page {currentPage} of {totalPages} ({totalItems} total)
+            </p>
+            <Pagination className="mx-0 w-auto">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.max(1, p - 1)); }}
+                    className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
+                  .map((p, idx, arr) => (
+                    <React.Fragment key={p}>
+                      {idx > 0 && arr[idx - 1] !== p - 1 && (
+                        <PaginationItem>
+                          <span className="flex h-9 w-9 items-center justify-center text-xs text-muted-foreground">...</span>
+                        </PaginationItem>
+                      )}
+                      <PaginationItem>
+                        <PaginationLink
+                          href="#"
+                          isActive={currentPage === p}
+                          onClick={(e) => { e.preventDefault(); setCurrentPage(p); }}
+                          className="cursor-pointer"
+                        >
+                          {p}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </React.Fragment>
+                  ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.min(totalPages, p + 1)); }}
+                    className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
     </motion.div>
   );

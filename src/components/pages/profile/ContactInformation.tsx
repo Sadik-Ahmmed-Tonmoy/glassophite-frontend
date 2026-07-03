@@ -32,7 +32,7 @@ export default function ContactInformation() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [isEditing, setIsEditing] = useState(false);
-  const { data: meData } = useGetMeQuery(undefined);
+  const { data: meData, isLoading: isMeLoading, isFetching: isMeFetching } = useGetMeQuery(undefined);
   const [updateMe, { isLoading }] = useUpdateMeMutation();
 
   const user = meData?.data || meData;
@@ -47,21 +47,6 @@ export default function ContactInformation() {
       country: "",
     },
   });
-
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        phoneNumber: user.phoneNumber || "",
-        address: {
-          street: user.address?.street || "",
-          city: user.address?.city || "",
-          state: user.address?.state || "",
-          zipCode: user.address?.zipCode || "",
-          country: user.address?.country || "",
-        },
-      });
-    }
-  }, [user]);
 
   const themeStyles = {
     dark: {
@@ -91,6 +76,41 @@ export default function ContactInformation() {
   };
 
   const styles = isDark ? themeStyles.dark : themeStyles.light;
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        phoneNumber: user.phoneNumber || "",
+        address: {
+          street: user.address?.street || "",
+          city: user.address?.city || "",
+          state: user.address?.state || "",
+          zipCode: user.address?.zipCode || "",
+          country: user.address?.country || "",
+        },
+      });
+    }
+  }, [user]);
+
+  if (isMeLoading || isMeFetching) {
+    return (
+      <div className={cn("rounded-xl border shadow-sm p-6 animate-pulse", styles.card)}>
+        <div className="h-6 bg-neutral-300 dark:bg-neutral-800 rounded w-1/4 mb-6"></div>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <div className="h-4 bg-neutral-200 dark:bg-neutral-800 rounded w-1/3"></div>
+            <div className="h-5 bg-neutral-200 dark:bg-neutral-800 rounded w-2/3"></div>
+          </div>
+          <div className="space-y-2">
+            <div className="h-4 bg-neutral-200 dark:bg-neutral-800 rounded w-1/3"></div>
+            <div className="h-5 bg-neutral-200 dark:bg-neutral-800 rounded w-2/3"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
 
   const handleSubmit = async (data: ContactInfoValues) => {
     try {

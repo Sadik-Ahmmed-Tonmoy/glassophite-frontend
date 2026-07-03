@@ -14,9 +14,35 @@ import DropDownMenus from "../DropDownMenus/DropDownMenus";
 import styles from "./PCNavBar.module.css";
 import CartButton from "../cart/CartButton";
 import { LanguageSwitcher, TranslateInitializer } from "@/lib/GoogleTranslateProvider";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { logout } from "@/redux/features/auth/authSlice";
+import { useGetMeQuery, useLogoutMutation } from "@/redux/features/auth/authApi";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const PCNavBar = () => {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const token = useAppSelector((state) => state.auth.access_token);
+  const { data: meData } = useGetMeQuery(undefined, { skip: !token });
+  const [logoutApi] = useLogoutMutation();
+
+  const user = meData?.data || meData;
+  const isLoggedIn = !!token && !!user;
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+
+  const handleLogout = async () => {
+    try {
+      await logoutApi(undefined).unwrap();
+    } catch {
+      // safe fallback
+    }
+    dispatch(logout());
+    toast.success("Logged out successfully");
+    router.push("/auth/login");
+  };
   const [shakeCartFloatingButton, setShakeCartFloatingButton] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   // search bar start
   const placeholders = [
     "polarized sunglasses",
@@ -42,11 +68,13 @@ const PCNavBar = () => {
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
+    setSearchValue(e.target.value);
   };
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("submitted");
+    if (searchValue.trim()) {
+      router.push(`/product-filter?search=${encodeURIComponent(searchValue.trim())}`);
+    }
   };
   // search bar end
   return (
@@ -74,27 +102,46 @@ const PCNavBar = () => {
             >
               <BsPerson className="w-6 h-6" />
               <span className="relative">
-                <span data-translate>Account</span>
-                <span className={styles.text} data-translate>Account</span>
+                <span data-translate>{isLoggedIn ? (user?.fullName || "Profile") : "Account"}</span>
+                <span className={styles.text} data-translate>{isLoggedIn ? (user?.fullName || "Profile") : "Account"}</span>
               </span>
             </button>
             
             {/* Account Dropdown Menu */}
             <div className="absolute right-0 top-full pt-2 w-48 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 z-50">
               <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl overflow-hidden p-2 flex flex-col gap-1 text-xs">
-                <Link href="/my-profile" className="px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-200 font-bold transition-colors">
-                  My Profile
-                </Link>
-                <Link href="/dashboard" className="px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-200 font-bold transition-colors">
-                  Admin Dashboard
-                </Link>
-                <div className="border-t border-neutral-200 dark:border-neutral-800 my-1" />
-                <Link href="/auth/login" className="px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-200 font-bold transition-colors">
-                  Login / Sign In
-                </Link>
-                <Link href="/auth/register" className="px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-200 font-bold transition-colors">
-                  Register Account
-                </Link>
+                {isLoggedIn ? (
+                  <>
+                    <div className="px-3 py-2 border-b border-neutral-150 dark:border-neutral-850 text-[10px] text-neutral-500 font-medium">
+                      Signed in as <br />
+                      <strong className="text-neutral-900 dark:text-white truncate block">{user?.email}</strong>
+                    </div>
+                    <Link href="/my-profile" className="px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-200 font-bold transition-colors">
+                      My Profile
+                    </Link>
+                    {isAdmin && (
+                      <Link href="/dashboard" className="px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-200 font-bold transition-colors">
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    <div className="border-t border-neutral-200 dark:border-neutral-800 my-1" />
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-3 py-2 hover:bg-red-500/10 text-red-650 rounded-lg font-bold transition-colors cursor-pointer"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/auth/login" className="px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-200 font-bold transition-colors">
+                      Login / Sign In
+                    </Link>
+                    <Link href="/auth/register" className="px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-200 font-bold transition-colors">
+                      Register Account
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

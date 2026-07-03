@@ -169,6 +169,56 @@ export default function ActiveFilters({
             )
           })}
 
+          {/* Sub-Categories */}
+          {filters.subCategories.map((subCat) => (
+            <motion.div
+              key={`subCategory-${subCat}`}
+              className={`inline-flex items-center rounded-full border ${styles.chipBorder} ${styles.chipBg} py-1.5 pl-3 pr-2 text-sm font-medium ${styles.chipText}`}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+              layout
+            >
+              <span>
+                <span className="sr-only">Sub-Category:</span> {subCat}
+              </span>
+              <button
+                type="button"
+                className={`ml-1 inline-flex h-6 w-6 flex-shrink-0 rounded-full p-1 ${styles.removeButton} transition-colors`}
+                onClick={() => removeFilter("subCategories", subCat)}
+                aria-label="Remove sub-category filter"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </motion.div>
+          ))}
+
+          {/* Types */}
+          {filters.types.map((type) => (
+            <motion.div
+              key={`type-${type}`}
+              className={`inline-flex items-center rounded-full border ${styles.chipBorder} ${styles.chipBg} py-1.5 pl-3 pr-2 text-sm font-medium ${styles.chipText}`}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+              layout
+            >
+              <span>
+                <span className="sr-only">Type:</span> {type}
+              </span>
+              <button
+                type="button"
+                className={`ml-1 inline-flex h-6 w-6 flex-shrink-0 rounded-full p-1 ${styles.removeButton} transition-colors`}
+                onClick={() => removeFilter("types", type)}
+                aria-label="Remove type filter"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </motion.div>
+          ))}
+
           {/* Sale */}
           {filters.saleOnly && (
             <motion.div

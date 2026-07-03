@@ -64,7 +64,7 @@ export default function AnalyticsView() {
   // Category breakdown from products
   const categoryMap: Record<string, number> = {};
   products.forEach((p: any) => {
-    const cat = p.category || "Uncategorized";
+    const cat = Array.isArray(p.categories) ? (p.categories[0] || "Uncategorized") : (p.categories || "Uncategorized");
     categoryMap[cat] = (categoryMap[cat] || 0) + 1;
   });
   const totalProductCount = products.length || 1;
@@ -279,7 +279,7 @@ export default function AnalyticsView() {
                 <div key={p.id} className="flex items-center justify-between text-xs pt-3 first:pt-0">
                   <div className="space-y-0.5 flex-1 min-w-0 mr-3">
                     <p className="font-bold text-foreground truncate">{p.title}</p>
-                    <p className="text-[10px] text-muted-foreground">{p.category} · {p.brand}</p>
+                    <p className="text-[10px] text-muted-foreground">{Array.isArray(p.categories) ? p.categories.join(", ") : p.categories} · {p.brand}</p>
                   </div>
                   <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                     <span className="font-bold text-[#007C74]">

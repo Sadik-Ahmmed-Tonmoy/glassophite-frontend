@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useGetAllProductsQuery } from "@/redux/features/product/productApi";
 import { useGetAllReviewsQuery } from "@/redux/features/review/reviewApi";
@@ -53,7 +52,7 @@ export default function SocialProofSection() {
       setActiveReview((prev) => (prev + 1) % reviews.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [reviews.length]);
 
   // Calculate average ratings
   const averageRating = (

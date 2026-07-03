@@ -7,6 +7,7 @@ import { Menu, MenuItem } from "@/components/ui/navbar-menu";
 import ScrollButton from "@/components/ui/ScrollButton/ScrollButton";
 import { useGetAllPostsQuery } from "@/redux/features/blog/blogApi";
 import { useGetAllBrandsQuery } from "@/redux/features/brand/brandApi";
+import { useGetAllNavbarMenusQuery } from "@/redux/features/navbar/navbarApi";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -36,13 +37,15 @@ interface TopBrand {
 
 const DropDownMenus = () => {
   const [active, setActive] = useState<string | null>(null);
-  console.log(active);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const { data: navbarData } = useGetAllNavbarMenusQuery(undefined);
+  const navbarMenus = (navbarData?.data || []) as any[];
 
   const { data: brandsData } = useGetAllBrandsQuery({});
   const { data: blogsData } = useGetAllPostsQuery({});
-  const brandProfiles = Array.isArray(brandsData) ? brandsData : brandsData?.data || [];
-  const blogPosts = Array.isArray(blogsData) ? blogsData : blogsData?.data || [];
+  const brandProfiles = useMemo(() => Array.isArray(brandsData) ? brandsData : brandsData?.data || [], [brandsData]);
+  const blogPosts = useMemo(() => Array.isArray(blogsData) ? blogsData : blogsData?.data || [], [blogsData]);
 
   const handleSubmit = (data: FieldValues, reset: any) => {
     console.log("Form Data:", data);
@@ -50,13 +53,6 @@ const DropDownMenus = () => {
     // reset(); // Uncomment this line to reset the form after submission
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
-  };
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log("submitted");
-  };
   // search bar end
 
   const [brandList, setBrandList] = useState<Brand[]>([]);
@@ -68,8 +64,7 @@ const DropDownMenus = () => {
 
   // const watchSearch = watch("search");
   const watchSearch = searchTerm;
-  const topBrandList: TopBrand[] = [{ id: 999999, caption: "Top Brands", list: [...topBrandListArr] }];
-
+  
   useEffect(() => {
     if (watchSearch?.length > 0) {
       const filteredList: Brand[] = [];
@@ -85,216 +80,6 @@ const DropDownMenus = () => {
     }
   }, [watchSearch, brandList]);
 
-  const data = useMemo<Brand[]>(() => [
-    {
-      id: 1,
-      caption: "A",
-      list: [
-        { id: 11, title: "apple" },
-        { id: 12, title: "almond" },
-      ],
-    },
-    {
-      id: 2,
-      caption: "B",
-      list: [
-        { id: 21, title: "ball" },
-        { id: 22, title: "banana" },
-      ],
-    },
-    {
-      id: 3,
-      caption: "C",
-      list: [
-        { id: 31, title: "cat" },
-        { id: 32, title: "carrot" },
-      ],
-    },
-    {
-      id: 4,
-      caption: "D",
-      list: [
-        { id: 41, title: "dog" },
-        { id: 42, title: "date" },
-      ],
-    },
-    {
-      id: 5,
-      caption: "E",
-      list: [
-        { id: 51, title: "elephant" },
-        { id: 52, title: "eggplant" },
-      ],
-    },
-    {
-      id: 6,
-      caption: "F",
-      list: [
-        { id: 61, title: "fox" },
-        { id: 62, title: "fig" },
-      ],
-    },
-    {
-      id: 7,
-      caption: "G",
-      list: [
-        { id: 71, title: "giraffe" },
-        { id: 72, title: "grape" },
-      ],
-    },
-    {
-      id: 8,
-      caption: "H",
-      list: [
-        { id: 81, title: "horse" },
-        { id: 82, title: "honeydew" },
-      ],
-    },
-    {
-      id: 9,
-      caption: "I",
-      list: [
-        { id: 91, title: "iguana" },
-        { id: 92, title: "ice cream" },
-      ],
-    },
-    {
-      id: 10,
-      caption: "J",
-      list: [
-        { id: 101, title: "jaguar" },
-        { id: 102, title: "jelly" },
-      ],
-    },
-    {
-      id: 11,
-      caption: "K",
-      list: [
-        { id: 111, title: "koala" },
-        { id: 112, title: "kiwi" },
-      ],
-    },
-    {
-      id: 12,
-      caption: "L",
-      list: [
-        { id: 121, title: "lion" },
-        { id: 122, title: "lemon" },
-      ],
-    },
-    {
-      id: 13,
-      caption: "M",
-      list: [
-        { id: 131, title: "monkey" },
-        { id: 132, title: "melon" },
-      ],
-    },
-    {
-      id: 14,
-      caption: "N",
-      list: [
-        { id: 141, title: "newt" },
-        { id: 142, title: "nutmeg" },
-      ],
-    },
-    {
-      id: 15,
-      caption: "O",
-      list: [
-        { id: 151, title: "owl" },
-        { id: 152, title: "orange" },
-      ],
-    },
-    {
-      id: 16,
-      caption: "P",
-      list: [
-        { id: 161, title: "penguin" },
-        { id: 162, title: "pear" },
-      ],
-    },
-    {
-      id: 17,
-      caption: "Q",
-      list: [
-        { id: 171, title: "quokka" },
-        { id: 172, title: "quince" },
-      ],
-    },
-    {
-      id: 18,
-      caption: "R",
-      list: [
-        { id: 181, title: "rhino" },
-        { id: 182, title: "raspberry" },
-      ],
-    },
-    {
-      id: 19,
-      caption: "S",
-      list: [
-        { id: 191, title: "snake" },
-        { id: 192, title: "strawberry" },
-      ],
-    },
-    {
-      id: 20,
-      caption: "T",
-      list: [
-        { id: 201, title: "tiger" },
-        { id: 202, title: "tomato" },
-      ],
-    },
-    {
-      id: 21,
-      caption: "U",
-      list: [
-        { id: 211, title: "umbrella bird" },
-        { id: 212, title: "ugli fruit" },
-      ],
-    },
-    {
-      id: 22,
-      caption: "V",
-      list: [
-        { id: 221, title: "vulture" },
-        { id: 222, title: "vanilla" },
-      ],
-    },
-    {
-      id: 23,
-      caption: "W",
-      list: [
-        { id: 231, title: "whale" },
-        { id: 232, title: "watermelon" },
-      ],
-    },
-    {
-      id: 24,
-      caption: "X",
-      list: [
-        { id: 241, title: "x-ray tetra" },
-        { id: 242, title: "xylophone" },
-      ],
-    },
-    {
-      id: 25,
-      caption: "Y",
-      list: [
-        { id: 251, title: "yak" },
-        { id: 252, title: "yogurt" },
-      ],
-    },
-    {
-      id: 26,
-      caption: "Z",
-      list: [
-        { id: 261, title: "zebra" },
-        { id: 262, title: "zucchini" },
-      ],
-    },
-  ], []);
 
   useEffect(() => {
     const activeBrands = brandProfiles.filter((brand: any) => brand.status === "Active") as any[];
@@ -658,13 +443,21 @@ const DropDownMenus = () => {
     }
   ];
 
-  const sunglasses = fakeData.find((item) => item.menu === "Sunglasses");
-  const opticalGlasses = fakeData.find((item) => item.menu === "Optical Glasses");
-  const contactLens = fakeData.find((item) => item.menu === "Contact Lens");
-  const accessories = fakeData.find((item) => item.menu === "Accessories");
-  const clearanceSale = fakeData.find((item) => item.menu === "Clearance SALE");
-  const blog = fakeData.find((item) => item.menu === "Blog");
-  const blogItems = blogMenuList.length > 0 ? blogMenuList : blog?.subMenu || [];
+  const getTranslateClass = (menuName: string) => {
+    const mapping: Record<string, string> = {
+      "Sunglasses": "sm:-translate-x-[153px] md:-translate-x-[105px] lg:-translate-x-[300px] xl:-translate-x-[485px] slim-scroll",
+      "Optical Glasses": "sm:-translate-x-[200px] md:-translate-x-[245px] lg:-translate-x-[430px] xl:-translate-x-[640px] 2xl:-translate-x-[660px]",
+      "Contact Lens": "sm:-translate-x-[250px] md:-translate-x-[300px] lg:-translate-x-[500px] xl:-translate-x-[700px] 2xl:-translate-x-[750px]",
+      "Accessories": "sm:-translate-x-[300px] md:-translate-x-[350px] lg:-translate-x-[550px] xl:-translate-x-[750px] 2xl:-translate-x-[800px]",
+      "Clearance SALE": "sm:-translate-x-[350px] md:-translate-x-[400px] lg:-translate-x-[600px] xl:-translate-x-[800px] 2xl:-translate-x-[850px]",
+      "Brands": "-translate-x-[350px] md:-translate-x-[345px] lg:-translate-x-[612px] xl:-translate-x-[712px]",
+      "Blogs": "-translate-x-[375px] lg:-translate-x-[600px] 2xl:-translate-x-[910px]",
+    };
+    return mapping[menuName] || "sm:-translate-x-[200px] lg:-translate-x-[400px] xl:-translate-x-[600px]";
+  };
+
+  const blog = navbarMenus.find((item) => item.menu === "Blogs");
+  const blogItems = blogMenuList.length > 0 ? blogMenuList : (blog?.subMenu as any[]) || [];
 
   return (
     <div>
@@ -672,407 +465,209 @@ const DropDownMenus = () => {
         <div className="hidden lg:block ">
           <MenuItem setActive={setActive} active={active} item="Home" href="/" className=""></MenuItem>
         </div>
-        <MenuItem
-          setActive={setActive}
-          active={active}
-          item="Sunglasses"
-          href="/product-filter?category=sunglasses"
-          className="sm:-translate-x-[153px] md:-translate-x-[105px] lg:-translate-x-[300px]  xl:-translate-x-[485px] slim-scroll "
-        >
-          <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll  text-sm grid grid-cols-2 xl:grid-cols-3 sm:gap-3 lg:gap-10 p-4 ">
-            {sunglasses?.subMenu.map((item, index) => (
-              <div key={index} className="flex flex-col md:flex-row items-start md:gap-4 ">
-                <div>
-                  <Link href={""}>
-                    <div className="sm:h-20 sm:w-20 md:h-24 md:w-24 lg:h-36 lg:w-36">
-                      <Image src={item.imageUrl} className="rounded-md cursor-pointer h-full w-full" height={150} width={150} alt="" />
-                    </div>
-                  </Link>
-                </div>
-                <div className="flex flex-col lg:gap-1 whitespace-nowrap">
-                  <Link href={""}>
-                    <h3 className={` hover:text-[#00a76b] text-xl w-min font-bold relative group cursor-pointer `}>
-                      {item.subMenuTitle}
-                      <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-                    </h3>
-                  </Link>
-                  {item.chieldMenu.map((chieldItem, index) => (
-                    <Link key={index} href={""}>
-                      <p className={` hover:text-[#00a76b]  w-min text-base font-medium relative group cursor-pointer `}>
-                        {chieldItem.chieldMenuTitle}
-                        <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 "></span>
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {/* View All Sunglasses Card */}
-            <div className="flex flex-col md:flex-row items-start md:gap-4 p-4 bg-[#007C74]/5 rounded-xl border border-[#007C74]/15 hover:bg-[#007C74]/10 transition-colors h-full min-h-[144px]">
-              <div className="flex flex-col justify-between h-full whitespace-nowrap">
-                <div>
-                  <h3 className="text-lg font-black text-[#007C74]">
-                    All Sunglasses
-                  </h3>
-                  <p className="text-xs text-muted-foreground whitespace-normal mt-1.5 max-w-[160px]">
-                    Browse our complete catalog of premium sunglasses styles.
-                  </p>
-                </div>
-                <Link href="/product-filter?category=sunglasses" className="text-xs font-bold text-red-500 flex items-center gap-1 group mt-4">
-                  <span>View All Collection</span>
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </MenuItem>
-        <MenuItem setActive={setActive} active={active} item="Optical Glasses" href="/product-filter?category=optical" className="sm:-translate-x-[200px] md:-translate-x-[245px] lg:-translate-x-[430px] xl:-translate-x-[640px] 2xl:-translate-x-[660px] ">
-          <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll  text-sm grid grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-10 p-4">
-            {opticalGlasses?.subMenu.map((item, index) => (
-              <div key={index} className="flex flex-col md:flex-row items-start gap-1 md:gap-4">
-                <div>
-                  <Link href={""}>
-                    <div className="sm:h-20 sm:w-20 md:h-24 md:w-24 lg:h-36 lg:w-36">
-                      <Image src={item.imageUrl} className="rounded-md cursor-pointer h-full w-full" height={150} width={150} alt="" />
-                    </div>
-                  </Link>
-                </div>
-                <div className="flex flex-col lg:gap-1 whitespace-nowrap">
-                  <Link href={""}>
-                    <h3 className={` hover:text-[#00a76b] text-xl w-min font-bold relative group cursor-pointer`}>
-                      
-                      {item.subMenuTitle.length > 20 ? item.subMenuTitle.substring(0, 20) + "..." : item.subMenuTitle}
-                      <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-                    </h3>
-                  </Link>
-                  {item.chieldMenu.map((chieldItem, index) => (
-                    <Link key={index} href={""}>
-                      <p className={` hover:text-[#00a76b] w-min text-base font-medium relative group cursor-pointer`}>
-                        {chieldItem.chieldMenuTitle}
-                        <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {/* View All Optical Glasses Card */}
-            <div className="flex flex-col md:flex-row items-start md:gap-4 p-4 bg-[#007C74]/5 rounded-xl border border-[#007C74]/15 hover:bg-[#007C74]/10 transition-colors h-full min-h-[144px]">
-              <div className="flex flex-col justify-between h-full whitespace-nowrap">
-                <div>
-                  <h3 className="text-lg font-black text-[#007C74]">
-                    All Optical Glasses
-                  </h3>
-                  <p className="text-xs text-muted-foreground whitespace-normal mt-1.5 max-w-[160px]">
-                    Browse our complete catalog of optical glasses.
-                  </p>
-                </div>
-                <Link href="/product-filter?category=optical" className="text-xs font-bold text-[#00a76b] flex items-center gap-1 group mt-4">
-                  <span>View All Collection</span>
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </MenuItem>
 
-        <MenuItem setActive={setActive} active={active} item="Contact Lens" href="/product-filter?category=contact-lens" className="sm:-translate-x-[250px] md:-translate-x-[300px] lg:-translate-x-[500px] xl:-translate-x-[700px] 2xl:-translate-x-[750px] ">
-          <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll  text-sm grid grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-10 p-4">
-            {contactLens?.subMenu.map((item, index) => (
-              <div key={index} className="flex flex-col md:flex-row items-start gap-1 md:gap-4">
-                <div>
-                  <Link href={""}>
-                    <div className="sm:h-20 sm:w-20 md:h-24 md:w-24 lg:h-36 lg:w-36">
-                      <Image src={item.imageUrl} className="rounded-md cursor-pointer h-full w-full" height={150} width={150} alt="" />
+        {navbarMenus.map((menuItem) => {
+          const translateClass = getTranslateClass(menuItem.menu);
+
+          // Custom Brands View Layout
+          if (menuItem.menu === "Brands") {
+            return (
+              <MenuItem
+                key={menuItem.id}
+                setActive={setActive}
+                active={active}
+                item={menuItem.menu}
+                href={menuItem.href || "/brands"}
+                className={translateClass}
+              >
+                <div className="max-h-[calc(100vh-170px)] overflow-y-auto slim-scroll min-h-[412px] sm:w-[595px] md:w-[728px] lg:w-[1000px] xl:w-[1202px] md:-left-[207px] lg:-left-[206px] xl:-left-[180px] 2xl:-left-14 z-10 flex top-[52px] rounded overflow-hidden">
+                  {/* left side start */}
+                  <div className="w-5/12">
+                    <div className="border-b-[1px] p-3">
+                      <MyFormWrapper onSubmit={handleSubmit} className="relative h-[45px]">
+                        <MyFormInputAceternity name="search" placeholder="Enter Brand Name" inputClassName="" />
+                        <button type="submit">
+                          <IoSearchSharp size={20} className="absolute top-[13px] right-3" />
+                        </button>
+                      </MyFormWrapper>
                     </div>
-                  </Link>
-                </div>
-                <div className="flex flex-col lg:gap-1 whitespace-nowrap">
-                  <Link href={""}>
-                    <h3 className={` hover:text-[#00a76b] text-xl w-min font-bold relative group cursor-pointer`}>
-                      {item.subMenuTitle.length > 20 ? item.subMenuTitle.substring(0, 20) + "..." : item.subMenuTitle}
-                      <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-                    </h3>
-                  </Link>
-                  {item.chieldMenu.map((chieldItem, index) => (
-                    <Link key={index} href={""}>
-                      <p className={` hover:text-[#00a76b]  w-min text-base font-medium relative group cursor-pointer`}>
-                        {chieldItem.chieldMenuTitle}
-                        <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {/* View All Contact Lenses Card */}
-            <div className="flex flex-col md:flex-row items-start md:gap-4 p-4 bg-[#007C74]/5 rounded-xl border border-[#007C74]/15 hover:bg-[#007C74]/10 transition-colors h-full min-h-[144px]">
-              <div className="flex flex-col justify-between h-full whitespace-nowrap">
-                <div>
-                  <h3 className="text-lg font-black text-[#007C74]">
-                    All Contact Lenses
-                  </h3>
-                  <p className="text-xs text-muted-foreground whitespace-normal mt-1.5 max-w-[160px]">
-                    Browse our complete range of quality contact lenses.
-                  </p>
-                </div>
-                <Link href="/product-filter?category=contact-lens" className="text-xs font-bold text-[#00a76b] flex items-center gap-1 group mt-4">
-                  <span>View All Collection</span>
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </MenuItem>
-
-        <MenuItem setActive={setActive} active={active} item="Accessories" href="/product-filter?category=accessories" className="sm:-translate-x-[300px] md:-translate-x-[350px] lg:-translate-x-[550px] xl:-translate-x-[750px] 2xl:-translate-x-[800px] ">
-          <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll  text-sm grid grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-10 p-4">
-            {accessories?.subMenu.map((item, index) => (
-              <div key={index} className="flex flex-col md:flex-row items-start gap-1 md:gap-4">
-                <div>
-                  <Link href={""}>
-                    <div className="sm:h-20 sm:w-20 md:h-24 md:w-24 lg:h-36 lg:w-36">
-                      <Image src={item.imageUrl} className="rounded-md cursor-pointer h-full w-full" height={150} width={150} alt="" />
-                    </div>
-                  </Link>
-                </div>
-                <div className="flex flex-col lg:gap-1 whitespace-nowrap">
-                  <Link href={""}>
-                    <h3 className={` hover:text-[#00a76b] text-xl w-min font-bold relative group cursor-pointer`}>
-                      {item.subMenuTitle.length > 20 ? item.subMenuTitle.substring(0, 20) + "..." : item.subMenuTitle}
-                      <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-                    </h3>
-                  </Link>
-                  {item.chieldMenu.map((chieldItem, index) => (
-                    <Link key={index} href={""}>
-                      <p className={` hover:text-[#00a76b]  w-min text-base font-medium relative group cursor-pointer`}>
-                        {chieldItem.chieldMenuTitle}
-                        <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {/* View All Accessories Card */}
-            <div className="flex flex-col md:flex-row items-start md:gap-4 p-4 bg-[#007C74]/5 rounded-xl border border-[#007C74]/15 hover:bg-[#007C74]/10 transition-colors h-full min-h-[144px]">
-              <div className="flex flex-col justify-between h-full whitespace-nowrap">
-                <div>
-                  <h3 className="text-lg font-black text-[#007C74]">
-                    All Accessories
-                  </h3>
-                  <p className="text-xs text-muted-foreground whitespace-normal mt-1.5 max-w-[160px]">
-                    Browse cases, solutions, chains, and cleaner kits.
-                  </p>
-                </div>
-                <Link href="/product-filter?category=accessories" className="text-xs font-bold text-[#00a76b] flex items-center gap-1 group mt-4">
-                  <span>View All Collection</span>
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </MenuItem>
-
-        <MenuItem setActive={setActive} active={active} item="Clearance SALE" href="/product-filter?sale=true" className="sm:-translate-x-[350px] md:-translate-x-[400px] lg:-translate-x-[600px] xl:-translate-x-[800px] 2xl:-translate-x-[850px] ">
-          <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll  text-sm grid grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-10 p-4">
-            {clearanceSale?.subMenu.map((item, index) => (
-              <div key={index} className="flex flex-col md:flex-row items-start gap-1 md:gap-4">
-                <div>
-                  <Link href={""}>
-                    <div className="sm:h-20 sm:w-20 md:h-24 md:w-24 lg:h-36 lg:w-36">
-                      <Image src={item.imageUrl} className="rounded-md cursor-pointer h-full w-full" height={150} width={150} alt="" />
-                    </div>
-                  </Link>
-                </div>
-                <div className="flex flex-col lg:gap-1 whitespace-nowrap">
-                  <Link href={""}>
-                    <h3 className={` hover:text-[#00a76b] text-xl w-min font-bold relative group cursor-pointer`}>
-                      {item.subMenuTitle.length > 20 ? item.subMenuTitle.substring(0, 20) + "..." : item.subMenuTitle}
-                      <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-                    </h3>
-                  </Link>
-                  {item.chieldMenu.map((chieldItem, index) => (
-                    <Link key={index} href={""}>
-                      <p className={` hover:text-[#00a76b]  w-min text-base font-medium relative group cursor-pointer`}>
-                        {chieldItem.chieldMenuTitle}
-                        <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {/* View All Clearance Deals Card */}
-            <div className="flex flex-col md:flex-row items-start md:gap-4 p-4 bg-red-500/5 rounded-xl border border-red-500/15 hover:bg-red-500/10 transition-colors h-full min-h-[144px]">
-              <div className="flex flex-col justify-between h-full whitespace-nowrap">
-                <div>
-                  <h3 className="text-lg font-black text-red-500 dark:text-red-400">
-                    All Clearance Deals
-                  </h3>
-                  <p className="text-xs text-muted-foreground whitespace-normal mt-1.5 max-w-[160px]">
-                    Grab special bundles and flat-discounted frames.
-                  </p>
-                </div>
-                <Link href="/product-filter?sale=true" className="text-xs font-bold text-red-500 dark:text-red-400 flex items-center gap-1 group mt-4">
-                  <span>View All Deals</span>
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </MenuItem>
-
-        <MenuItem setActive={setActive} active={active} item="Brands" href="/brands" className=" -translate-x-[350px] md:-translate-x-[345px] lg:-translate-x-[612px] xl:-translate-x-[712px] ">
-          <div
-            // style={{ boxShadow: "0px 4px 20px 0px rgba(36, 52, 58, 0.10)" }}
-            className={`max-h-[calc(100vh-170px)] overflow-y-auto slim-scroll min-h-[412px] sm:w-[595px] md:w-[728px] lg:w-[1000px] xl:w-[1202px] md:-left-[207px] lg:-left-[206px] xl:-left-[180px] 2xl:-left-14  z-10 flex top-[52px] rounded overflow-hidden `}
-          >
-            {/* left side start */}
-            <div className=" w-5/12">
-              <div className="border-b-[1px] h- p-3">
-                {/* <form onSubmit={handleSubmit(onSubmit)}>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      {...register("search")}
-                      placeholder="Search Brands"
-                      className="input w-full ps-9 py-[6px]  rounded-sm"
-                    />
-                    <button className="absolute top-[10px] left-2" type="submit">
-                    
-                    </button>
-                  </div>
-                </form> */}
-
-                <MyFormWrapper onSubmit={handleSubmit} className="relative h-[45px]">
-                  <MyFormInputAceternity name="search" placeholder="Enter Brand Name" inputClassName="" />
-                  <button type="submit">
-                    <IoSearchSharp size={20} className="absolute top-[13px] right-3" />
-                  </button>
-                </MyFormWrapper>
-              </div>
-              <div className="relative">
-                <div className="max-h-[330px] overflow-hidden overflow-y-auto slim-scroll">
-                  <>
-                    {/* {watchSearch?.length > 0 || (
-                      <>
-                        {topBrandList?.map((items, i) => (
-                          <div key={i} id={items.caption} className="px-5 ">
-                            <h5 className="mt-4 mb-2  text-lg font-medium leading-normal">{items.caption}</h5>
+                    <div className="relative">
+                      <div className="max-h-[330px] overflow-hidden overflow-y-auto slim-scroll">
+                        {FilteredBrandList?.map((items, i) => (
+                          <div key={i} id={items.caption} className="px-5">
+                            <h5 className="mt-4 text-lg font-medium leading-normal">{items.caption}</h5>
                             <div className="mb-5">
                               {items.list.map((item, index) => (
                                 <span
                                   onClick={() => {
-                                    setValue("search", "");
                                     setIsBrandOpen(false);
                                   }}
                                   key={index}
                                 >
-                                  <Link href={`/product-filter?brand=${item?.id}`}>
-                                    <p className={`text-sm font-normal leading-normal mb-2 hover:text-primary-color `}>{item?.title}</p>
+                                  <Link href={`/product-filter?brand=${encodeURIComponent(item.title)}`} onClick={() => setActive(null)}>
+                                    <p className="text-sm font-normal leading-normal mb-2 hover:text-primary-color">{item.title}</p>
                                   </Link>
                                 </span>
                               ))}
                             </div>
                           </div>
                         ))}
-                      </>
-                    )} */}
-                  </>
-                  {FilteredBrandList?.map((items, i) => (
-                    <div key={i} id={items.caption} className="px-5 ">
-                      <h5 className="mt-4  text-lg font-medium leading-normal">{items.caption}</h5>
-                      <div className="mb-5">
-                        {items.list.map((item, index) => (
-                          <span
-                            onClick={() => {
-                              // setValue("search", "");
-                              setIsBrandOpen(false);
-                            }}
-                            key={index}
-                          >
-                            <Link href={`/product-filter?brand=${encodeURIComponent(item.title)}`}>
-                              <p className={`text-sm font-normal leading-normal mb-2 hover:text-primary-color `}>{item.title}</p>
-                            </Link>
-                          </span>
-                        ))}
+                        <div className="flex flex-col absolute top-2 right-2 overflow-hidden slim-scroll">
+                          {alphabetList.map((item, index) => (
+                            <ScrollButton key={index} to={item} name={item} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* left side end */}
+                  {/* right side start */}
+                  <div className="w-full">
+                    <div className="border-b-[1px] py-[23px]">
+                      <h4 className="text-center">Popular Brands</h4>
+                    </div>
+                    {/* brand images start */}
+                    <div className="grid grid-cols-5 gap-5 p-8 h-[360px] overflow-hidden overflow-y-auto slim-scroll">
+                      {topBrandListArr.map((item) => (
+                        <Link
+                          key={item.id}
+                          href={`/product-filter?brand=${encodeURIComponent(item.title)}`}
+                          onClick={() => setActive(null)}
+                          className="group rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden bg-white dark:bg-neutral-950 hover:border-[#00a76b]/60 transition-colors"
+                        >
+                          <div className="relative h-24 bg-neutral-100 dark:bg-neutral-900">
+                            {item.imageUrl && (
+                              <Image src={item.imageUrl} alt={item.title} fill className="object-cover" sizes="160px" />
+                            )}
+                          </div>
+                          <div className="p-3">
+                            <p className="text-xs font-extrabold group-hover:text-[#00a76b] transition-colors line-clamp-1">
+                              {item.title}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground line-clamp-2 mt-1">
+                              {item.tagline}
+                            </p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                    {/* brand images end */}
+                  </div>
+                  {/* right side end */}
+                </div>
+              </MenuItem>
+            );
+          }
+
+          // Custom Blogs View Layout
+          if (menuItem.menu === "Blogs") {
+            return (
+              <MenuItem
+                key={menuItem.id}
+                setActive={setActive}
+                active={active}
+                item={menuItem.menu}
+                href={menuItem.href || "/blogs"}
+                className={translateClass}
+              >
+                <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll text-sm grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-x-20 gap-y-4 md:gap-x-24 p-4">
+                  {blogItems.map((item: any, index: number) => (
+                    <div key={index} className="flex items-start gap-4">
+                      <div className="h-14 w-14">
+                        <Link href={`/blogs?category=${encodeURIComponent(item.subMenuTitle)}`} onClick={() => setActive(null)}>
+                          {item.imageUrl && (
+                            <Image src={item.imageUrl} className="rounded-md cursor-pointer h-full w-full" height={150} width={150} alt="" />
+                          )}
+                        </Link>
+                      </div>
+                      <div className="flex flex-col gap-1 max-w-[140px]">
+                        <Link href={`/blogs?category=${encodeURIComponent(item.subMenuTitle)}`} onClick={() => setActive(null)}>
+                          <h3 className="hover:text-[#00a76b] text-sm w-min font-bold relative group cursor-pointer whitespace-nowrap">
+                            {item.subMenuTitle.length > 20 ? item.subMenuTitle.substring(0, 20) + "..." : item.subMenuTitle}
+                            <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+                          </h3>
+                          <p className="">{item?.descriptions?.length > 30 ? item?.descriptions.substring(0, 30) + "..." : item.descriptions || ""}</p>
+                        </Link>
                       </div>
                     </div>
                   ))}
-                  <div className="flex flex-col absolute top-2 right-2 overflow-hidden slim-scroll">
-                    {alphabetList.map((item, index) => (
-                      <ScrollButton key={index} to={item} name={item} />
-                      // <div className="flex flex-col">{item}</div>
-                    ))}
+                </div>
+              </MenuItem>
+            );
+          }
+
+          const hasSubmenu = menuItem.subMenu && (menuItem.subMenu as any[]).length > 0;
+          const categoryHref = menuItem.href || `/product-filter?category=${encodeURIComponent(menuItem.menu)}`;
+
+          // Generic Dynamic Category Dropdown Layout
+          return (
+            <MenuItem
+              key={menuItem.id}
+              setActive={setActive}
+              active={active}
+              item={menuItem.menu}
+              href={categoryHref}
+              className={translateClass}
+            >
+              {hasSubmenu && (
+                <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll text-sm grid grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-10 p-4">
+                  {(menuItem.subMenu as any[]).map((item: any, index: number) => {
+                    const subHref = item.href || `/product-filter?category=${encodeURIComponent(menuItem.menu)}&subCategory=${encodeURIComponent(item.subMenuTitle)}`;
+                    return (
+                      <div key={index} className="flex flex-col md:flex-row items-start gap-1 md:gap-4">
+                        {item.imageUrl && (
+                          <div>
+                            <Link href={subHref} onClick={() => setActive(null)}>
+                              <div className="sm:h-20 sm:w-20 md:h-24 md:w-24 lg:h-36 lg:w-36">
+                                <Image src={item.imageUrl} className="rounded-md cursor-pointer h-full w-full" height={150} width={150} alt="" />
+                              </div>
+                            </Link>
+                          </div>
+                        )}
+                        <div className="flex flex-col lg:gap-1 whitespace-nowrap">
+                          <Link href={subHref} onClick={() => setActive(null)}>
+                            <h3 className="hover:text-[#00a76b] text-xl w-min font-bold relative group cursor-pointer">
+                              {item.subMenuTitle}
+                              <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+                            </h3>
+                          </Link>
+                          {item.chieldMenu?.map((chieldItem: any, idx: number) => {
+                            const childHref = chieldItem.href || `/product-filter?category=${encodeURIComponent(menuItem.menu)}&subCategory=${encodeURIComponent(item.subMenuTitle)}&type=${encodeURIComponent(chieldItem.chieldMenuTitle)}`;
+                            return chieldItem.chieldMenuTitle ? (
+                              <Link key={idx} href={childHref} onClick={() => setActive(null)}>
+                                <p className="hover:text-[#00a76b] w-min text-base font-medium relative group cursor-pointer">
+                                  {chieldItem.chieldMenuTitle}
+                                  <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+                                </p>
+                              </Link>
+                            ) : null;
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {/* View All Dynamic Card */}
+                  <div className="flex flex-col md:flex-row items-start md:gap-4 p-4 bg-[#007C74]/5 rounded-xl border border-[#007C74]/15 hover:bg-[#007C74]/10 transition-colors h-full min-h-[144px]">
+                    <div className="flex flex-col justify-between h-full whitespace-nowrap">
+                      <div>
+                        <h3 className="text-lg font-black text-[#007C74]">
+                          All {menuItem.menu}
+                        </h3>
+                        <p className="text-xs text-muted-foreground whitespace-normal mt-1.5 max-w-[160px]">
+                          Browse our complete range of quality {menuItem.menu.toLowerCase()}.
+                        </p>
+                      </div>
+                      <Link href={categoryHref} onClick={() => setActive(null)} className="text-xs font-bold text-[#00a76b] flex items-center gap-1 group mt-4">
+                        <span>View All Collection</span>
+                        <span className="group-hover:translate-x-1 transition-transform">→</span>
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            {/* left side end */}
-            {/* right side start */}
-            <div className=" w-full">
-              <div className="border-b-[1px] py-[23px]">
-                <h4 className="text-center">Popular Brands</h4>
-              </div>
-              {/* brand images start */}
-              <div className="grid grid-cols-5 gap-5 p-8 h-[360px] overflow-hidden overflow-y-auto slim-scroll">
-                {topBrandListArr.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={`/product-filter?brand=${encodeURIComponent(item.title)}`}
-                    className="group rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden bg-white dark:bg-neutral-950 hover:border-[#00a76b]/60 transition-colors"
-                  >
-                    <div className="relative h-24 bg-neutral-100 dark:bg-neutral-900">
-                      {item.imageUrl && (
-                        <Image src={item.imageUrl} alt={item.title} fill className="object-cover" sizes="160px" />
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <p className="text-xs font-extrabold group-hover:text-[#00a76b] transition-colors line-clamp-1">
-                        {item.title}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground line-clamp-2 mt-1">
-                        {item.tagline}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-              {/* brand images end */}
-            </div>
-            {/* right side end */}
-          </div>
-        </MenuItem>
-
-        <MenuItem
-          setActive={setActive}
-          active={active}
-          item="Blogs"
-          href="/blogs"
-          className=" -translate-x-[375px] lg:-translate-x-[600px] 2xl:-translate-x-[910px]"
-        >
-          <div className=" max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll  text-sm grid grid-cols-2  lg:grid-cols-3 2xl:grid-cols-5 gap-x-20 gap-y-4 md:gap-x-24  p-4">
-            {blogItems.map((item, index) => (
-              <div key={index} className="flex items-start gap-4">
-                <div className="h-14 w-14">
-                  <Link href={`/blogs?category=${encodeURIComponent(item.subMenuTitle)}`}>
-                    <Image src={item.imageUrl} className="rounded-md cursor-pointer h-full w-full" height={150} width={150} alt="" />
-                  </Link>
-                </div>
-                <div className="flex flex-col gap-1 max-w-[140px]">
-                  <Link href={`/blogs?category=${encodeURIComponent(item.subMenuTitle)}`}>
-                    <h3 className={` hover:text-[#00a76b] text-sm w-min font-bold relative group cursor-pointer whitespace-nowrap`}>
-                      {item.subMenuTitle.length > 20 ? item.subMenuTitle.substring(0, 20) + "..." : item.subMenuTitle}
-                      <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-                    </h3>
-                    <p className="">{item?.descriptions.length > 30 ? item?.descriptions.substring(0, 30) + "..." : item.descriptions}</p>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </MenuItem>
+              )}
+            </MenuItem>
+          );
+        })}
       </Menu>
     </div>
   );

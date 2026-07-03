@@ -47,6 +47,30 @@ export default function Breadcrumb({ filters }: BreadcrumbProps) {
             <span aria-current="page">{filters.categories[0]}</span>
           </li>
         )}
+        {filters.subCategories.length === 1 && (
+          <li className="flex items-center">
+            <svg className="h-4 w-4 mx-1" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span aria-current="page">{filters.subCategories[0]}</span>
+          </li>
+        )}
+        {filters.types.length === 1 && (
+          <li className="flex items-center">
+            <svg className="h-4 w-4 mx-1" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span aria-current="page">{filters.types[0]}</span>
+          </li>
+        )}
         {filters.saleOnly && (
           <li className="flex items-center">
             <svg className="h-4 w-4 mx-1" fill="currentColor" viewBox="0 0 20 20">

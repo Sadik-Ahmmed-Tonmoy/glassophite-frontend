@@ -3,6 +3,8 @@ export type SortOption = "featured" | "price-low" | "price-high" | "rating" | "n
 export type FilterState = {
   priceRange: [number, number]
   categories: string[]
+  subCategories: string[]
+  types: string[]
   saleOnly: boolean
   brands: string[]
   frameTypes: string[]
@@ -14,6 +16,8 @@ export type FilterState = {
 
 export type FilterOptionCounts = {
   collections: Record<string, number>
+  subCategories: Record<string, number>
+  types: Record<string, number>
   brands: Record<string, number>
   frameTypes: Record<string, number>
   lensTypes: Record<string, number>

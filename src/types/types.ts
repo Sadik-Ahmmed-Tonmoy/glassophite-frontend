@@ -47,7 +47,9 @@ export type TProduct = {
   id: string;
   title: string;
   brand?: string;
-  category?: string;
+  categories?: string[];
+  subCategories?: string[];
+  types?: string[];
 
   // Legacy/mock fields (used by storefront components and productMockData)
   img?: string;
@@ -70,6 +72,10 @@ export type TProduct = {
   targetAudience?: string;
   careInstructions?: string;
   isFeatured?: boolean;
+  isNewArrival?: boolean;
+  isBestSeller?: boolean;
+  isTrending?: boolean;
+  salePercentage?: number;
   averageRating?: number;
   totalReviews?: number;
   status?: "ACTIVE" | "INACTIVE" | "ARCHIVED";

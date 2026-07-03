@@ -2,7 +2,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -31,10 +39,17 @@ import {
   useUpdateVariantMutation,
   useDeleteVariantMutation,
 } from "@/redux/features/product/productApi";
+import { useGetAllNavbarMenusQuery } from "@/redux/features/navbar/navbarApi";
+import { Select } from "antd";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 export default function ProductsView() {
-  const { data, isLoading } = useGetAllProductsQuery({ limit: 100 });
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 20;
+  const { data, isLoading, isFetching } = useGetAllProductsQuery({ page: currentPage, limit });
   const products: TProduct[] = (data?.data || []) as TProduct[];
+  const totalItems = data?.meta?.total || 0;
+  const totalPages = Math.ceil(totalItems / limit);
 
   const [createProduct] = useCreateProductMutation();
   const [updateProduct] = useUpdateProductMutation();
@@ -68,7 +83,70 @@ export default function ProductsView() {
   // Main Form States
   const [title, setTitle] = useState("");
   const [brand, setBrand] = useState("");
-  const [category, setCategory] = useState("all");
+  const [categories, setCategories] = useState<string[]>([]);
+  const [subCategories, setSubCategories] = useState<string[]>([]);
+  const [types, setTypes] = useState<string[]>([]);
+
+  const { data: navbarData } = useGetAllNavbarMenusQuery(undefined);
+
+  const categoryOptions = useMemo(() => {
+    const navbarMenus = ((navbarData?.data || []) as any[]);
+    return navbarMenus
+      .filter((m: any) => m.menu && m.menu !== "Brands" && m.menu !== "Blogs")
+      .map((m: any) => ({ label: m.menu, value: m.menu.toLowerCase() }));
+  }, [navbarData]);
+
+  const selectedNavMenus = useMemo(() => {
+    const navbarMenus = ((navbarData?.data || []) as any[]);
+    return navbarMenus.filter((m: any) =>
+      categories.includes(m.menu?.toLowerCase())
+    );
+  }, [navbarData, categories]);
+
+  const subCategoryOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const opts: { label: string; value: string }[] = [];
+    for (const menu of selectedNavMenus) {
+      for (const sub of menu.subMenu || []) {
+        if (sub.subMenuTitle && !seen.has(sub.subMenuTitle)) {
+          seen.add(sub.subMenuTitle);
+          opts.push({ label: sub.subMenuTitle, value: sub.subMenuTitle });
+        }
+      }
+    }
+    subCategories.forEach((sc) => {
+      if (sc && !seen.has(sc)) {
+        seen.add(sc);
+        opts.push({ label: sc, value: sc });
+      }
+    });
+    return opts;
+  }, [selectedNavMenus, subCategories]);
+
+  const typeOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const opts: { label: string; value: string }[] = [];
+    for (const menu of selectedNavMenus) {
+      for (const sub of menu.subMenu || []) {
+        if (subCategories.includes(sub.subMenuTitle)) {
+          for (const child of sub.chieldMenu || []) {
+            if (child.chieldMenuTitle && !seen.has(child.chieldMenuTitle)) {
+              seen.add(child.chieldMenuTitle);
+              opts.push({ label: child.chieldMenuTitle, value: child.chieldMenuTitle });
+            }
+          }
+        }
+      }
+    }
+    types.forEach((t) => {
+      if (t && !seen.has(t)) {
+        seen.add(t);
+        opts.push({ label: t, value: t });
+      }
+    });
+    return opts;
+  }, [selectedNavMenus, subCategories, types]);
+
   const [shortDescription, setShortDescription] = useState("");
   const [longDescription, setLongDescription] = useState("");
   const [material, setMaterial] = useState("Metal Alloy");
@@ -82,6 +160,10 @@ export default function ProductsView() {
   const [targetAudience, setTargetAudience] = useState("Unisex, Luxury Seekers");
   const [careInstructions, setCareInstructions] = useState("Clean lenses with a microfiber cloth.");
   const [isFeatured, setIsFeatured] = useState(false);
+  const [isNewArrival, setIsNewArrival] = useState(false);
+  const [isBestSeller, setIsBestSeller] = useState(false);
+  const [isTrending, setIsTrending] = useState(false);
+  const [salePercentage, setSalePercentage] = useState("0");
 
   // Form Validation Errors
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -116,7 +198,7 @@ export default function ProductsView() {
   const productSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters."),
     brand: z.string().min(2, "Brand is required."),
-    category: z.string().min(1, "Category is required."),
+    category: z.array(z.string()).min(1, "At least one category is required."),
     shortDescription: z.string().min(5, "Short description is required."),
   });
 
@@ -139,7 +221,9 @@ export default function ProductsView() {
   const resetProductForm = () => {
     setTitle("");
     setBrand("Elite Styles");
-    setCategory("all");
+    setCategories([]);
+    setSubCategories([]);
+    setTypes([]);
     setShortDescription("");
     setLongDescription("");
     setMaterial("Metal Alloy");
@@ -153,6 +237,10 @@ export default function ProductsView() {
     setTargetAudience("Unisex, Luxury Seekers");
     setCareInstructions("Store in a protective case. Clean lenses with a microfiber cloth.");
     setIsFeatured(false);
+    setIsNewArrival(false);
+    setIsBestSeller(false);
+    setIsTrending(false);
+    setSalePercentage("0");
     setVariantsList([]);
     setShowVariantForm(false);
     setEditingVariantIndex(null);
@@ -170,7 +258,9 @@ export default function ProductsView() {
     setEditingProduct(p);
     setTitle(p.title);
     setBrand(p.brand || "Elite Styles");
-    setCategory(p.category || "all");
+    setCategories(p.categories || []);
+    setSubCategories(p.subCategories || []);
+    setTypes(p.types || []);
     setShortDescription(p.shortDescription || "");
     setLongDescription(p.longDescription || "");
     setMaterial(p.material || "Metal Alloy");
@@ -184,6 +274,10 @@ export default function ProductsView() {
     setTargetAudience(p.targetAudience || "Unisex");
     setCareInstructions(p.careInstructions || "Clean lenses with a microfiber cloth.");
     setIsFeatured(!!p.isFeatured);
+    setIsNewArrival(!!p.isNewArrival);
+    setIsBestSeller(!!p.isBestSeller);
+    setIsTrending(!!p.isTrending);
+    setSalePercentage(p.salePercentage?.toString() || "0");
     setVariantsList([...p.variants]);
     setShowVariantForm(false);
     setEditingVariantIndex(null);
@@ -395,7 +489,7 @@ export default function ProductsView() {
   const handleSubmitProduct = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const mainVal = productSchema.safeParse({ title, brand, category, shortDescription });
+    const mainVal = productSchema.safeParse({ title, brand, category: categories, shortDescription });
     if (!mainVal.success) {
       const errors: Record<string, string> = {};
       mainVal.error.errors.forEach((err) => {
@@ -417,10 +511,13 @@ export default function ProductsView() {
 
     try {
       const productPayload = {
-        title, brand, category, shortDescription, longDescription,
+        title, brand, categories: categories.length > 0 ? categories : undefined,
+        subCategories: subCategories.length > 0 ? subCategories : undefined,
+        types: types.length > 0 ? types : undefined, shortDescription, longDescription,
         material, dimensions, weight, shippingInfo, frameType,
         lensType, warranty, countryOfOrigin, targetAudience,
-        careInstructions, isFeatured,
+        careInstructions, isFeatured, isNewArrival, isBestSeller, isTrending,
+        salePercentage: Number(salePercentage) || 0,
       };
 
       if (editingProduct) {
@@ -470,7 +567,7 @@ export default function ProductsView() {
     (p) =>
       p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (p.brand && p.brand.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (p.category && p.category.toLowerCase().includes(searchTerm.toLowerCase()))
+      (p.categories && p.categories.some((c) => c.toLowerCase().includes(searchTerm.toLowerCase())))
   );
 
   return (
@@ -526,7 +623,7 @@ export default function ProductsView() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {isLoading ? (
+            {isLoading || isFetching ? (
               <tr>
                 <td colSpan={7} className="p-8 text-center text-muted-foreground">
                   <Loader2 className="w-5 h-5 animate-spin mx-auto" />
@@ -598,7 +695,7 @@ export default function ProductsView() {
                       <td className="p-4 font-semibold text-muted-foreground">{p.brand}</td>
                       <td className="p-4">
                         <span className="px-2.5 py-0.5 bg-muted text-[10px] font-bold rounded text-foreground capitalize">
-                          {p.category || "all"}
+                          {p.categories?.length ? p.categories.slice(0, 2).map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(", ") + (p.categories.length > 2 ? ` +${p.categories.length - 2}` : "") : "all"}
                         </span>
                       </td>
                       <td className="p-4 font-semibold">
@@ -694,6 +791,52 @@ export default function ProductsView() {
             )}
           </tbody>
         </table>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+            <p className="text-xs text-muted-foreground">
+              Page {currentPage} of {totalPages} ({totalItems} total)
+            </p>
+            <Pagination className="mx-0 w-auto">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.max(1, p - 1)); }}
+                    className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
+                  .map((p, idx, arr) => (
+                    <React.Fragment key={p}>
+                      {idx > 0 && arr[idx - 1] !== p - 1 && (
+                        <PaginationItem>
+                          <span className="flex h-9 w-9 items-center justify-center text-xs text-muted-foreground">...</span>
+                        </PaginationItem>
+                      )}
+                      <PaginationItem>
+                        <PaginationLink
+                          href="#"
+                          isActive={currentPage === p}
+                          onClick={(e) => { e.preventDefault(); setCurrentPage(p); }}
+                          className="cursor-pointer"
+                        >
+                          {p}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </React.Fragment>
+                  ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.min(totalPages, p + 1)); }}
+                    className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
 
       {/* Add / Edit Product Modal */}
@@ -752,23 +895,50 @@ export default function ProductsView() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-1">
-                      <label className="font-bold text-muted-foreground">Category Selection</label>
-                      <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        className="w-full px-3.5 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
-                      >
-                        <option value="all">General (All)</option>
-                        <option value="aviator">Aviator Classic</option>
-                        <option value="wayfarer">Wayfarer Retro</option>
-                        <option value="luxury">Luxury Style</option>
-                        <option value="optical">Optical Frame</option>
-                      </select>
+                      <label className="font-bold text-muted-foreground">Category / Collection</label>
+                      <Select
+                        mode="multiple"
+                        value={categories}
+                        onChange={(vals) => { setCategories(vals); setSubCategories([]); setTypes([]); }}
+                        options={categoryOptions.map((o) => ({ label: o.label, value: o.value }))}
+                        placeholder="Select categories..."
+                        className="w-full [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!border-border [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!min-h-[42px] [&_.ant-select-selector]:!py-0.5 [&_.ant-select-selection-placeholder]:!text-muted-foreground [&_.ant-select-selection-placeholder]:!text-sm"
+                        size="large"
+                      />
                     </div>
                     <div className="space-y-1">
-                      <label className="font-bold text-muted-foreground">Featured Status</label>
+                      <label className="font-bold text-muted-foreground">Sub-Category</label>
+                      <Select
+                        mode="multiple"
+                        value={subCategories}
+                        onChange={(vals) => { setSubCategories(vals); setTypes([]); }}
+                        options={subCategoryOptions.map((o) => ({ label: o.label, value: o.value }))}
+                        placeholder={subCategoryOptions.length === 0 ? "Select category first" : "Select sub-categories..."}
+                        disabled={subCategoryOptions.length === 0}
+                        className="w-full [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!border-border [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!min-h-[42px] [&_.ant-select-selector]:!py-0.5 [&_.ant-select-selection-placeholder]:!text-muted-foreground [&_.ant-select-selection-placeholder]:!text-sm"
+                        size="large"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="font-bold text-muted-foreground">Type</label>
+                      <Select
+                        mode="multiple"
+                        value={types}
+                        onChange={setTypes}
+                        options={typeOptions.map((o) => ({ label: o.label, value: o.value }))}
+                        placeholder={typeOptions.length === 0 ? "Select sub-category first" : "Select types..."}
+                        disabled={typeOptions.length === 0}
+                        className="w-full [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!border-border [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!min-h-[42px] [&_.ant-select-selector]:!py-0.5 [&_.ant-select-selection-placeholder]:!text-muted-foreground [&_.ant-select-selection-placeholder]:!text-sm"
+                        size="large"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="font-bold text-muted-foreground">Product Flags</label>
                       <div className="flex items-center h-9 gap-2">
                         <input
                           id="prod_featured"
@@ -781,6 +951,54 @@ export default function ProductsView() {
                           Featured listing on homepage
                         </label>
                       </div>
+                      <div className="flex items-center h-9 gap-2">
+                        <input
+                          id="prod_newarrival"
+                          type="checkbox"
+                          checked={isNewArrival}
+                          onChange={(e) => setIsNewArrival(e.target.checked)}
+                          className="w-4 h-4 rounded border border-border accent-primary cursor-pointer"
+                        />
+                        <label htmlFor="prod_newarrival" className="font-bold text-foreground cursor-pointer">
+                          New Arrival
+                        </label>
+                      </div>
+                      <div className="flex items-center h-9 gap-2">
+                        <input
+                          id="prod_bestseller"
+                          type="checkbox"
+                          checked={isBestSeller}
+                          onChange={(e) => setIsBestSeller(e.target.checked)}
+                          className="w-4 h-4 rounded border border-border accent-primary cursor-pointer"
+                        />
+                        <label htmlFor="prod_bestseller" className="font-bold text-foreground cursor-pointer">
+                          Best Seller
+                        </label>
+                      </div>
+                      <div className="flex items-center h-9 gap-2">
+                        <input
+                          id="prod_trending"
+                          type="checkbox"
+                          checked={isTrending}
+                          onChange={(e) => setIsTrending(e.target.checked)}
+                          className="w-4 h-4 rounded border border-border accent-primary cursor-pointer"
+                        />
+                        <label htmlFor="prod_trending" className="font-bold text-foreground cursor-pointer">
+                          Trending
+                        </label>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="font-bold text-muted-foreground">Sale Percentage (%)</label>
+                      <input
+                        type="number"
+                        value={salePercentage}
+                        onChange={(e) => setSalePercentage(e.target.value)}
+                        placeholder="0"
+                        min="0"
+                        max="100"
+                        className="w-full px-3.5 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
                     </div>
                   </div>
 

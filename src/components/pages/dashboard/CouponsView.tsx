@@ -1,9 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Plus, Trash2, Tag, Pencil, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -24,8 +30,12 @@ type TCoupon = {
 };
 
 export default function CouponsView() {
-  const { data, isLoading } = useGetAllCouponsQuery(undefined);
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 20;
+  const { data, isLoading, isFetching } = useGetAllCouponsQuery({ page: currentPage, limit });
   const coupons = data?.data || [];
+  const totalItems = data?.meta?.total || 0;
+  const totalPages = Math.ceil(totalItems / limit);
   const [createCoupon] = useCreateCouponMutation();
   const [updateCoupon] = useUpdateCouponMutation();
   const [deleteCoupon] = useDeleteCouponMutation();
@@ -176,7 +186,7 @@ export default function CouponsView() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {isLoading ? (
+            {isLoading || isFetching ? (
               <tr><td colSpan={5} className="p-8 text-center text-muted-foreground"><Loader2 className="w-5 h-5 animate-spin mx-auto" /></td></tr>
             ) : coupons.length === 0 ? (
               <tr>
@@ -232,6 +242,52 @@ export default function CouponsView() {
             )}
           </tbody>
         </table>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+            <p className="text-xs text-muted-foreground">
+              Page {currentPage} of {totalPages} ({totalItems} total)
+            </p>
+            <Pagination className="mx-0 w-auto">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.max(1, p - 1)); }}
+                    className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
+                  .map((p, idx, arr) => (
+                    <React.Fragment key={p}>
+                      {idx > 0 && arr[idx - 1] !== p - 1 && (
+                        <PaginationItem>
+                          <span className="flex h-9 w-9 items-center justify-center text-xs text-muted-foreground">...</span>
+                        </PaginationItem>
+                      )}
+                      <PaginationItem>
+                        <PaginationLink
+                          href="#"
+                          isActive={currentPage === p}
+                          onClick={(e) => { e.preventDefault(); setCurrentPage(p); }}
+                          className="cursor-pointer"
+                        >
+                          {p}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </React.Fragment>
+                  ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.min(totalPages, p + 1)); }}
+                    className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
 
       {/* Add / Edit Coupon Modal */}

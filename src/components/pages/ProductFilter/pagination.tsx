@@ -3,6 +3,10 @@
 import { motion } from "framer-motion"
 import { useTheme } from "next-themes"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { usePathname, useSearchParams } from "next/navigation"
+import Link from "next/link"
+
+const MotionLink = motion(Link)
 
 interface PaginationProps {
   currentPage: number
@@ -27,6 +31,18 @@ export default function Pagination({
 }: PaginationProps) {
   const { theme } = useTheme()
   const isDark = theme === "dark"
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  const createPageUrl = (pageNumber: number) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (pageNumber > 1) {
+      params.set("page", pageNumber.toString())
+    } else {
+      params.delete("page")
+    }
+    return `${pathname}?${params.toString()}`
+  }
 
   // Theme styles
   const themeStyles = {
@@ -115,32 +131,46 @@ export default function Pagination({
       {/* Mobile pagination */}
       <div className="flex flex-1 justify-between sm:hidden">
         <div className="flex items-center space-x-2">
-          <motion.button
-            onClick={() => currentPage > 1 && paginate(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`relative inline-flex items-center rounded-md px-2 py-2 text-sm font-medium ${
-              currentPage === 1 ? styles.buttonDisabled : styles.button
-            }`}
-            whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
-            whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
-          >
-            <span className="sr-only" data-translate="pagination.previous">Previous</span>
-            <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path
-                fillRule="evenodd"
-                d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </motion.button>
+          {currentPage === 1 ? (
+            <span
+              className={`relative inline-flex items-center rounded-md px-2 py-2 text-sm font-medium ${styles.buttonDisabled}`}
+            >
+              <span className="sr-only" data-translate="pagination.previous">Previous</span>
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path
+                  fillRule="evenodd"
+                  d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </span>
+          ) : (
+            <MotionLink
+              href={createPageUrl(currentPage - 1)}
+              onClick={() => paginate(currentPage - 1)}
+              className={`relative inline-flex items-center rounded-md px-2 py-2 text-sm font-medium ${styles.button}`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="sr-only" data-translate="pagination.previous">Previous</span>
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path
+                  fillRule="evenodd"
+                  d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </MotionLink>
+          )}
 
           <div className="flex space-x-1 overflow-x-auto max-w-[180px] px-1">
             {totalPages <= 5 ? (
               [...Array(totalPages)].map((_, index) => {
                 const pageNumber = index + 1
                 return (
-                  <motion.button
+                  <MotionLink
                     key={pageNumber}
+                    href={createPageUrl(pageNumber)}
                     onClick={() => paginate(pageNumber)}
                     className={`relative inline-flex items-center justify-center min-w-[32px] h-8 px-2 text-sm font-medium rounded-md ${
                       currentPage === pageNumber ? styles.buttonActive : styles.buttonInactive
@@ -149,12 +179,13 @@ export default function Pagination({
                     whileTap={{ scale: 0.95 }}
                   >
                     {pageNumber}
-                  </motion.button>
+                  </MotionLink>
                 )
               })
             ) : (
               <>
-                <motion.button
+                <MotionLink
+                  href={createPageUrl(1)}
                   onClick={() => paginate(1)}
                   className={`relative inline-flex items-center justify-center min-w-[32px] h-8 px-2 text-sm font-medium rounded-md ${
                     currentPage === 1 ? styles.buttonActive : styles.buttonInactive
@@ -163,7 +194,7 @@ export default function Pagination({
                   whileTap={{ scale: 0.95 }}
                 >
                   1
-                </motion.button>
+                </MotionLink>
 
                 {currentPage > 3 && (
                   <span className={`inline-flex items-center justify-center min-w-[32px] h-8 px-2 text-sm ${styles.ellipsis}`}>
@@ -179,8 +210,9 @@ export default function Pagination({
                     (pageNumber === currentPage || pageNumber === currentPage - 1 || pageNumber === currentPage + 1)
                   ) {
                     return (
-                      <motion.button
+                      <MotionLink
                         key={pageNumber}
+                        href={createPageUrl(pageNumber)}
                         onClick={() => paginate(pageNumber)}
                         className={`relative inline-flex items-center justify-center min-w-[32px] h-8 px-2 text-sm font-medium rounded-md ${
                           currentPage === pageNumber ? styles.buttonActive : styles.buttonInactive
@@ -189,7 +221,7 @@ export default function Pagination({
                         whileTap={{ scale: 0.95 }}
                       >
                         {pageNumber}
-                      </motion.button>
+                      </MotionLink>
                     )
                   }
                   return null
@@ -201,7 +233,8 @@ export default function Pagination({
                   </span>
                 )}
 
-                <motion.button
+                <MotionLink
+                  href={createPageUrl(totalPages)}
                   onClick={() => paginate(totalPages)}
                   className={`relative inline-flex items-center justify-center min-w-[32px] h-8 px-2 text-sm font-medium rounded-md ${
                     currentPage === totalPages ? styles.buttonActive : styles.buttonInactive
@@ -210,29 +243,42 @@ export default function Pagination({
                   whileTap={{ scale: 0.95 }}
                 >
                   {totalPages}
-                </motion.button>
+                </MotionLink>
               </>
             )}
           </div>
 
-          <motion.button
-            onClick={() => currentPage < totalPages && paginate(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`relative inline-flex items-center rounded-md px-2 py-2 text-sm font-medium ${
-              currentPage === totalPages ? styles.buttonDisabled : styles.button
-            }`}
-            whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
-            whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
-          >
-            <span className="sr-only" data-translate="pagination.next">Next</span>
-            <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path
-                fillRule="evenodd"
-                d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </motion.button>
+          {currentPage === totalPages ? (
+            <span
+              className={`relative inline-flex items-center rounded-md px-2 py-2 text-sm font-medium ${styles.buttonDisabled}`}
+            >
+              <span className="sr-only" data-translate="pagination.next">Next</span>
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path
+                  fillRule="evenodd"
+                  d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </span>
+          ) : (
+            <MotionLink
+              href={createPageUrl(currentPage + 1)}
+              onClick={() => paginate(currentPage + 1)}
+              className={`relative inline-flex items-center rounded-md px-2 py-2 text-sm font-medium ${styles.button}`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="sr-only" data-translate="pagination.next">Next</span>
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path
+                  fillRule="evenodd"
+                  d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </MotionLink>
+          )}
         </div>
       </div>
 
@@ -267,25 +313,38 @@ export default function Pagination({
 
         <div>
           <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-            <motion.button
-              onClick={() => currentPage > 1 && paginate(currentPage - 1)}
-              disabled={currentPage === 1}
-              className={`relative inline-flex items-center rounded-l-md px-2 py-2 ${
-                currentPage === 1 ? styles.buttonDisabled : styles.button
-              }`}
-              whileHover={currentPage !== 1 ? { scale: 1.1 } : {}}
-              whileTap={currentPage !== 1 ? { scale: 0.9 } : {}}
-              aria-label="Previous page"
-            >
-              <span className="sr-only" data-translate="pagination.previous">Previous</span>
-              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path
-                  fillRule="evenodd"
-                  d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </motion.button>
+            {currentPage === 1 ? (
+              <span
+                className={`relative inline-flex items-center rounded-l-md px-2 py-2 ${styles.buttonDisabled}`}
+              >
+                <span className="sr-only" data-translate="pagination.previous">Previous</span>
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path
+                    fillRule="evenodd"
+                    d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+            ) : (
+              <MotionLink
+                href={createPageUrl(currentPage - 1)}
+                onClick={() => paginate(currentPage - 1)}
+                className={`relative inline-flex items-center rounded-l-md px-2 py-2 ${styles.button}`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                aria-label="Previous page"
+              >
+                <span className="sr-only" data-translate="pagination.previous">Previous</span>
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path
+                    fillRule="evenodd"
+                    d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </MotionLink>
+            )}
 
             {pageNumbers.map((pageNumber, index) => {
               if (pageNumber === "ellipsis-start" || pageNumber === "ellipsis-end") {
@@ -300,8 +359,9 @@ export default function Pagination({
               }
 
               return (
-                <motion.button
+                <MotionLink
                   key={index}
+                  href={createPageUrl(pageNumber as number)}
                   onClick={() => paginate(pageNumber as number)}
                   className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
                     currentPage === pageNumber
@@ -313,29 +373,42 @@ export default function Pagination({
                   aria-current={currentPage === pageNumber ? "page" : undefined}
                 >
                   {pageNumber}
-                </motion.button>
+                </MotionLink>
               )
             })}
 
-            <motion.button
-              onClick={() => currentPage < totalPages && paginate(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className={`relative inline-flex items-center rounded-r-md px-2 py-2 ${
-                currentPage === totalPages ? styles.buttonDisabled : styles.button
-              }`}
-              whileHover={currentPage !== totalPages ? { scale: 1.1 } : {}}
-              whileTap={currentPage !== totalPages ? { scale: 0.9 } : {}}
-              aria-label="Next page"
-            >
-              <span className="sr-only" data-translate="pagination.next">Next</span>
-              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path
-                  fillRule="evenodd"
-                  d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </motion.button>
+            {currentPage === totalPages ? (
+              <span
+                className={`relative inline-flex items-center rounded-r-md px-2 py-2 ${styles.buttonDisabled}`}
+              >
+                <span className="sr-only" data-translate="pagination.next">Next</span>
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path
+                    fillRule="evenodd"
+                    d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+            ) : (
+              <MotionLink
+                href={createPageUrl(currentPage + 1)}
+                onClick={() => paginate(currentPage + 1)}
+                className={`relative inline-flex items-center rounded-r-md px-2 py-2 ${styles.button}`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                aria-label="Next page"
+              >
+                <span className="sr-only" data-translate="pagination.next">Next</span>
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path
+                    fillRule="evenodd"
+                    d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </MotionLink>
+            )}
           </nav>
         </div>
       </div>

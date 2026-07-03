@@ -3,6 +3,10 @@ import { baseApi } from "../../api/baseApi";
 const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Public
+    getFilterOptions: builder.query({
+      query: () => ({ url: "products/filter-options" }),
+      providesTags: ["products"],
+    }),
     getAllProducts: builder.query({
       query: (filters = {}) => ({
         url: "products",
@@ -63,6 +67,7 @@ const productApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetFilterOptionsQuery,
   useGetAllProductsQuery,
   useGetFeaturedProductsQuery,
   useGetBestSellersQuery,

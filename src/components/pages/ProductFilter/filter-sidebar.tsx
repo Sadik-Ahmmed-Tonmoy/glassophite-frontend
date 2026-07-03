@@ -22,6 +22,8 @@ interface FilterSidebarProps {
   }[];
   optionCounts: FilterOptionCounts;
   allBrands: string[];
+  allSubCategories: string[];
+  allTypes: string[];
   allFrameTypes: string[];
   allLensTypes: string[];
   allColors: { color: string; title: string }[];
@@ -35,6 +37,8 @@ export default function FilterSidebar({
   collectionOptions,
   optionCounts,
   allBrands,
+  allSubCategories,
+  allTypes,
   allFrameTypes,
   allLensTypes,
   allColors,
@@ -185,6 +189,8 @@ export default function FilterSidebar({
         type="multiple"
         defaultValue={[
           "collection",
+          "subCategory",
+          "type",
           "price",
           "brand",
           "frame",
@@ -224,6 +230,58 @@ export default function FilterSidebar({
             </div>
           </AccordionContent>
         </AccordionItem>
+
+        {/* ========== Sub-Category ========== */}
+        {allSubCategories.length > 0 && (
+          <AccordionItem value="subCategory" className={styles.border}>
+            <AccordionTrigger
+              className={`text-sm font-medium ${styles.accordionTrigger}`}
+            >
+              Sub-Category
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="pt-2 pb-4 space-y-4">
+                {allSubCategories.map((subCat, index) =>
+                  renderFilterRow({
+                    id: `subCategory-${subCat}`,
+                    checked: filters.subCategories.includes(subCat),
+                    onChange: () => handleFilterChange("subCategories", subCat),
+                    label: subCat,
+                    count: optionCounts.subCategories[subCat] || 0,
+                    key: subCat,
+                    index,
+                  })
+                )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
+        {/* ========== Type ========== */}
+        {allTypes.length > 0 && (
+          <AccordionItem value="type" className={styles.border}>
+            <AccordionTrigger
+              className={`text-sm font-medium ${styles.accordionTrigger}`}
+            >
+              Type
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="pt-2 pb-4 space-y-4">
+                {allTypes.map((type, index) =>
+                  renderFilterRow({
+                    id: `type-${type}`,
+                    checked: filters.types.includes(type),
+                    onChange: () => handleFilterChange("types", type),
+                    label: type,
+                    count: optionCounts.types[type] || 0,
+                    key: type,
+                    index,
+                  })
+                )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        )}
 
         {/* ========== Price Range ========== */}
         <AccordionItem value="price" className={styles.border}>

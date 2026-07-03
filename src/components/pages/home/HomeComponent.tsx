@@ -12,6 +12,7 @@ import SEOContentSection from "./SEOContentSection";
 import Testimonials from "./TestimonialsSection";
 import WhyChooseGlassophiteSection from "./WhyChooseGlassophiteSection";
 import HeroParallaxDemo from "./hero-parallax-demo";
+import VirtualTryOn from "./VirtualTryOn";
 
 const HomeComponent = () => {
   return (
@@ -22,9 +23,9 @@ const HomeComponent = () => {
       <BestSellerCarouselSection />
       <WhyChooseGlassophiteSection />
       <FeaturedCollectionSection />
-      {/* <HeroParallaxDemo /> */}
+      <HeroParallaxDemo />
       <Testimonials />
-      {/* <VirtualTryOn /> */}
+      <VirtualTryOn />
       {/* <StyleInspirationSection /> */}
       {/* <LimitedEditionHighlightSection /> */}
       {/* <SocialProofSection /> */}

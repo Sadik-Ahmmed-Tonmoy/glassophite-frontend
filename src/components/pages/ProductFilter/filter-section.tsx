@@ -17,6 +17,8 @@ interface FilterSectionProps {
   }[]
   optionCounts: FilterOptionCounts
   allBrands: string[]
+  allSubCategories: string[]
+  allTypes: string[]
   allFrameTypes: string[]
   allLensTypes: string[]
   allColors: { color: string; title: string }[]
@@ -33,6 +35,8 @@ export default function FilterSection({
   collectionOptions,
   optionCounts,
   allBrands,
+  allSubCategories,
+  allTypes,
   allFrameTypes,
   allLensTypes,
   allColors,
@@ -93,7 +97,7 @@ export default function FilterSection({
             <h3 className={`text-lg font-semibold ${styles.text}`} data-translate="filter.filters">
               Filters
             </h3>
-            {hasActiveFilters && (
+            {/* {hasActiveFilters && (
               <span className="px-2 py-0.5 text-xs bg-[#007C74] text-white rounded-full">
                 {Object.values(filters).reduce((acc, val) => {
                   if (Array.isArray(val)) return acc + val.length
@@ -102,7 +106,7 @@ export default function FilterSection({
                   return acc
                 }, 0)}
               </span>
-            )}
+            )} */}
           </div>
 
           {hasActiveFilters && (
@@ -152,6 +156,8 @@ export default function FilterSection({
             collectionOptions={collectionOptions}
             optionCounts={optionCounts}
             allBrands={allBrands}
+          allSubCategories={allSubCategories}
+          allTypes={allTypes}
           allFrameTypes={allFrameTypes}
           allLensTypes={allLensTypes}
           allColors={allColors}

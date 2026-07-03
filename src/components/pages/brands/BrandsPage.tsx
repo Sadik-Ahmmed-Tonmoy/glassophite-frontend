@@ -12,7 +12,7 @@ export default function BrandsPage() {
   const { data: brandsData, isLoading } = useGetAllBrandsQuery({});
   const [searchTerm, setSearchTerm] = useState("");
 
-  const brands = brandsData || [];
+  const brands = useMemo(() => brandsData?.data || [], [brandsData]);
 
   const activeBrands = useMemo(() => {
     return brands

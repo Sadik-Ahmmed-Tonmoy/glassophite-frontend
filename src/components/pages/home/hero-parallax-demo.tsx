@@ -22,12 +22,10 @@ const workingImages = [
 ];
 
 export default function HeroParallaxDemo() {
-  const { data: featuredProducts } = useGetFeaturedProductsQuery(undefined, {
-    selectFromResult: ({ data }) => ({ data: data ?? [] }),
-  });
+  const { data: response } = useGetFeaturedProductsQuery(undefined);
 
   // Ensure we have exactly 15 items by padding if data is smaller
-  const products = featuredProducts || [];
+  const products = response?.data || [];
   const parallaxProducts = [...products, ...products, ...products]
     .slice(0, 15)
     .map((product, index) => {

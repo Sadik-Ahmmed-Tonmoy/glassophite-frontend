@@ -2,14 +2,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState } from "react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 import { motion } from "framer-motion";
 import { Loader2, UserCheck, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { useGetAllUsersQuery, useUpdateUserStatusMutation } from "@/redux/features/user/userApi";
 
 export default function CustomersView() {
-  const { data, isLoading } = useGetAllUsersQuery({ limit: 100, role: "USER" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 20;
+  const { data, isLoading, isFetching } = useGetAllUsersQuery({ page: currentPage, limit, role: "USER" });
   const customers = (data?.data || []) as any[];
+  const totalItems = data?.meta?.total || 0;
+  const totalPages = Math.ceil(totalItems / limit);
   const [updateUserStatus] = useUpdateUserStatusMutation();
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
@@ -43,7 +55,7 @@ export default function CustomersView() {
         <div className="glass-panel rounded-2xl border border-border px-5 py-3 text-right">
           <p className="text-[10px] uppercase font-extrabold text-muted-foreground">Total</p>
           <p className="text-2xl font-extrabold text-foreground">
-            {isLoading ? "—" : data?.meta?.total ?? customers.length}
+             {isLoading || isFetching ? "—" : data?.meta?.total ?? customers.length}
           </p>
         </div>
       </div>
@@ -62,7 +74,7 @@ export default function CustomersView() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {isLoading ? (
+            {isLoading || isFetching ? (
               <tr>
                 <td colSpan={6} className="p-8 text-center text-muted-foreground">
                   <Loader2 className="w-5 h-5 animate-spin mx-auto" />
@@ -119,6 +131,52 @@ export default function CustomersView() {
             )}
           </tbody>
         </table>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+            <p className="text-xs text-muted-foreground">
+              Page {currentPage} of {totalPages} ({totalItems} total)
+            </p>
+            <Pagination className="mx-0 w-auto">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.max(1, p - 1)); }}
+                    className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
+                  .map((p, idx, arr) => (
+                    <React.Fragment key={p}>
+                      {idx > 0 && arr[idx - 1] !== p - 1 && (
+                        <PaginationItem>
+                          <span className="flex h-9 w-9 items-center justify-center text-xs text-muted-foreground">...</span>
+                        </PaginationItem>
+                      )}
+                      <PaginationItem>
+                        <PaginationLink
+                          href="#"
+                          isActive={currentPage === p}
+                          onClick={(e) => { e.preventDefault(); setCurrentPage(p); }}
+                          className="cursor-pointer"
+                        >
+                          {p}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </React.Fragment>
+                  ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.min(totalPages, p + 1)); }}
+                    className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
     </motion.div>
   );

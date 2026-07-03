@@ -245,7 +245,7 @@ export const mockProducts: TProduct[] = [
     averageRating: 4.5,
     totalReviews: 100,
     isFeatured: true,
-    category: "all",
+    categories: ["all"],
     variants: [
       {
         id: "11",
@@ -337,7 +337,7 @@ export const mockProducts: TProduct[] = [
     averageRating: 4.2,
     totalReviews: 120,
     isFeatured: false,
-     category: "aviator",
+     categories: ["aviator"],
     variants: [
       {
         id: "21",
@@ -389,7 +389,7 @@ export const mockProducts: TProduct[] = [
     averageRating: 4.8,
     totalReviews: 80,
     isFeatured: true,
-     category: "wayfarer",
+     categories: ["wayfarer"],
     variants: [
       {
         id: "31",
@@ -458,7 +458,7 @@ export const mockProducts: TProduct[] = [
     averageRating: 4.5,
     totalReviews: 90,
     isFeatured: false,
-     category: "luxury",
+     categories: ["luxury"],
     variants: [
       {
         id: "41",
@@ -506,7 +506,7 @@ export const mockProducts: TProduct[] = [
     averageRating: 4.7,
     totalReviews: 110,
     isFeatured: true,
-     category: "all",
+     categories: ["all"],
     variants: [
       {
         id: "51",
@@ -554,7 +554,7 @@ export const mockProducts: TProduct[] = [
     averageRating: 4.6,
     totalReviews: 95,
     isFeatured: false,
-     category: "all",
+     categories: ["all"],
     variants: [
       {
         id: "61",
@@ -602,7 +602,7 @@ export const mockProducts: TProduct[] = [
     averageRating: 4.4,
     totalReviews: 85,
     isFeatured: false,
-     category: "all",
+     categories: ["all"],
     variants: [
       {
         id: "71",
@@ -650,7 +650,7 @@ export const mockProducts: TProduct[] = [
     averageRating: 4.3,
     totalReviews: 70,
     isFeatured: false,
-     category: "all",
+     categories: ["all"],
     variants: [
       {
         id: "81",
@@ -698,7 +698,7 @@ export const mockProducts: TProduct[] = [
     averageRating: 4.9,
     totalReviews: 60,
     isFeatured: true,
-     category: "all",
+     categories: ["all"],
     variants: [
       {
         id: "91",

@@ -4,7 +4,7 @@ const couponApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Admin
     getAllCoupons: builder.query({
-      query: () => ({ url: "coupons" }),
+      query: (params = {}) => ({ url: "coupons", params }),
       providesTags: ["coupons"],
     }),
     createCoupon: builder.mutation({

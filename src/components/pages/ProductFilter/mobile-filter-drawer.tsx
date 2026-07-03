@@ -16,6 +16,8 @@ interface MobileFilterDrawerProps {
   }[]
   optionCounts: FilterOptionCounts
   allBrands: string[]
+  allSubCategories: string[]
+  allTypes: string[]
   allFrameTypes: string[]
   allLensTypes: string[]
   allColors: { color: string; title: string }[]
@@ -30,6 +32,8 @@ export default function MobileFilterDrawer({
   collectionOptions,
   optionCounts,
   allBrands,
+  allSubCategories,
+  allTypes,
   allFrameTypes,
   allLensTypes,
   allColors,
@@ -43,6 +47,8 @@ export default function MobileFilterDrawer({
     return (
       filters.brands.length > 0 ||
       filters.categories.length > 0 ||
+      filters.subCategories.length > 0 ||
+      filters.types.length > 0 ||
       filters.saleOnly ||
       filters.frameTypes.length > 0 ||
       filters.lensTypes.length > 0 ||
@@ -147,6 +153,54 @@ export default function MobileFilterDrawer({
                 ))}
               </div>
             </div>
+
+            {allSubCategories.length > 0 && (
+              <div className="px-4 py-6 border-t border-gray-200">
+                <h3 className="text-sm font-medium text-gray-900">Sub-Category</h3>
+                <div className="mt-4 space-y-4">
+                  {allSubCategories.map((subCat) => (
+                    <div key={subCat} className="flex items-center">
+                      <input
+                        id={`mobile-subCategory-${subCat}`}
+                        name={`mobile-subCategory-${subCat}`}
+                        type="checkbox"
+                        checked={filters.subCategories.includes(subCat)}
+                        onChange={() => handleFilterChange("subCategories", subCat)}
+                        className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74]"
+                      />
+                      <label htmlFor={`mobile-subCategory-${subCat}`} className="ml-3 flex flex-1 items-center justify-between gap-3 text-sm text-gray-600">
+                        <span>{subCat}</span>
+                        <span className="text-xs text-gray-400">({optionCounts.subCategories[subCat] || 0})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {allTypes.length > 0 && (
+              <div className="px-4 py-6 border-t border-gray-200">
+                <h3 className="text-sm font-medium text-gray-900">Type</h3>
+                <div className="mt-4 space-y-4">
+                  {allTypes.map((type) => (
+                    <div key={type} className="flex items-center">
+                      <input
+                        id={`mobile-type-${type}`}
+                        name={`mobile-type-${type}`}
+                        type="checkbox"
+                        checked={filters.types.includes(type)}
+                        onChange={() => handleFilterChange("types", type)}
+                        className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74]"
+                      />
+                      <label htmlFor={`mobile-type-${type}`} className="ml-3 flex flex-1 items-center justify-between gap-3 text-sm text-gray-600">
+                        <span>{type}</span>
+                        <span className="text-xs text-gray-400">({optionCounts.types[type] || 0})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="px-4 py-6 border-t border-gray-200">
               <h3 className="text-sm font-medium text-gray-900">Price Range</h3>
@@ -310,6 +364,8 @@ export default function MobileFilterDrawer({
                 onClick={() => {
                   handleFilterChange("priceRange", [minPrice, maxPrice])
                   handleFilterChange("categories", [])
+                  handleFilterChange("subCategories", [])
+                  handleFilterChange("types", [])
                   handleFilterChange("saleOnly", false)
                   handleFilterChange("brands", [])
                   handleFilterChange("frameTypes", [])

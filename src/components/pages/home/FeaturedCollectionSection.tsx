@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { motion, useInView } from "framer-motion";
@@ -188,12 +189,10 @@ export default function FeaturedCollectionSection() {
   const {
     data: featuredProductsData,
     isLoading: queryLoading, // ✅ renamed to avoid conflict
-    isFetching,
-    error,
   } = useGetFeaturedProductsQuery(undefined);
 
   // ✅ Always ensure array
-  const featuredProducts = Array.isArray(featuredProductsData) ? featuredProductsData : [];
+  const featuredProducts = (featuredProductsData as any)?.data || [];
 
   // Category filter handler with error handling
   const handleCategoryChange = useCallback((categoryId: string) => {

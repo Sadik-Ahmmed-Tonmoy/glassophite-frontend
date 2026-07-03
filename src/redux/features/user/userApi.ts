@@ -34,6 +34,7 @@ const userApi = baseApi.injectEndpoints({
       query: (body) => ({ url: "auth/change-password", method: "PUT", body }),
     }),
   }),
+  overrideExisting: true,
 });
 
 export const {

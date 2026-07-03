@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle, ExternalLink, Globe, ImageIcon, Pencil, Plus, Search, Star, Tag, Trash2 } from "lucide-react";
+import { CheckCircle, ExternalLink, Globe, ImageIcon, Pencil, Plus, Search, Star, Tag, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { slugify } from "@/lib/utils";
@@ -14,6 +13,14 @@ import {
   useUpdateBrandMutation,
   useDeleteBrandMutation,
 } from "@/redux/features/brand/brandApi";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 const brandSchema = z.object({
   name: z.string().min(2, "Brand name is required."),
@@ -31,8 +38,12 @@ const brandSchema = z.object({
 });
 
 export default function BrandsView() {
-  const { data, isLoading } = useGetAllBrandsQuery({});
+  const [currentPage, setCurrentPage] = useState(1)
+  const limit = 20
+  const { data, isLoading, isFetching } = useGetAllBrandsQuery({ page: currentPage, limit });
   const brands = useMemo(() => (data?.data || []), [data]);
+  const totalItems = data?.meta?.total || 0
+  const totalPages = Math.ceil(totalItems / limit)
   const [createBrand] = useCreateBrandMutation();
   const [updateBrand] = useUpdateBrandMutation();
   const [deleteBrand] = useDeleteBrandMutation();
@@ -228,7 +239,16 @@ export default function BrandsView() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {filteredBrands.length === 0 ? (
+            {isLoading || isFetching ? (
+              <tr>
+                <td colSpan={6} className="p-8 text-center text-muted-foreground bg-card/25">
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-[#007C74]" />
+                    <span>Loading brands...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredBrands.length === 0 ? (
               <tr>
                 <td colSpan={6} className="p-8 text-center text-muted-foreground bg-card/25">
                   No brands found.
@@ -296,6 +316,52 @@ export default function BrandsView() {
             )}
           </tbody>
         </table>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+            <p className="text-xs text-muted-foreground">
+              Page {currentPage} of {totalPages} ({totalItems} total)
+            </p>
+            <Pagination className="mx-0 w-auto">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.max(1, p - 1)); }}
+                    className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
+                  .map((p, idx, arr) => (
+                    <React.Fragment key={p}>
+                      {idx > 0 && arr[idx - 1] !== p - 1 && (
+                        <PaginationItem>
+                          <span className="flex h-9 w-9 items-center justify-center text-xs text-muted-foreground">...</span>
+                        </PaginationItem>
+                      )}
+                      <PaginationItem>
+                        <PaginationLink
+                          href="#"
+                          isActive={currentPage === p}
+                          onClick={(e) => { e.preventDefault(); setCurrentPage(p); }}
+                          className="cursor-pointer"
+                        >
+                          {p}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </React.Fragment>
+                  ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.min(totalPages, p + 1)); }}
+                    className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>

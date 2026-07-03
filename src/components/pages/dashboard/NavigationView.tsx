@@ -41,6 +41,19 @@ type TNavbarMenu = {
   subMenu: SubMenu[];
   order: number;
 };
+const getCategorySlugOrHref = (menuName: string): string => {
+  const m = menuName.toLowerCase().trim();
+  // Map to the DB-stored category value (must match what products have in their categories array)
+  if (m === "optical glasses" || m === "optical") return "/product-filter?category=optical glasses";
+  if (m === "contact lens" || m === "contact-lens" || m === "contact lenses") return "/product-filter?category=contact-lens";
+  if (m === "accessories") return "/product-filter?category=accessories";
+  if (m === "sunglasses") return "/product-filter?category=sunglasses";
+  if (m === "clearance sale" || m === "sale") return "/product-filter?sale=true";
+  if (m === "new arrivals") return "/product-filter?category=New Arrivals";
+  if (m === "blogs") return "/blogs";
+  if (m === "brands") return "/brands";
+  return `/product-filter?category=${encodeURIComponent(menuName)}`;
+};
 
 export default function NavigationView() {
   const { data, isLoading, isFetching } = useGetAllNavbarMenusQuery(undefined);
@@ -423,7 +436,7 @@ export default function NavigationView() {
                         setMenu(e.target.value);
                         if (!editingMenu && hrefAutoGenRef.current) {
                           const val = e.target.value.trim();
-                          setHref(val ? `/product-filter?category=${val}` : "");
+                          setHref(val ? getCategorySlugOrHref(val) : "");
                         }
                       }}
                       className="dashboard-input text-xs font-bold"

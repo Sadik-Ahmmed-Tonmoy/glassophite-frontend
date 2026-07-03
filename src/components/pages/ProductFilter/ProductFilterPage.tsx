@@ -15,6 +15,7 @@ import { useGetAllNavbarMenusQuery } from "@/redux/features/navbar/navbarApi"
 import Breadcrumb from "./breadcrumb"
 import FilterSection from "./filter-section"
 import ProductSection from "./product-section"
+import { normalizeCategoryForDB, normalizeCategoryForUI } from "@/lib/utils"
 
 const getInitialBrandsFromParams = (searchParams: Pick<URLSearchParams, "get">) => {
   const brands = searchParams.get("brands")?.split(",").filter(Boolean) || []
@@ -23,7 +24,8 @@ const getInitialBrandsFromParams = (searchParams: Pick<URLSearchParams, "get">) 
 }
 
 const getInitialCategoriesFromParams = (searchParams: Pick<URLSearchParams, "get">) => {
-  return searchParams.get("category")?.split(",").filter(Boolean) || []
+  const raw = searchParams.get("category")?.split(",").filter(Boolean) || []
+  return raw.map(normalizeCategoryForDB)
 }
 
 export default function ProductFilterPage() {
@@ -56,11 +58,23 @@ export default function ProductFilterPage() {
   const [currentPage, setCurrentPage] = useState(Number.parseInt(searchParams.get("page") || "1"))
   const [productsPerPage, setProductsPerPage] = useState(Number.parseInt(searchParams.get("limit") || "12"))
 
+  // Special boolean categories check
+  const isNewArrivalSelected = filters.categories.some((c) => c.toLowerCase() === "new arrivals")
+  const isBestSellerSelected = filters.categories.some((c) => c.toLowerCase() === "best sellers" || c.toLowerCase() === "best seller")
+  const isFeaturedSelected = filters.categories.some((c) => c.toLowerCase() === "featured" || c.toLowerCase() === "featured picks")
+  const isTrendingSelected = filters.categories.some((c) => c.toLowerCase() === "trending" || c.toLowerCase() === "trending now")
+
+  const specialCategories = ["new arrivals", "best sellers", "best seller", "featured", "featured picks", "trending", "trending now"]
+  const categoriesQueryParam = filters.categories
+    .filter((c) => !specialCategories.includes(c.toLowerCase()))
+    .map(normalizeCategoryForDB)
+    .join(",") || undefined
+
   const { data: productsData, isLoading, isFetching } = useGetAllProductsQuery({
     page: currentPage,
     limit: productsPerPage,
     sortBy: sortOption === "price-low" ? "price_asc" : sortOption === "price-high" ? "price_desc" : sortOption === "newest" ? "newest" : sortOption === "rating" ? "rating" : undefined,
-    categories: filters.categories.length > 0 ? filters.categories.join(",") : undefined,
+    categories: categoriesQueryParam,
     subCategories: filters.subCategories.length > 0 ? filters.subCategories.join(",") : undefined,
     types: filters.types.length > 0 ? filters.types.join(",") : undefined,
     brand: filters.brands.length === 1 ? filters.brands[0] : undefined,
@@ -69,6 +83,10 @@ export default function ProductFilterPage() {
     inStock: filters.inStock ?? undefined,
     priceMin: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
     priceMax: filters.priceRange[1] < 5000 ? filters.priceRange[1] : undefined,
+    isNewArrival: isNewArrivalSelected ? true : undefined,
+    isBestSeller: isBestSellerSelected ? true : undefined,
+    isFeatured: isFeaturedSelected ? true : undefined,
+    isTrending: isTrendingSelected ? true : undefined,
   })
 
   const { data: filterOptionsData } = useGetFilterOptionsQuery(undefined)
@@ -145,24 +163,42 @@ export default function ProductFilterPage() {
 
   const optionCounts: FilterOptionCounts = useMemo(() => {
     const collections: Record<string, number> = {}
+
+    // Explicitly calculate highlight options counts
+    collections["New Arrivals"] = products.filter((p: any) => p.isNewArrival).length
+    collections["Best Sellers"] = products.filter((p: any) => p.isBestSeller).length
+    collections["Trending Now"] = products.filter((p: any) => p.isTrending).length
+    collections["Featured Picks"] = products.filter((p: any) => p.isFeatured).length
+
     navbarCategoryOptions.forEach((option) => {
       if (option.type === "sale") {
         collections[option.value] = products.filter((p: any) =>
           p.variants?.some((v: any) => v.discountPercent > 0 || (v.priceAfterDiscount && v.mainPrice && v.priceAfterDiscount < v.mainPrice))
         ).length
+      } else if (option.value.toLowerCase() === "new arrivals") {
+        collections[option.value] = products.filter((p: any) => p.isNewArrival).length
+      } else if (option.value.toLowerCase() === "best sellers" || option.value.toLowerCase() === "best seller") {
+        collections[option.value] = products.filter((p: any) => p.isBestSeller).length
+      } else if (option.value.toLowerCase() === "featured" || option.value.toLowerCase() === "featured picks") {
+        collections[option.value] = products.filter((p: any) => p.isFeatured).length
+      } else if (option.value.toLowerCase() === "trending" || option.value.toLowerCase() === "trending now") {
+        collections[option.value] = products.filter((p: any) => p.isTrending).length
       } else {
-        collections[option.value] = products.filter((p: any) => p.categories?.includes(option.value)).length
+        const dbValue = normalizeCategoryForDB(option.value)
+        collections[option.value] = products.filter((p: any) => 
+          p.categories?.map((c: string) => c.toLowerCase()).includes(dbValue.toLowerCase())
+        ).length
       }
     })
 
     return {
       collections,
-      subCategories: Object.fromEntries(allSubCategories.map((s: string) => [s, products.filter((p: any) => p.subCategories?.includes(s)).length])),
-      types: Object.fromEntries(allTypes.map((t: string) => [t, products.filter((p: any) => p.types?.includes(t)).length])),
-      brands: Object.fromEntries(allBrands.map((b: string) => [b, products.filter((p: any) => p.brand === b).length])),
-      frameTypes: Object.fromEntries(allFrameTypes.map((f: string) => [f, products.filter((p: any) => p.frameType === f).length])),
-      lensTypes: Object.fromEntries(allLensTypes.map((l: string) => [l, products.filter((p: any) => p.lensType?.includes(l)).length])),
-      colors: Object.fromEntries(allColors.map((c: any) => [c.color, products.filter((p: any) => p.variants?.some((v: any) => v.color === c.color)).length])),
+      subCategories: Object.fromEntries(allSubCategories.map((s: string) => [s, products.filter((p: any) => p.subCategories?.map((sc: string) => sc.toLowerCase()).includes(s.toLowerCase())).length])),
+      types: Object.fromEntries(allTypes.map((t: string) => [t, products.filter((p: any) => p.types?.map((ty: string) => ty.toLowerCase()).includes(t.toLowerCase())).length])),
+      brands: Object.fromEntries(allBrands.map((b: string) => [b, products.filter((p: any) => p.brand?.toLowerCase() === b.toLowerCase()).length])),
+      frameTypes: Object.fromEntries(allFrameTypes.map((f: string) => [f, products.filter((p: any) => p.frameType?.toLowerCase() === f.toLowerCase()).length])),
+      lensTypes: Object.fromEntries(allLensTypes.map((l: string) => [l, products.filter((p: any) => p.lensType?.toLowerCase().includes(l.toLowerCase())).length])),
+      colors: Object.fromEntries(allColors.map((c: any) => [c.color, products.filter((p: any) => p.variants?.some((v: any) => v.color?.toLowerCase() === c.color?.toLowerCase())).length])),
       ratings: Object.fromEntries([5, 4, 3, 2, 1].map((r) => [r, products.filter((p: any) => Math.floor(p.averageRating || 0) === r).length])),
       inStock: products.filter((p: any) => p.variants?.some((v: any) => v.inStock)).length,
     }
@@ -171,7 +207,8 @@ export default function ProductFilterPage() {
   useEffect(() => {
     const minP = Number.parseInt(searchParams.get("minPrice") || "0")
     const maxP = Number.parseInt(searchParams.get("maxPrice") || "5000")
-    const categories = getInitialCategoriesFromParams(searchParams)
+    const rawCategories = getInitialCategoriesFromParams(searchParams)
+    const categories = rawCategories.map((c) => normalizeCategoryForDB(c))
     const subCategories = searchParams.get("subCategory")?.split(",").filter(Boolean) || []
     const types = searchParams.get("type")?.split(",").filter(Boolean) || []
     const saleOnly = searchParams.get("sale") === "true"
@@ -251,8 +288,14 @@ export default function ProductFilterPage() {
       else if (filterType === "saleOnly") newFilters.saleOnly = value
       else if (Array.isArray(newFilters[filterType])) {
         const arr = newFilters[filterType] as any[]
-        if (Array.isArray(value)) { newFilters[filterType] = value as any }
-        else { newFilters[filterType] = (arr.includes(value) ? arr.filter((i) => i !== value) : [...arr, value]) as any }
+        if (Array.isArray(value)) {
+          newFilters[filterType] = value.map((val) => 
+            filterType === "categories" ? normalizeCategoryForDB(val) : val
+          ) as any
+        } else {
+          const mappedValue = filterType === "categories" ? normalizeCategoryForDB(value) : value
+          newFilters[filterType] = (arr.includes(mappedValue) ? arr.filter((i) => i !== mappedValue) : [...arr, mappedValue]) as any
+        }
       }
       return newFilters
     })
@@ -276,7 +319,10 @@ export default function ProductFilterPage() {
       if (filterType === "priceRange") n.priceRange = [0, 5000]
       else if (filterType === "inStock") n.inStock = null
       else if (filterType === "saleOnly") n.saleOnly = false
-      else if (Array.isArray(n[filterType])) n[filterType] = (n[filterType] as any[]).filter((i) => i !== value) as any
+      else if (Array.isArray(n[filterType])) {
+        const mappedValue = filterType === "categories" ? normalizeCategoryForDB(value) : value
+        n[filterType] = (n[filterType] as any[]).filter((i) => i !== mappedValue) as any
+      }
       return n
     })
   }
@@ -304,8 +350,8 @@ export default function ProductFilterPage() {
   const getMetaTitle = () => {
     let title = "Eyewear Collection"
     if (filters.categories.length === 1) {
-      const option = navbarCategoryOptions.find((item) => item.value === filters.categories[0])
-      title = `${option?.label || filters.categories[0]} Eyewear`
+      const label = normalizeCategoryForUI(filters.categories[0])
+      title = `${label} Eyewear`
     }
     if (filters.saleOnly) title = `Sale ${title}`
     if (filters.brands.length === 1) title = `${filters.brands[0]} Eyewear`
@@ -318,7 +364,7 @@ export default function ProductFilterPage() {
   const getMetaDescription = () => {
     let description = "Browse our premium collection of eyewear including sunglasses and prescription glasses."
     const parts: string[] = []
-    if (filters.categories.length > 0) parts.push(`collections like ${filters.categories.map((c) => navbarCategoryOptions.find((o) => o.value === c)?.label || c).join(", ")}`)
+    if (filters.categories.length > 0) parts.push(`collections like ${filters.categories.map((c) => normalizeCategoryForUI(c)).join(", ")}`)
     if (filters.saleOnly) parts.push("sale items")
     if (filters.brands.length > 0) parts.push(`brands like ${filters.brands.join(", ")}`)
     if (filters.frameTypes.length > 0) parts.push(`${filters.frameTypes.join(", ")} frames`)
@@ -398,7 +444,7 @@ export default function ProductFilterPage() {
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }} className="flex lg:hidden flex-wrap items-center gap-2 py-4">
               <span className={`text-sm ${s.textMutedLighter}`} data-translate="filter.active">Active filters:</span>
               {filters.brands.map((b) => <ActiveFilterBtn key={b} onClick={() => removeFilter("brands", b)} s={s}>{b}</ActiveFilterBtn>)}
-              {filters.categories.map((c) => <ActiveFilterBtn key={c} onClick={() => removeFilter("categories", c)} s={s}>{navbarCategoryOptions.find((o) => o.value === c)?.label || c}</ActiveFilterBtn>)}
+              {filters.categories.map((c) => <ActiveFilterBtn key={c} onClick={() => removeFilter("categories", c)} s={s}>{normalizeCategoryForUI(c)}</ActiveFilterBtn>)}
               {filters.subCategories.map((sc) => <ActiveFilterBtn key={sc} onClick={() => removeFilter("subCategories", sc)} s={s}>{sc}</ActiveFilterBtn>)}
               {filters.types.map((t) => <ActiveFilterBtn key={t} onClick={() => removeFilter("types", t)} s={s}>{t}</ActiveFilterBtn>)}
               {filters.saleOnly && <ActiveFilterBtn onClick={() => removeFilter("saleOnly", null)} s={s}>Sale</ActiveFilterBtn>}

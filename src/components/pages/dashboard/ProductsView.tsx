@@ -38,6 +38,7 @@ import {
   useAddVariantMutation,
   useUpdateVariantMutation,
   useDeleteVariantMutation,
+  useLazyGenerateSKUQuery,
 } from "@/redux/features/product/productApi";
 import { useGetAllNavbarMenusQuery } from "@/redux/features/navbar/navbarApi";
 import { Select } from "antd";
@@ -57,6 +58,17 @@ export default function ProductsView() {
   const [addVariant] = useAddVariantMutation();
   const [updateVariant] = useUpdateVariantMutation();
   const [deleteVariant] = useDeleteVariantMutation();
+  const [triggerGenerateSKU, { isFetching: isGeneratingSKU }] = useLazyGenerateSKUQuery();
+
+  // Fetch a DB-verified unique SKU from the backend
+  const fetchSKUFromBackend = async (categoryHint?: string): Promise<string> => {
+    try {
+      const result = await triggerGenerateSKU(categoryHint || categories[0] || "").unwrap();
+      return (result as any)?.data?.sku || (result as any)?.sku || "";
+    } catch {
+      return "";
+    }
+  };
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpenModal, setIsOpenModal] = useState(false);
@@ -208,7 +220,8 @@ export default function ProductsView() {
     mainPrice: z.number().positive("Price must be positive."),
     discountPercent: z.number().min(0).max(100, "Discount range is 0-100%."),
     quantity: z.number().int().nonnegative("Quantity cannot be negative."),
-    productCode: z.string().min(3, "Product code (SKU) is required."),
+    // productCode is optional — backend auto-generates a DB-unique SKU if blank
+    productCode: z.string().optional(),
   });
 
   const toggleExpand = (prodId: string) => {
@@ -287,7 +300,7 @@ export default function ProductsView() {
   };
 
   // Variant Form Handlers
-  const handleOpenAddVariant = () => {
+  const handleOpenAddVariant = async () => {
     setEditingVariantIndex(null);
     setEditingVariantId(null);
     setVarTitle("");
@@ -295,12 +308,15 @@ export default function ProductsView() {
     setVarMainPrice("");
     setVarDiscountPercent("0");
     setVarQuantity("");
-    setVarProductCode(`GP-${Math.floor(1000 + Math.random() * 9000)}`);
+    setVarProductCode(""); // will be filled by backend below
     setVarShortDescription("");
     setVarImgList([]);
     setUrlInput("");
     setFormErrors({});
     setShowVariantForm(true);
+    // Fetch a guaranteed-unique SKU from the backend
+    const sku = await fetchSKUFromBackend(categories[0]);
+    if (sku) setVarProductCode(sku);
   };
 
   const handleOpenEditVariant = (index: number) => {
@@ -608,8 +624,8 @@ export default function ProductsView() {
         </div>
       </div>
 
-      {/* Main Catalog Table */}
-      <div className="glass-panel rounded-2xl border border-border overflow-hidden overflow-x-auto">
+      {/* ── Desktop Table ── */}
+      <div className="hidden md:block glass-panel rounded-2xl border border-border overflow-hidden overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             <tr className="bg-muted/40 text-muted-foreground uppercase tracking-wider font-extrabold text-[10px] border-b border-border">
@@ -632,9 +648,7 @@ export default function ProductsView() {
             ) : filteredProducts.length === 0 ? (
               <tr>
                 <td colSpan={7} className="p-8 text-center text-muted-foreground bg-card/25">
-                  {searchTerm
-                    ? `No products found matching "${searchTerm}".`
-                    : "No products yet. Click \"Add Eyewear\" to get started."}
+                  {searchTerm ? `No products found matching "${searchTerm}".` : 'No products yet. Click "Add Eyewear" to get started.'}
                 </td>
               </tr>
             ) : (
@@ -642,51 +656,30 @@ export default function ProductsView() {
                 const totalStock = p.variants?.reduce((acc, v) => acc + v.quantity, 0) || 0;
                 const isExpanded = !!expandedProducts[p.id];
                 const activeColor = p.color || "#ccc";
-                const displayImg =
-                  p.variants?.[0]?.imgList?.[0]?.image ||
-                  p.img ||
-                  "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png";
-                const displayPrice =
-                  p.variants?.[0]?.priceAfterDiscount ?? p.priceAfterDiscount ?? p.mainPrice;
-
+                const displayImg = p.variants?.[0]?.imgList?.[0]?.image || p.img || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png";
+                const displayPrice = p.variants?.[0]?.priceAfterDiscount ?? p.priceAfterDiscount ?? p.mainPrice;
                 return (
                   <React.Fragment key={p.id}>
                     <tr className="hover:bg-muted/20 transition-colors">
                       <td className="p-4 text-center">
-                        <button
-                          onClick={() => toggleExpand(p.id)}
-                          className="p-1 rounded hover:bg-muted text-muted-foreground transition-colors cursor-pointer"
-                        >
+                        <button onClick={() => toggleExpand(p.id)} className="p-1 rounded hover:bg-muted text-muted-foreground transition-colors cursor-pointer">
                           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </button>
                       </td>
                       <td className="p-4 flex items-center gap-3">
                         <div className="relative w-10 h-10 rounded border border-border bg-muted overflow-hidden flex-shrink-0">
-                          <Image
-                            src={displayImg}
-                            alt={p.title}
-                            fill
-                            className="object-cover"
-                            unoptimized
-                          />
+                          <Image src={displayImg} alt={p.title} fill className="object-cover" unoptimized />
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
                             <p className="font-bold text-foreground">{p.title}</p>
-                            {p.isFeatured && (
-                              <span className="px-1.5 py-0.5 bg-yellow-400/10 text-yellow-500 rounded text-[9px] font-bold flex items-center gap-0.5">
-                                <Sparkles className="w-2.5 h-2.5" /> Featured
-                              </span>
-                            )}
+                            {p.isFeatured && (<span className="px-1.5 py-0.5 bg-yellow-400/10 text-yellow-500 rounded text-[9px] font-bold flex items-center gap-0.5"><Sparkles className="w-2.5 h-2.5" /> Featured</span>)}
                           </div>
                           <div className="flex gap-2 items-center text-[10px] text-muted-foreground font-medium">
                             <span className="font-mono">ID: {p.id.slice(-8)}</span>
                             <span>•</span>
                             <span className="flex items-center gap-1">
-                              <span
-                                className="w-2 h-2 rounded-full inline-block"
-                                style={{ backgroundColor: activeColor }}
-                              />
+                              <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: activeColor }} />
                               {p.variants?.length || 0} variant(s)
                             </span>
                           </div>
@@ -699,36 +692,14 @@ export default function ProductsView() {
                         </span>
                       </td>
                       <td className="p-4 font-semibold">
-                        {totalStock > 0 ? (
-                          <span className="text-green-600 dark:text-green-400 font-bold bg-green-500/10 px-2 py-0.5 rounded-md">
-                            {totalStock} units
-                          </span>
-                        ) : (
-                          <span className="text-red-500 font-bold bg-red-500/10 px-2 py-0.5 rounded-md">Out of Stock</span>
-                        )}
+                        {totalStock > 0 ? (<span className="text-green-600 dark:text-green-400 font-bold bg-green-500/10 px-2 py-0.5 rounded-md">{totalStock} units</span>) : (<span className="text-red-500 font-bold bg-red-500/10 px-2 py-0.5 rounded-md">Out of Stock</span>)}
                       </td>
-                      <td className="p-4 font-extrabold text-primary">
-                        ৳{displayPrice?.toLocaleString()}
-                      </td>
+                      <td className="p-4 font-extrabold text-primary">৳{displayPrice?.toLocaleString()}</td>
                       <td className="p-4 flex justify-center gap-1.5 mt-2">
-                        <button
-                          onClick={() => handleOpenEdit(p)}
-                          className="p-1.5 bg-muted hover:bg-muted/80 text-foreground rounded-lg border border-border transition-colors cursor-pointer"
-                          title="Edit product specs & variants"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => triggerDeleteProduct(p.id, p.title)}
-                          className="p-1.5 bg-muted hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded-lg border border-border transition-colors cursor-pointer"
-                          title="Delete catalog item"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <button onClick={() => handleOpenEdit(p)} className="p-1.5 bg-muted hover:bg-muted/80 text-foreground rounded-lg border border-border transition-colors cursor-pointer" title="Edit product"><Pencil className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => triggerDeleteProduct(p.id, p.title)} className="p-1.5 bg-muted hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded-lg border border-border transition-colors cursor-pointer" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
                       </td>
                     </tr>
-
-                    {/* Collapsible Nested Variants row */}
                     {isExpanded && (
                       <tr>
                         <td colSpan={7} className="bg-muted/10 p-4 border-l-2 border-primary">
@@ -742,39 +713,19 @@ export default function ProductsView() {
                             ) : (
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {p.variants?.map((v) => (
-                                  <div
-                                    key={v.id}
-                                    className="glass-panel p-3 rounded-xl border border-border flex items-center gap-3 bg-card"
-                                  >
+                                  <div key={v.id} className="glass-panel p-3 rounded-xl border border-border flex items-center gap-3 bg-card">
                                     <div className="relative w-12 h-12 rounded overflow-hidden border border-border bg-muted flex-shrink-0">
-                                      <Image
-                                        src={v.imgList?.[0]?.image || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png"}
-                                        alt={v.title}
-                                        fill
-                                        className="object-cover"
-                                        unoptimized
-                                      />
+                                      <Image src={v.imgList?.[0]?.image || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png"} alt={v.title} fill className="object-cover" unoptimized />
                                     </div>
                                     <div className="flex-1 min-w-0 text-xs">
                                       <div className="flex justify-between items-center mb-1">
                                         <span className="font-extrabold text-foreground truncate">{v.title}</span>
-                                        <span
-                                          className="w-3 h-3 rounded-full border border-border shadow-sm flex-shrink-0"
-                                          style={{ backgroundColor: v.color }}
-                                        />
+                                        <span className="w-3 h-3 rounded-full border border-border shadow-sm flex-shrink-0" style={{ backgroundColor: v.color }} />
                                       </div>
-                                      <p className="text-[10px] text-muted-foreground font-mono mb-1">
-                                        Code: {v.productCode}
-                                      </p>
+                                      <p className="text-[10px] text-muted-foreground font-mono mb-1">SKU: {v.productCode}</p>
                                       <div className="flex justify-between items-center text-[11px]">
                                         <span className="font-bold text-primary">৳{v.priceAfterDiscount}</span>
-                                        <span
-                                          className={`font-bold ${
-                                            v.quantity > 0 ? "text-green-600 dark:text-green-400" : "text-red-500"
-                                          }`}
-                                        >
-                                          {v.quantity} in stock
-                                        </span>
+                                        <span className={`font-bold ${v.quantity > 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>{v.quantity} in stock</span>
                                       </div>
                                     </div>
                                   </div>
@@ -791,53 +742,137 @@ export default function ProductsView() {
             )}
           </tbody>
         </table>
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border">
-            <p className="text-xs text-muted-foreground">
-              Page {currentPage} of {totalPages} ({totalItems} total)
-            </p>
-            <Pagination className="mx-0 w-auto">
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    href="#"
-                    onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.max(1, p - 1)); }}
-                    className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
-                  />
-                </PaginationItem>
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
-                  .map((p, idx, arr) => (
-                    <React.Fragment key={p}>
-                      {idx > 0 && arr[idx - 1] !== p - 1 && (
-                        <PaginationItem>
-                          <span className="flex h-9 w-9 items-center justify-center text-xs text-muted-foreground">...</span>
-                        </PaginationItem>
-                      )}
-                      <PaginationItem>
-                        <PaginationLink
-                          href="#"
-                          isActive={currentPage === p}
-                          onClick={(e) => { e.preventDefault(); setCurrentPage(p); }}
-                          className="cursor-pointer"
-                        >
-                          {p}
-                        </PaginationLink>
-                      </PaginationItem>
-                    </React.Fragment>
-                  ))}
-                <PaginationItem>
-                  <PaginationNext
-                    href="#"
-                    onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.min(totalPages, p + 1)); }}
-                    className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+      </div>
+
+      {/* ── Mobile Cards ── */}
+      <div className="md:hidden space-y-3">
+        {isLoading || isFetching ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="glass-panel rounded-2xl border border-border p-8 text-center text-muted-foreground text-sm">
+            {searchTerm ? `No products matching "${searchTerm}".` : 'No products yet. Tap "Add Eyewear" to get started.'}
+          </div>
+        ) : (
+          filteredProducts.map((p) => {
+            const totalStock = p.variants?.reduce((acc, v) => acc + v.quantity, 0) || 0;
+            const isExpanded = !!expandedProducts[p.id];
+            const displayImg = p.variants?.[0]?.imgList?.[0]?.image || p.img || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png";
+            const displayPrice = p.variants?.[0]?.priceAfterDiscount ?? p.priceAfterDiscount ?? p.mainPrice;
+            return (
+              <div key={p.id} className="glass-panel rounded-2xl border border-border overflow-hidden">
+                {/* Card header */}
+                <div className="flex items-center gap-3 p-4">
+                  <div className="relative w-14 h-14 rounded-xl border border-border bg-muted overflow-hidden flex-shrink-0">
+                    <Image src={displayImg} alt={p.title} fill className="object-cover" unoptimized />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-bold text-sm text-foreground truncate">{p.title}</p>
+                        <p className="text-xs text-muted-foreground">{p.brand}</p>
+                      </div>
+                      <div className="flex gap-1.5 flex-shrink-0">
+                        <button onClick={() => handleOpenEdit(p)} className="p-2 bg-muted hover:bg-muted/80 text-foreground rounded-lg border border-border transition-colors cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => triggerDeleteProduct(p.id, p.title)} className="p-2 bg-muted hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded-lg border border-border transition-colors cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {p.categories?.slice(0, 2).map(c => (
+                        <span key={c} className="px-2 py-0.5 bg-muted rounded text-[10px] font-bold capitalize">{c}</span>
+                      ))}
+                      {totalStock > 0
+                        ? <span className="px-2 py-0.5 bg-green-500/10 text-green-600 dark:text-green-400 rounded text-[10px] font-bold">{totalStock} units</span>
+                        : <span className="px-2 py-0.5 bg-red-500/10 text-red-500 rounded text-[10px] font-bold">Out of Stock</span>
+                      }
+                      <span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-extrabold">৳{displayPrice?.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+                {/* Expand variants */}
+                <button
+                  onClick={() => toggleExpand(p.id)}
+                  className="w-full flex items-center justify-between px-4 py-2.5 border-t border-border text-[11px] font-bold text-muted-foreground hover:bg-muted/20 transition-colors cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5"><Package className="w-3.5 h-3.5" /> {p.variants?.length || 0} Variant(s)</span>
+                  {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                {isExpanded && p.variants && p.variants.length > 0 && (
+                  <div className="p-3 border-t border-border bg-muted/10 space-y-2">
+                    {p.variants.map(v => (
+                      <div key={v.id} className="flex items-center gap-3 bg-card rounded-xl border border-border p-3">
+                        <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-border bg-muted flex-shrink-0">
+                          <Image src={v.imgList?.[0]?.image || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png"} alt={v.title} fill className="object-cover" unoptimized />
+                        </div>
+                        <div className="flex-1 min-w-0 text-xs">
+                          <div className="flex justify-between">
+                            <span className="font-bold truncate">{v.title}</span>
+                            <span className="w-3 h-3 rounded-full border border-border flex-shrink-0" style={{ backgroundColor: v.color }} />
+                          </div>
+                          <p className="text-[10px] text-muted-foreground font-mono">SKU: {v.productCode}</p>
+                          <div className="flex justify-between text-[11px] mt-0.5">
+                            <span className="font-bold text-primary">৳{v.priceAfterDiscount}</span>
+                            <span className={v.quantity > 0 ? "text-green-600 dark:text-green-400 font-bold" : "text-red-500 font-bold"}>{v.quantity} in stock</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
+
+      {/* ── Pagination ── */}
+      {totalPages > 1 && (
+        <div className="glass-panel rounded-2xl border border-border flex items-center justify-between px-4 py-3">
+          <p className="text-xs text-muted-foreground">
+            Page {currentPage} of {totalPages} ({totalItems} total)
+          </p>
+          <Pagination className="mx-0 w-auto">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.max(1, p - 1)); }}
+                  className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
+                .map((p, idx, arr) => (
+                  <React.Fragment key={p}>
+                    {idx > 0 && arr[idx - 1] !== p - 1 && (
+                      <PaginationItem>
+                        <span className="flex h-9 w-9 items-center justify-center text-xs text-muted-foreground">...</span>
+                      </PaginationItem>
+                    )}
+                    <PaginationItem>
+                      <PaginationLink
+                        href="#"
+                        isActive={currentPage === p}
+                        onClick={(e) => { e.preventDefault(); setCurrentPage(p); }}
+                        className="cursor-pointer"
+                      >
+                        {p}
+                      </PaginationLink>
+                    </PaginationItem>
+                  </React.Fragment>
+                ))}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.min(totalPages, p + 1)); }}
+                  className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
 
       {/* Add / Edit Product Modal */}
       <AnimatePresence>
@@ -1176,12 +1211,32 @@ export default function ProductsView() {
                       </div>
 
                       <div className="space-y-1">
-                        <label className="font-bold text-muted-foreground">SKU / Product Code</label>
-                        <input
-                          value={varProductCode}
-                          onChange={(e) => setVarProductCode(e.target.value)}
-                          className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono"
-                        />
+                        <div className="flex items-center justify-between">
+                          <label className="font-bold text-muted-foreground">SKU / Product Code</label>
+                          <span className="text-[10px] text-muted-foreground italic">Auto-generated if empty</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            value={varProductCode}
+                            onChange={(e) => setVarProductCode(e.target.value)}
+                            placeholder="Generating unique SKU..."
+                            className="flex-1 px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono text-xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const sku = await fetchSKUFromBackend(categories[0]);
+                              if (sku) setVarProductCode(sku);
+                            }}
+                            disabled={isGeneratingSKU}
+                            title="Fetch a new unique SKU from server"
+                            className="px-3 py-2 text-xs font-bold rounded-xl border border-[#007C74]/40 text-[#007C74] hover:bg-[#007C74]/10 transition-colors whitespace-nowrap cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                          >
+                            {isGeneratingSKU
+                              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generating...</>
+                              : <>&#8635; Generate</>}
+                          </button>
+                        </div>
                         {formErrors.variant_productCode && <span className="text-red-500 text-[10px]">{formErrors.variant_productCode}</span>}
                       </div>
 

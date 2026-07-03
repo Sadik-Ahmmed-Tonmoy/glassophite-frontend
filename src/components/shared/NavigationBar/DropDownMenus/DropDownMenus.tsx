@@ -598,6 +598,17 @@ const DropDownMenus = () => {
 
           const hasSubmenu = menuItem.subMenu && (menuItem.subMenu as any[]).length > 0;
           const categoryHref = menuItem.href || `/product-filter?category=${encodeURIComponent(menuItem.menu)}`;
+          // Extract the category slug that matches what the backend expects
+          // e.g. href="/product-filter?category=optical" → categorySlug="optical"
+          const hrefCategorySlug = (() => {
+            try {
+              const url = new URL(menuItem.href || '', 'http://x');
+              const cat = url.searchParams.get('category');
+              return cat || encodeURIComponent(menuItem.menu);
+            } catch {
+              return encodeURIComponent(menuItem.menu);
+            }
+          })();
 
           // Generic Dynamic Category Dropdown Layout
           return (
@@ -612,7 +623,7 @@ const DropDownMenus = () => {
               {hasSubmenu && (
                 <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll text-sm grid grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-10 p-4">
                   {(menuItem.subMenu as any[]).map((item: any, index: number) => {
-                    const subHref = item.href || `/product-filter?category=${encodeURIComponent(menuItem.menu)}&subCategory=${encodeURIComponent(item.subMenuTitle)}`;
+                    const subHref = item.href || `/product-filter?category=${encodeURIComponent(hrefCategorySlug)}&subCategory=${encodeURIComponent(item.subMenuTitle)}`;
                     return (
                       <div key={index} className="flex flex-col md:flex-row items-start gap-1 md:gap-4">
                         {item.imageUrl && (
@@ -632,7 +643,7 @@ const DropDownMenus = () => {
                             </h3>
                           </Link>
                           {item.chieldMenu?.map((chieldItem: any, idx: number) => {
-                            const childHref = chieldItem.href || `/product-filter?category=${encodeURIComponent(menuItem.menu)}&subCategory=${encodeURIComponent(item.subMenuTitle)}&type=${encodeURIComponent(chieldItem.chieldMenuTitle)}`;
+                            const childHref = chieldItem.href || `/product-filter?category=${encodeURIComponent(hrefCategorySlug)}&subCategory=${encodeURIComponent(item.subMenuTitle)}&type=${encodeURIComponent(chieldItem.chieldMenuTitle)}`;
                             return chieldItem.chieldMenuTitle ? (
                               <Link key={idx} href={childHref} onClick={() => setActive(null)}>
                                 <p className="hover:text-[#00a76b] w-min text-base font-medium relative group cursor-pointer">

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "next-themes"
 import { Star, X } from "lucide-react"
 import type { FilterState } from "@/types/filter-types"
+import { normalizeCategoryForUI } from "@/lib/utils"
 
 interface ActiveFiltersProps {
   filters: FilterState
@@ -143,7 +144,7 @@ export default function ActiveFilters({
 
           {/* Collections */}
           {filters.categories.map((category) => {
-            const option = collectionOptions.find((item) => item.value === category)
+            const optionLabel = normalizeCategoryForUI(category);
             return (
               <motion.div
                 key={`category-${category}`}
@@ -155,7 +156,7 @@ export default function ActiveFilters({
                 layout
               >
                 <span>
-                  <span className="sr-only">Collection:</span> {option?.label || category}
+                  <span className="sr-only">Collection:</span> {optionLabel}
                 </span>
                 <button
                   type="button"

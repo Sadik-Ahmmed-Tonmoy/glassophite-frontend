@@ -6,6 +6,7 @@ import type { FilterOptionCounts, FilterState } from "@/types/filter-types"
 // import { renderStars } from "@/lib/utils"
 import PriceRangeSlider from "./price-range-slider"
 import ActiveFilters from "./active-filters"
+import { normalizeCategoryForDB } from "@/lib/utils"
 
 interface MobileFilterDrawerProps {
   filters: FilterState
@@ -128,29 +129,60 @@ export default function MobileFilterDrawer({
 
           {/* Mobile filters */}
           <div className="mt-4 border-t border-gray-200">
+            {/* Highlights Section */}
             <div className="px-4 py-6">
-              <h3 className="text-sm font-medium text-gray-900">Collection</h3>
+              <h3 className="text-sm font-medium text-gray-900">Highlights</h3>
               <div className="mt-4 space-y-4">
-                {collectionOptions.map((option) => (
+                {[
+                  { label: "New Arrivals", value: "New Arrivals" },
+                  { label: "Best Sellers", value: "Best Sellers" },
+                  { label: "Trending Now", value: "Trending Now" },
+                  { label: "Featured Picks", value: "Featured Picks" },
+                ].map((option) => (
                   <div key={option.value} className="flex items-center">
                     <input
-                      id={`mobile-collection-${option.value}`}
-                      name={`mobile-collection-${option.value}`}
+                      id={`mobile-highlights-${option.value}`}
+                      name={`mobile-highlights-${option.value}`}
                       type="checkbox"
-                      checked={option.type === "sale" ? filters.saleOnly : filters.categories.includes(option.value)}
-                      onChange={() =>
-                        option.type === "sale"
-                          ? handleFilterChange("saleOnly", !filters.saleOnly)
-                          : handleFilterChange("categories", option.value)
-                      }
+                      checked={filters.categories.includes(normalizeCategoryForDB(option.value))}
+                      onChange={() => handleFilterChange("categories", option.value)}
                       className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74]"
                     />
-                    <label htmlFor={`mobile-collection-${option.value}`} className="ml-3 flex flex-1 items-center justify-between gap-3 text-sm text-gray-600">
+                    <label htmlFor={`mobile-highlights-${option.value}`} className="ml-3 flex flex-1 items-center justify-between gap-3 text-sm text-gray-600">
                       <span>{option.label}</span>
                       <span className="text-xs text-gray-400">({optionCounts.collections[option.value] || 0})</span>
                     </label>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Collection Section */}
+            <div className="px-4 py-6 border-t border-gray-200">
+              <h3 className="text-sm font-medium text-gray-900">Collection</h3>
+              <div className="mt-4 space-y-4">
+                {collectionOptions
+                  .filter((o) => o.value.toLowerCase() !== "new arrivals" && o.value.toLowerCase() !== "blogs" && o.value.toLowerCase() !== "brands")
+                  .map((option) => (
+                    <div key={option.value} className="flex items-center">
+                      <input
+                        id={`mobile-collection-${option.value}`}
+                        name={`mobile-collection-${option.value}`}
+                        type="checkbox"
+                        checked={option.type === "sale" ? filters.saleOnly : filters.categories.includes(normalizeCategoryForDB(option.value))}
+                        onChange={() =>
+                          option.type === "sale"
+                            ? handleFilterChange("saleOnly", !filters.saleOnly)
+                            : handleFilterChange("categories", option.value)
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-[#007C74] focus:ring-[#007C74]"
+                      />
+                      <label htmlFor={`mobile-collection-${option.value}`} className="ml-3 flex flex-1 items-center justify-between gap-3 text-sm text-gray-600">
+                        <span>{option.label}</span>
+                        <span className="text-xs text-gray-400">({optionCounts.collections[option.value] || 0})</span>
+                      </label>
+                    </div>
+                  ))}
               </div>
             </div>
 

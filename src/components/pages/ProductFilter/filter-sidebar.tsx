@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import { useTheme } from "next-themes";
 import PriceRangeSlider from "./price-range-slider";
+import { normalizeCategoryForDB } from "@/lib/utils";
 
 interface FilterSidebarProps {
   filters: FilterState;
@@ -188,6 +189,7 @@ export default function FilterSidebar({
       <Accordion
         type="multiple"
         defaultValue={[
+          "highlights",
           "collection",
           "subCategory",
           "type",
@@ -200,6 +202,39 @@ export default function FilterSidebar({
           "availability",
         ]}
       >
+        {/* ========== Highlights ========== */}
+        <AccordionItem value="highlights" className={styles.border}>
+          <AccordionTrigger
+            className={`text-sm font-medium ${styles.accordionTrigger}`}
+          >
+            Highlights
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="pt-2 pb-4 space-y-4">
+              {[
+                { label: "New Arrivals", value: "New Arrivals" },
+                { label: "Best Sellers", value: "Best Sellers" },
+                { label: "Trending Now", value: "Trending Now" },
+                { label: "Featured Picks", value: "Featured Picks" },
+              ].map((option, index) => {
+                const dbValue = normalizeCategoryForDB(option.value);
+                const checked = filters.categories.includes(dbValue);
+                const onChange = () => handleFilterChange("categories", option.value);
+                const count = optionCounts.collections[option.value] || 0;
+                return renderFilterRow({
+                  id: `highlights-${option.value}`,
+                  checked,
+                  onChange,
+                  label: option.label,
+                  count,
+                  key: option.value,
+                  index,
+                });
+              })}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
         {/* ========== Collection ========== */}
         <AccordionItem value="collection" className={styles.border}>
           <AccordionTrigger
@@ -209,24 +244,27 @@ export default function FilterSidebar({
           </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4 space-y-4">
-              {collectionOptions.map((option, index) => {
-                const isSale = option.type === "sale";
-                const checked = isSale ? filters.saleOnly : filters.categories.includes(option.value);
-                const onChange = () =>
-                  isSale
-                    ? handleFilterChange("saleOnly", !filters.saleOnly)
-                    : handleFilterChange("categories", option.value);
-                const count = optionCounts.collections[option.value] || 0;
-                return renderFilterRow({
-                  id: `collection-${option.value}`,
-                  checked,
-                  onChange,
-                  label: option.label,
-                  count,
-                  key: option.value,
-                  index,
-                });
-              })}
+              {collectionOptions
+                .filter((o) => o.value.toLowerCase() !== "new arrivals" && o.value.toLowerCase() !== "blogs" && o.value.toLowerCase() !== "brands")
+                .map((option, index) => {
+                  const isSale = option.type === "sale";
+                  const dbValue = normalizeCategoryForDB(option.value);
+                  const checked = isSale ? filters.saleOnly : filters.categories.includes(dbValue);
+                  const onChange = () =>
+                    isSale
+                      ? handleFilterChange("saleOnly", !filters.saleOnly)
+                      : handleFilterChange("categories", option.value);
+                  const count = optionCounts.collections[option.value] || 0;
+                  return renderFilterRow({
+                    id: `collection-${option.value}`,
+                    checked,
+                    onChange,
+                    label: option.label,
+                    count,
+                    key: option.value,
+                    index,
+                  });
+                })}
             </div>
           </AccordionContent>
         </AccordionItem>

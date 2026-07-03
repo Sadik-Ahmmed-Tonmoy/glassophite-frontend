@@ -63,6 +63,13 @@ const productApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["products"],
     }),
+    // Returns a DB-verified unique SKU code
+    generateSKU: builder.query<{ data: { sku: string } }, string>({
+      query: (category = "") => ({
+        url: "products/generate-sku",
+        params: { category },
+      }),
+    }),
   }),
 });
 
@@ -79,4 +86,5 @@ export const {
   useAddVariantMutation,
   useUpdateVariantMutation,
   useDeleteVariantMutation,
+  useLazyGenerateSKUQuery,
 } = productApi;

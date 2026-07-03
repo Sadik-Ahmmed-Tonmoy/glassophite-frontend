@@ -3,42 +3,44 @@
 import { HeroParallax } from "@/components/hero-parallax";
 import { useGetFeaturedProductsQuery } from "@/redux/features/product/productApi";
 import React from "react";
-
-// Curated list of actual working sunglasses images from the mock dataset and public sources
-const workingImages = [
-  "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
-  "https://i.ibb.co.com/qMPcw4zJ/Chat-GPT-Image-Apr-4-2025-03-27-28-PM.png",
-  "https://images.pexels.com/photos/2587370/pexels-photo-2587370.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/2587371/pexels-photo-2587371.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/2587372/pexels-photo-2587372.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/2587373/pexels-photo-2587373.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/2587374/pexels-photo-2587374.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/2587375/pexels-photo-2587375.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/2587376/pexels-photo-2587376.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/2587377/pexels-photo-2587377.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/2587378/pexels-photo-2587378.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/2587379/pexels-photo-2587379.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/2587380/pexels-photo-2587380.jpeg?auto=compress&cs=tinysrgb&w=600",
-];
+import type { TProduct } from "@/types/types";
 
 export default function HeroParallaxDemo() {
-  const { data: response } = useGetFeaturedProductsQuery(undefined);
+  const { data: response, isLoading } = useGetFeaturedProductsQuery(20);
 
-  // Ensure we have exactly 15 items by padding if data is smaller
-  const products = response?.data || [];
-  const parallaxProducts = [...products, ...products, ...products]
-    .slice(0, 15)
-    .map((product, index) => {
-      // Check if product has a valid loaded URL, otherwise fall back to a working asset URL
-      const hasValidImage = product.img && (product.img.includes("jkktXJFP") || product.img.includes("qMPcw4zJ") || product.img.includes("pexels.com"));
-      const thumbnail: string = (hasValidImage ? product.img : workingImages[index % workingImages.length]) ?? workingImages[index % workingImages.length];
+  const products: TProduct[] = response?.data || [];
+  const productsWithImages = products.filter(
+    (product) => product.variants?.[0]?.imgList?.[0]?.image
+  );
 
-      return {
+  if (isLoading) {
+    return (
+      <div className="h-[240vh] py-20 overflow-hidden antialiased relative flex flex-col justify-start items-center bg-background">
+        <div className="max-w-7xl relative mx-auto py-10 md:py-20 lg:py-40 px-4 w-full left-0 top-0 animate-pulse">
+          <div className="h-16 w-3/4 bg-neutral-300 dark:bg-neutral-800 rounded-lg mb-6" />
+          <div className="h-6 w-1/2 bg-neutral-300 dark:bg-neutral-800 rounded-lg mb-4" />
+          <div className="h-6 w-1/3 bg-neutral-300 dark:bg-neutral-800 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
+  if (productsWithImages.length === 0) {
+    return null;
+  }
+
+  const parallaxProducts: { title: string; link: string; thumbnail: string }[] = [];
+  while (parallaxProducts.length < 15) {
+    for (const product of productsWithImages) {
+      if (parallaxProducts.length >= 15) break;
+      parallaxProducts.push({
         title: product.title,
         link: `/product/${product.id}`,
-        thumbnail,
-      };
-    });
+        thumbnail: product.variants[0].imgList[0].image,
+      });
+    }
+  }
 
   return <HeroParallax products={parallaxProducts} />;
 }
+

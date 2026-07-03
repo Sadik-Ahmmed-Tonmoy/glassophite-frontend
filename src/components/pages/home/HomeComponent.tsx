@@ -2,6 +2,8 @@
 
 import { FloatButton } from "@/components/ui/FloatButton/FloatButton";
 import BestSellerCarouselSection from "./BestSellerCarouselSection";
+import NewArrivalsSection from "./NewArrivalsSection";
+import CollectionSpotlightSection from "./CollectionSpotlightSection";
 // import BrandStatementSection from "./BrandStatementSection";
 import FeaturedCollectionSection from "./FeaturedCollectionSection";
 import GlassophitePromiseSection from "./GlassophitePromiseSection";
@@ -20,8 +22,10 @@ const HomeComponent = () => {
       {/* <Banner /> */}
       <HeroCinematicSection />
       {/* <BrandStatementSection /> */}
-      <BestSellerCarouselSection />
       <WhyChooseGlassophiteSection />
+      <CollectionSpotlightSection />
+      <BestSellerCarouselSection />
+      <NewArrivalsSection />
       <FeaturedCollectionSection />
       <HeroParallaxDemo />
       <Testimonials />

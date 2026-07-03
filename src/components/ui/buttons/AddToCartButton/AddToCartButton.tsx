@@ -2,7 +2,7 @@
 "use client";
 import { useCart } from "@/hooks/use-cart";
 import "./AddToCartButton.css"; // Import your CSS file here
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -27,16 +27,13 @@ interface AddToCartButtonProps {
 
 const AddToCartButton = ({ product, productId, cartQuantity, className }: AddToCartButtonProps) => {
   const { addItem, items } = useCart()
-  const { toast } = useToast()
   const [isAdded, setIsAdded] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
 
   const handleAddToCart = async () => {
     if (!product.inStock || product.quantity < 1) {
-      toast({
-        title: "Out of Stock",
+      toast.error("Out of Stock", {
         description: "This product variant is currently out of stock.",
-        type: "destructive",
       })
       return
     }
@@ -48,10 +45,8 @@ const AddToCartButton = ({ product, productId, cartQuantity, className }: AddToC
     const qtyToAdd = cartQuantity || 1
 
     if (currentQtyInCart + qtyToAdd > product.quantity) {
-      toast({
-        title: "Stock limit reached",
+      toast.error("Stock limit reached", {
         description: `Cannot add more items. You have ${currentQtyInCart} in your cart, and only ${product.quantity} are in stock.`,
-        type: "destructive",
       })
       return
     }
@@ -78,10 +73,8 @@ const AddToCartButton = ({ product, productId, cartQuantity, className }: AddToC
       await addItem(cartItem)
 
       // Show toast notification
-      toast({
-        title: "Added to cart",
+      toast.success("Added to cart", {
         description: `${product.title} has been added to your cart`,
-        type: "success",
       })
 
       setIsAdded(true)
@@ -99,10 +92,8 @@ const AddToCartButton = ({ product, productId, cartQuantity, className }: AddToC
     <button
       onClick={handleAddToCart}
       disabled={isAdding}
-      className={`CartBtn w-full transition-colors text-white flex justify-center items-center gap-1.5 py-3 rounded-md disabled:opacity-75 ${
-        isOutOfStock
-          ? "bg-neutral-500 hover:bg-neutral-600 cursor-pointer opacity-80"
-          : "bg-gradient-to-br from-green-secondary via-green-800 to-green-secondary hover:from-green-primary hover:via-green-600 hover:to-green-secondary"
+      className={`CartBtn w-full bg-gradient-to-br from-green-secondary via-green-800 to-green-secondary hover:from-green-primary hover:via-green-600 hover:to-green-secondary transition-colors text-white flex justify-center items-center gap-1.5 py-3 rounded-md disabled:opacity-75 ${
+        isOutOfStock ? "opacity-50 cursor-pointer" : ""
       } ${className || ""}`}
     >
       <span className="IconContainer">

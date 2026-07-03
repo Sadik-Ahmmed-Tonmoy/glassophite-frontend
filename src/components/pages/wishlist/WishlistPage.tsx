@@ -7,24 +7,31 @@ import { Heart, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useGetWishlistQuery } from "@/redux/features/wishlist/wishlistApi";
+import { useGetWishlistQuery, useRemoveFromWishlistMutation } from "@/redux/features/wishlist/wishlistApi";
 
 export default function WishlistPage() {
   const { data: wishlistData } = useGetWishlistQuery(undefined);
+  const [removeFromWishlist] = useRemoveFromWishlistMutation();
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
 
   useEffect(() => {
-    if (wishlistData?.items) {
-      const items = wishlistData.items.map((item: any) => item.product || item);
+    if (wishlistData?.data?.items) {
+      const items = wishlistData.data.items.map((item: any) => item.product || item);
       setWishlistItems(items);
     }
   }, [wishlistData]);
 
-  const handleRemoveItem = (id: string, name: string) => {
-    setWishlistItems((prev) => prev.filter((item) => item.id !== id));
-    toast.success("Removed from Wishlist", {
-      description: `${name} has been removed from your saved items.`,
-    });
+  const handleRemoveItem = async (id: string, name: string) => {
+    try {
+      await removeFromWishlist(id).unwrap();
+      toast.success("Removed from Wishlist", {
+        description: `${name} has been removed from your saved items.`,
+      });
+    } catch (err: any) {
+      toast.error("Failed to remove item", {
+        description: err?.data?.message || "Something went wrong.",
+      });
+    }
   };
 
   const handleMoveToBag = (name: string) => {

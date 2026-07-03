@@ -279,7 +279,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               {/* Action Buttons */}
               <div className="flex-1 flex items-center space-x-2 sm:space-x-4">
                 {!selectedVariant.inStock ? (
-                  <RequestStockButton />
+                  <RequestStockButton 
+                    productId={product.id}
+                    variantId={selectedVariant.id}
+                  />
                 ) : (
                   <AddToCartButton
                     product={{
@@ -302,7 +305,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     cartQuantity={quantity}
                   />
                 )}
-                <WishlistButton />
+                <WishlistButton productId={product.id} productName={product.title} />
               </div>
             </div>
           </div>

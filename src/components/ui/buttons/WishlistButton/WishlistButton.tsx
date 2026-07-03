@@ -1,23 +1,90 @@
 "use client";
 import "./WishlistButton.css"; // Import your CSS file here
+import { useAppSelector } from "@/redux/hooks";
+import {
+  useGetWishlistQuery,
+  useAddToWishlistMutation,
+  useRemoveFromWishlistMutation,
+} from "@/redux/features/wishlist/wishlistApi";
+import { toast } from "sonner";
+import { useMemo } from "react";
+import { Heart, Loader2 } from "lucide-react";
 
-const WishlistButton = () => {
+interface WishlistButtonProps {
+  productId?: string;
+  productName?: string;
+}
+
+const WishlistButton = ({ productId, productName }: WishlistButtonProps) => {
+  const token = useAppSelector((state) => state.auth.access_token);
+  const { data: wishlistData, isFetching } = useGetWishlistQuery(undefined, { skip: !token });
+  const [addToWishlist, { isLoading: isAdding }] = useAddToWishlistMutation();
+  const [removeFromWishlist, { isLoading: isRemoving }] = useRemoveFromWishlistMutation();
+
+  const isLoading = isAdding || isRemoving;
+
+  const isWishlisted = useMemo(() => {
+    if (!wishlistData?.data?.items || !productId) return false;
+    return wishlistData.data.items.some((item: any) => item.productId === productId);
+  }, [wishlistData, productId]);
+
+  const handleWishlistClick = async () => {
+    if (!productId) return;
+    if (!token) {
+      toast.error("Please log in", {
+        description: "You must be logged in to save items to your wishlist.",
+      });
+      return;
+    }
+
+    try {
+      if (isWishlisted) {
+        await removeFromWishlist(productId).unwrap();
+        toast.success("Removed from Wishlist", {
+          description: productName ? `${productName} has been removed from your saved items.` : "Product removed from wishlist.",
+        });
+      } else {
+        await addToWishlist(productId).unwrap();
+        toast.success("Added to Wishlist", {
+          description: productName ? `${productName} has been saved to your items.` : "Product saved to wishlist.",
+        });
+      }
+    } catch (err: any) {
+      toast.error("Wishlist action failed", {
+        description: err?.data?.message || "Something went wrong.",
+      });
+    }
+  };
+
+  const isPending = isLoading;
+
   return (
-    <button className="WishBtn w-full bg-gradient-to-br from-red-800 via-red-500 to-red-700 hover:from-red-500 hover:via-red-600 hover:to-red-500 transition-colors text-white flex justify-center items-center gap-1 py-3 rounded-md">
-      <span className="IconContainer">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          height="1em"
-          viewBox="0 0 512 512"
-          fill="white"
-          className="heart"
-        >
-          <path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"/>
-        </svg>
+    <button 
+      onClick={handleWishlistClick}
+      disabled={isPending}
+      className={`WishBtn w-full flex justify-center items-center gap-1.5 py-3 rounded-md transition-all duration-300 font-bold border cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed ${
+        isWishlisted 
+          ? "bg-red-500 hover:bg-red-650 border-red-500 text-white" 
+          : "bg-transparent text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800 border-neutral-300 dark:border-neutral-700"
+      }`}
+    >
+      <span className="flex items-center justify-center gap-2">
+        {isPending || isFetching ? (
+          <Loader2 className="w-4 h-4 animate-spin text-current" />
+        ) : (
+          <Heart className={`w-4 h-4 ${isWishlisted ? "fill-white text-white" : "text-red-500"}`} />
+        )}
+        <p className="font-semibold text-sm">
+          {isPending || isFetching 
+            ? "Updating Wishlist..."
+            : isWishlisted 
+              ? "Remove from Wishlist" 
+              : "Add to Wishlist"}
+        </p>
       </span>
-      <p className="text text-white ">Add to Wishlist</p>
     </button>
   );
 };
 
 export default WishlistButton;
+

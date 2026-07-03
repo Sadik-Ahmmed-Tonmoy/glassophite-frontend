@@ -1,7 +1,7 @@
 "use client";
 
 import { TProduct, TVariant } from "@/types/types";
-import { Heart, XCircle } from "lucide-react";
+import { Heart, XCircle, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,6 +11,14 @@ import RequestStockButton from "../buttons/RequestStockButton/RequestStockButton
 import ViewDetailsButton from "../buttons/ViewDetailsButton/view-details-button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useAppSelector } from "@/redux/hooks";
+import {
+  useGetWishlistQuery,
+  useAddToWishlistMutation,
+  useRemoveFromWishlistMutation,
+} from "@/redux/features/wishlist/wishlistApi";
+import { toast } from "sonner";
+import { useMemo } from "react";
 
 interface ProductCardProps {
   product: TProduct;
@@ -45,15 +53,51 @@ function ProductCard({ product }: ProductCardProps) {
   const [selectedVariant, setSelectedVariant] = useState<TVariant>(
     product?.variants[0]
   );
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const token = useAppSelector((state) => state.auth.access_token);
+  const { data: wishlistData, isFetching } = useGetWishlistQuery(undefined, { skip: !token });
+  const [addToWishlist, { isLoading: isAdding }] = useAddToWishlistMutation();
+  const [removeFromWishlist, { isLoading: isRemoving }] = useRemoveFromWishlistMutation();
+  const isLoading = isAdding || isRemoving;
+
+  const isWishlisted = useMemo(() => {
+    if (!wishlistData?.data?.items) return false;
+    return wishlistData.data.items.some((item: any) => item.productId === product.id);
+  }, [wishlistData, product.id]);
+
   const [isHovered, setIsHovered] = useState(false);
 
   const handleColorButtonClick = (variant: TVariant) => {
     setSelectedVariant(variant);
   };
 
-  const handleWishlistClick = () => {
-    setIsWishlisted((prevState) => !prevState);
+  const handleWishlistClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!token) {
+      toast.error("Please log in", {
+        description: "You must be logged in to save items to your wishlist.",
+      });
+      return;
+    }
+
+    try {
+      if (isWishlisted) {
+        await removeFromWishlist(product.id).unwrap();
+        toast.success("Removed from Wishlist", {
+          description: `${selectedVariant.title} has been removed from your saved items.`,
+        });
+      } else {
+        await addToWishlist(product.id).unwrap();
+        toast.success("Added to Wishlist", {
+          description: `${selectedVariant.title} has been saved to your items.`,
+        });
+      }
+    } catch (err: any) {
+      toast.error("Wishlist action failed", {
+        description: err?.data?.message || "Something went wrong.",
+      });
+    }
   };
 
   // Animation variants
@@ -106,15 +150,20 @@ function ProductCard({ product }: ProductCardProps) {
               isDark ? 'bg-black/50 hover:bg-black/70' : 'bg-white/50 hover:bg-white/70'
             }`, isHovered && "top-6")}
             onClick={handleWishlistClick}
+            disabled={isLoading}
             aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           >
-            <Heart 
-              className={`w-5 h-5 transition-all duration-300 ${
-                isWishlisted 
-                  ? "fill-red-500 text-red-500" 
-                  : isDark ? "text-white" : "text-gray-700"
-              }`} 
-            />
+            {isLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin text-[#007C74]" />
+            ) : (
+              <Heart 
+                className={`w-5 h-5 transition-all duration-300 ${
+                  isWishlisted 
+                    ? "fill-red-500 text-red-500" 
+                    : isDark ? "text-white" : "text-gray-700"
+                }`} 
+              />
+            )}
           </motion.button>
 
           {/* Product Code Badge */}
@@ -304,8 +353,8 @@ function ProductCard({ product }: ProductCardProps) {
             
             {!selectedVariant.inStock ? (
               <RequestStockButton 
-                // productId={product.id}
-                // variantId={selectedVariant.id}
+                productId={product.id}
+                variantId={selectedVariant.id}
               />
             ) : (
               <AddToCartButton

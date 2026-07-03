@@ -19,12 +19,14 @@ import { logout } from "@/redux/features/auth/authSlice";
 import { useGetMeQuery, useLogoutMutation } from "@/redux/features/auth/authApi";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useGetWishlistQuery } from "@/redux/features/wishlist/wishlistApi";
 
 const PCNavBar = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const token = useAppSelector((state) => state.auth.access_token);
   const { data: meData } = useGetMeQuery(undefined, { skip: !token });
+  const { data: wishlistData } = useGetWishlistQuery(undefined, { skip: !token });
   const [logoutApi] = useLogoutMutation();
 
   const user = meData?.data || meData;
@@ -155,8 +157,8 @@ const PCNavBar = () => {
                <span data-translate>Wishlist</span>
                 <span className={styles.text} data-translate>Wishlist</span>
               </span>
-              <p className="absolute -top-[6px] right-[0px] rounded-full bg-primary-color h-[18px] w-[18px] text-white flex items-center justify-center bg-[#00a76b] text-xs">
-                0
+              <p className="absolute -top-[6px] right-[0px] rounded-full bg-primary-color h-[18px] w-[18px] text-white flex items-center justify-center bg-[#00a76b] text-xs font-bold">
+                {wishlistData?.data?.items?.length || 0}
               </p>
             </button>
           </Link>

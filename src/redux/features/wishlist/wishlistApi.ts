@@ -10,6 +10,7 @@ const wishlistApi = baseApi.injectEndpoints({
       query: (productId: string) => ({
         url: `wishlist/${productId}`,
         method: "POST",
+        body: {},
       }),
       invalidatesTags: ["wishlist"],
     }),
@@ -17,6 +18,7 @@ const wishlistApi = baseApi.injectEndpoints({
       query: (productId: string) => ({
         url: `wishlist/${productId}`,
         method: "DELETE",
+        body: {},
       }),
       invalidatesTags: ["wishlist"],
     }),

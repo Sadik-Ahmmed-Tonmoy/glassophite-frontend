@@ -17,7 +17,8 @@ import {
   Shield,
   BookOpen,
   Store,
-  Menu
+  Menu,
+  ClipboardList
 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -27,6 +28,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
     { label: "Products", href: "/dashboard/products", icon: Package },
+    { label: "Stock Requests", href: "/dashboard/stock-requests", icon: ClipboardList },
     { label: "Brands", href: "/dashboard/brands", icon: Store },
     { label: "Blogs", href: "/dashboard/blogs", icon: BookOpen },
     { label: "Orders", href: "/dashboard/orders", icon: ShoppingCart },

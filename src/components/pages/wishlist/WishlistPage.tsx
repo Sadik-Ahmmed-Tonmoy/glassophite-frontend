@@ -43,7 +43,7 @@ export default function WishlistPage() {
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-[#0a0a0a] dark:via-neutral-900 dark:to-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-500 py-12">
       <div className="container mx-auto px-4 md:px-6 max-w-5xl space-y-12">
-        
+
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto space-y-4 pt-8">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-[#007C74] via-[#00A693] to-[#3C55A5] bg-clip-text text-transparent flex items-center justify-center gap-3">
@@ -59,7 +59,7 @@ export default function WishlistPage() {
         <div className="max-w-4xl mx-auto">
           <AnimatePresence mode="popLayout">
             {wishlistItems.length > 0 ? (
-              <motion.div 
+              <motion.div
                 layout
                 className="grid grid-cols-1 md:grid-cols-2 gap-6"
               >

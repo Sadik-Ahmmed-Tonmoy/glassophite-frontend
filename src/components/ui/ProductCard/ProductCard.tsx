@@ -49,7 +49,7 @@ function ProductCard({ product }: ProductCardProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const styles = getThemeStyles(isDark);
-  
+
   const [selectedVariant, setSelectedVariant] = useState<TVariant>(
     product?.variants[0]
   );
@@ -146,9 +146,8 @@ function ProductCard({ product }: ProductCardProps) {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className={cn(`absolute top-3 right-3 z-20 p-2 rounded-full backdrop-blur-sm transition-colors duration-300 ${
-              isDark ? 'bg-black/50 hover:bg-black/70' : 'bg-white/50 hover:bg-white/70'
-            }`, isHovered && "top-6")}
+            className={cn(`absolute top-3 right-3 z-20 p-2 rounded-full backdrop-blur-sm transition-colors duration-300 ${isDark ? 'bg-black/50 hover:bg-black/70' : 'bg-white/50 hover:bg-white/70'
+              }`, isHovered && "top-6")}
             onClick={handleWishlistClick}
             disabled={isLoading}
             aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
@@ -156,18 +155,17 @@ function ProductCard({ product }: ProductCardProps) {
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin text-[#007C74]" />
             ) : (
-              <Heart 
-                className={`w-5 h-5 transition-all duration-300 ${
-                  isWishlisted 
-                    ? "fill-red-500 text-red-500" 
+              <Heart
+                className={`w-5 h-5 transition-all duration-300 ${isWishlisted
+                    ? "fill-red-500 text-red-500"
                     : isDark ? "text-white" : "text-gray-700"
-                }`} 
+                  }`}
               />
             )}
           </motion.button>
 
           {/* Product Code Badge */}
-          <motion.div 
+          <motion.div
             initial={{ x: -100 }}
             animate={{ x: isHovered ? 0 : -100 }}
             transition={{ type: "spring", stiffness: 100 }}
@@ -189,17 +187,17 @@ function ProductCard({ product }: ProductCardProps) {
                 className="absolute inset-0"
               >
                 <Image
-                  src={variant.imgList[0]?.image || "/placeholder.svg"}
+                  src={variant.imgList?.[0]?.image || "/placeholder.svg"}
                   alt={variant.title}
                   width={400}
                   height={400}
                   priority={index === 0}
                   quality={90}
                   placeholder="blur"
-                  blurDataURL={variant.imgList[0]?.image}
+                  blurDataURL={variant.imgList?.[0]?.image}
                   className="h-full w-full object-cover"
                 />
-                
+
                 {/* Stock Overlay */}
                 <AnimatePresence>
                   {selectedVariant.color === variant.color && !variant.inStock && (
@@ -215,7 +213,7 @@ function ProductCard({ product }: ProductCardProps) {
                       >
                         <XCircle className="w-12 h-12 text-white mb-2" />
                       </motion.div>
-                      <motion.span 
+                      <motion.span
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.1 }}
@@ -244,21 +242,20 @@ function ProductCard({ product }: ProductCardProps) {
         <article className={`${styles.text} p-4 transition-colors duration-500`}>
           {/* Title and Stock Status */}
           <div className="flex justify-between items-start gap-2">
-            <motion.h3 
+            <motion.h3
               className="font-semibold text-lg line-clamp-1"
               whileHover={{ x: 2 }}
             >
               {selectedVariant.title}
             </motion.h3>
-            
-            <motion.span 
-              className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${
-                !selectedVariant.inStock 
+
+            <motion.span
+              className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${!selectedVariant.inStock
                   ? styles.stockOut
                   : selectedVariant.quantity <= 5
                     ? 'bg-yellow-500/10 text-yellow-500'
                     : styles.stockIn
-              }`}
+                }`}
               animate={!selectedVariant.inStock ? { opacity: [1, 0.7, 1] } : {}}
               transition={{ duration: 1.5, repeat: Infinity }}
             >
@@ -287,12 +284,12 @@ function ProductCard({ product }: ProductCardProps) {
                 BDT
               </span>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <span className={`text-sm line-through ${styles.priceSecondary}`}>
                 ৳{selectedVariant.mainPrice}
               </span>
-              <motion.span 
+              <motion.span
                 whileHover={{ scale: 1.1 }}
                 className={`text-sm font-semibold ${styles.discount}`}
               >
@@ -313,11 +310,10 @@ function ProductCard({ product }: ProductCardProps) {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleColorButtonClick(variant)}
-                  className={`relative w-8 h-8 rounded-full border-2 transition-all ${
-                    selectedVariant.color === variant.color
+                  className={`relative w-8 h-8 rounded-full border-2 transition-all ${selectedVariant.color === variant.color
                       ? styles.colorButton.active
                       : styles.colorButton.inactive
-                  } ${!variant.inStock ? "opacity-50" : ""}`}
+                    } ${!variant.inStock ? "opacity-50" : ""}`}
                   title={variant.inStock ? `Available: ${variant.quantity}` : "Out of Stock"}
                   aria-label={`Select ${variant.color} color variant`}
                 >
@@ -337,7 +333,7 @@ function ProductCard({ product }: ProductCardProps) {
             </div>
 
             {/* SKU */}
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05 }}
               className={`text-xs ${styles.textMutedLighter} font-mono`}
             >
@@ -350,9 +346,9 @@ function ProductCard({ product }: ProductCardProps) {
             <Link href={`/product/${product.id}`} className="w-full flex">
               <ViewDetailsButton />
             </Link>
-            
+
             {!selectedVariant.inStock ? (
-              <RequestStockButton 
+              <RequestStockButton
                 productId={product.id}
                 variantId={selectedVariant.id}
               />
@@ -369,8 +365,9 @@ function ProductCard({ product }: ProductCardProps) {
                   priceAfterDiscount: selectedVariant?.priceAfterDiscount,
                   inStock: selectedVariant?.inStock || false,
                   quantity: selectedVariant?.quantity || 0,
-                  img: selectedVariant?.imgList[0]?.image,
+                  img: selectedVariant?.imgList?.[0]?.image,
                 }}
+                productId={product.id}
                 className="flex-1"
               />
             )}

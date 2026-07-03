@@ -130,7 +130,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-12"
+      className="space-y-12 mt-16"
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Image Slider */}
@@ -161,23 +161,24 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               </h1>
               {!selectedVariant.inStock ? (
                 <Badge
-                  className={`text-sm border ${styles.badgeDanger}`}
+                  className="text-sm border border-red-500 bg-red-50 dark:bg-red-950/20 text-red-500 font-bold"
                   data-translate="product.outOfStock"
+                  
                 >
                   Out of Stock
                 </Badge>
               ) : (
-                <Badge
+                <div
                   className={`text-sm border ${
-                    selectedVariant.quantity <= 5
-                      ? styles.badgeWarning
+                    selectedVariant.quantity < 7
+                      ? " border-red-500 bg-red-50 dark:bg-red-950/20 text-red-500 font-bold"
                       : styles.badgeSuccess
                   }`}
                 >
-                  {selectedVariant.quantity <= 5
+                  {selectedVariant.quantity < 7
                     ? `Only ${selectedVariant.quantity} left!`
-                    : "In Stock"}
-                </Badge>
+                    : `In Stock: ${selectedVariant.quantity}`}
+                </div>
               )}
             </div>
             <p className={`${styles.textMuted} mt-2`}>
@@ -277,13 +278,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex-1 flex items-center space-x-2 sm:space-x-4">
-                {!selectedVariant.inStock ? (
-                  <RequestStockButton 
-                    productId={product.id}
-                    variantId={selectedVariant.id}
-                  />
-                ) : (
+              <div className="flex-1 flex flex-col md:flex-row gap-2 md:gap-4 w-full">
+                <div className="flex-1 flex items-center space-x-2 sm:space-x-4 w-full">
                   <AddToCartButton
                     product={{
                       id: selectedVariant.id.toString(),
@@ -302,10 +298,20 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                           ? selectedVariant.imgList[0].image
                           : undefined,
                     }}
+                    productId={product.id}
                     cartQuantity={quantity}
                   />
+                  <WishlistButton productId={product.id} productName={product.title} />
+                </div>
+                
+                {!selectedVariant.inStock && (
+                  <div className="w-full md:w-auto min-w-[200px]">
+                    <RequestStockButton 
+                      productId={product.id}
+                      variantId={selectedVariant.id}
+                    />
+                  </div>
                 )}
-                <WishlistButton productId={product.id} productName={product.title} />
               </div>
             </div>
           </div>

@@ -6,6 +6,7 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 import { Trash2, Minus, Plus } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
+import { toast } from "sonner"
 
 
 export default function CartItem({ item }: any) {
@@ -14,7 +15,12 @@ export default function CartItem({ item }: any) {
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity < 1) return
-    if (newQuantity > item.maxQuantity) return
+    if (newQuantity > item.maxQuantity) {
+      toast.error("Stock limit reached", {
+        description: `Only ${item.maxQuantity} items are available in stock.`,
+      })
+      return
+    }
     updateItemQuantity(item.id, newQuantity)
   }
 
@@ -48,10 +54,14 @@ export default function CartItem({ item }: any) {
           <div className="flex justify-between  ">
             <div className="flex-1 pr-2">
               <h3 className="text-sm font-medium text-gray-900 line-clamp-2">{item.name}</h3>
-              <div className="mt-1 flex items-center text-xs text-gray-500 space-x-2">
+              <div className="mt-1 flex items-center text-xs text-gray-500 space-x-2 flex-wrap">
                 <span>Brand: {item.brand}</span>
                 <span>•</span>
                 <span>Size: {item.size}</span>
+                <span>•</span>
+                <span className={item.maxQuantity < 7 ? "text-red-500 font-bold" : "text-emerald-600 font-medium"}>
+                  Stock: {item.maxQuantity}
+                </span>
               </div>
 
               {/* Color Variant */}
@@ -90,8 +100,9 @@ export default function CartItem({ item }: any) {
               <span className="w-8 text-center text-sm">{item.quantity}</span>
               <button
                 onClick={() => handleQuantityChange(item.quantity + 1)}
-                disabled={item.quantity >= item.maxQuantity}
-                className="px-2 py-1 text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                className={`px-2 py-1 text-gray-500 hover:text-gray-700 cursor-pointer ${
+                  item.quantity >= item.maxQuantity ? "opacity-50" : ""
+                }`}
                 aria-label="Increase quantity"
               >
                 <Plus size={14} />

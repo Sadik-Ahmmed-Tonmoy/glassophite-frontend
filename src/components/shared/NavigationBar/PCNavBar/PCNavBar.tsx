@@ -20,14 +20,19 @@ import { useGetMeQuery, useLogoutMutation } from "@/redux/features/auth/authApi"
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useGetWishlistQuery } from "@/redux/features/wishlist/wishlistApi";
+import { useCart } from "@/hooks/use-cart";
+import CartDrawer from "../cart/CartDrawer";
+import { Loader2 } from "lucide-react";
 
 const PCNavBar = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const token = useAppSelector((state) => state.auth.access_token);
   const { data: meData } = useGetMeQuery(undefined, { skip: !token });
-  const { data: wishlistData } = useGetWishlistQuery(undefined, { skip: !token });
+  const { data: wishlistData, isLoading: isWishlistLoading, isFetching: isWishlistFetching } = useGetWishlistQuery(undefined, { skip: !token });
   const [logoutApi] = useLogoutMutation();
+  const { totalItems, totalPrice, isLoading: isCartLoading, isFetching: isCartFetching } = useCart();
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const user = meData?.data || meData;
   const isLoggedIn = !!token && !!user;
@@ -157,55 +162,45 @@ const PCNavBar = () => {
                <span data-translate>Wishlist</span>
                 <span className={styles.text} data-translate>Wishlist</span>
               </span>
-              <p className="absolute -top-[6px] right-[0px] rounded-full bg-primary-color h-[18px] w-[18px] text-white flex items-center justify-center bg-[#00a76b] text-xs font-bold">
-                {wishlistData?.data?.items?.length || 0}
-              </p>
+              {isWishlistLoading || isWishlistFetching ? (
+                <span className="absolute -top-[6px] right-[0px] rounded-full bg-neutral-200 dark:bg-neutral-800 h-[18px] w-[18px] flex items-center justify-center text-xs">
+                  <Loader2 className="w-3 h-3 animate-spin text-[#00a76b]" />
+                </span>
+              ) : (
+                <span className="absolute -top-[6px] right-[0px] rounded-full h-[18px] w-[18px] text-white flex items-center justify-center bg-[#00a76b] text-xs font-bold">
+                  {wishlistData?.data?.items?.length || 0}
+                </span>
+              )}
             </button>
           </Link>
-          <button
-            className={`${styles.accountButton} ${styles.textHoverEffect}`}
-          >
-            <MdOutlineShoppingBag className="w-6 h-6 " />
-
-            <span className="relative"   >
-             <span data-translate> My Bag</span>
-              <span className={styles.text} data-translate>My Bag</span>
-            </span>
-            <p className="absolute -top-[6px] right-[1px] rounded-full h-[18px] w-[18px] text-white flex items-center justify-center bg-[#00a76b] text-xs">
-              0
-            </p>
-          </button>
-           <CartButton />
+          <CartButton onClick={() => setIsCartOpen(true)} />
 
           <ThemeSwitcher />
 
           {/* cart floating button start */}
           <div
+            onClick={() => setIsCartOpen(true)}
             className={cn(
               shakeCartFloatingButton ? `${styles.addToBagCartShake}` : "",
-              "absolute top-[200%] w-[80px] right-0 rounded-ss-lg rounded-es-lg overflow-hidden hover:cursor-pointer"
+              "absolute top-[200%] w-[80px] right-0 rounded-ss-lg rounded-es-lg overflow-hidden hover:cursor-pointer z-50 shadow-lg"
             )}
           >
             <div className="bg-[#192038]  py-3 px-4 flex flex-col items-center">
               <PiShoppingBagOpenFill size={35} className="text-white" />
-              <p className="text-white font-Inter text-sm font-medium leading-normal tracking-[-0.42px] whitespace-nowrap">
-                5 Items
+              <p className="text-white font-Inter text-sm font-medium leading-normal tracking-[-0.42px] whitespace-nowrap min-h-[20px] flex items-center justify-center">
+                {isCartLoading || isCartFetching ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                ) : (
+                  `${totalItems} ${totalItems === 1 ? "Item" : "Items"}`
+                )}
               </p>
             </div>
             <div className="bg-green-primary  py-3 px-4 flex flex-col items-center">
-              <p className="text-white font-Inter text-sm font-medium leading-normal tracking-[-0.42px] whitespace-nowrap">
-                ৳
-                {5 > 0 ? (
-                  <span className="ms-1">
-                    {/* <CountUp
-                      enableScrollSpy={true}
-                      duration={3}
-                      start={100}
-                      end={5 > 0 ? 2500 : 0}
-                    /> */}
-                  </span>
+              <p className="text-white font-Inter text-sm font-medium leading-normal tracking-[-0.42px] whitespace-nowrap min-h-[20px] flex items-center justify-center">
+                {isCartLoading || isCartFetching ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
                 ) : (
-                  <span className="ms-1">0</span>
+                  `৳${totalPrice}`
                 )}
               </p>
             </div>
@@ -213,6 +208,8 @@ const PCNavBar = () => {
           <TranslateInitializer />
            <LanguageSwitcher  />
           {/* floating button end*/}
+
+          <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         </div>
       </div>
       {/* first row end */}

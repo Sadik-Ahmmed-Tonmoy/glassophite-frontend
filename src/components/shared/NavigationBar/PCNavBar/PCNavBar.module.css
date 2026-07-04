@@ -66,14 +66,17 @@
   
   .addToBagCartShake {
       animation-name: cartShakeAnimation;
-      animation-duration: 2000ms;
-      animation-iteration-count: infinite;
-      animation-fill-mode: forwards;
-      animation-direction: alternate;
+      animation-duration: 1200ms;
+      animation-iteration-count: 1;
+      animation-fill-mode: both;
+      animation-timing-function: ease-in-out;
   }
 
   @keyframes cartShakeAnimation {
-      15% {
+     0% {
+          transform: translateY(0px);
+      } 
+     15% {
           transform: translateY(70px);
       }
       30% {

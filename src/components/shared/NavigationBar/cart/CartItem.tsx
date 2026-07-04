@@ -3,8 +3,8 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { motion } from "framer-motion"
-import { Trash2, Minus, Plus } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Trash2, Minus, Plus, AlertTriangle, X, Check } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
 import { toast } from "sonner"
 
@@ -12,6 +12,7 @@ import { toast } from "sonner"
 export default function CartItem({ item }: any) {
   const { updateItemQuantity, removeItem, saveForLater } = useCart()
   const [isRemoving, setIsRemoving] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity < 1) return
@@ -24,12 +25,20 @@ export default function CartItem({ item }: any) {
     updateItemQuantity(item.id, newQuantity)
   }
 
-  const handleRemove = () => {
+  const handleRemoveClick = () => {
+    setShowConfirm(true)
+  }
+
+  const handleConfirmRemove = () => {
+    setShowConfirm(false)
     setIsRemoving(true)
-    // Slight delay to allow animation to complete
     setTimeout(() => {
       removeItem(item.id)
     }, 300)
+  }
+
+  const handleCancelRemove = () => {
+    setShowConfirm(false)
   }
 
   return (
@@ -53,7 +62,7 @@ export default function CartItem({ item }: any) {
         <div className="flex-1 min-w-0">
           <div className="flex justify-between  ">
             <div className="flex-1 pr-2">
-              <h3 className="text-sm font-medium text-gray-900 line-clamp-2">{item.name}</h3>
+              <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">{item.name}</h3>
               <div className="mt-1 flex items-center text-xs text-gray-500 space-x-2 flex-wrap">
                 <span>Brand: {item.brand}</span>
                 <span>•</span>
@@ -78,13 +87,49 @@ export default function CartItem({ item }: any) {
 
             {/* Remove Button */}
             <button
-              onClick={handleRemove}
-              className="text-gray-400 hover:text-red-500 transition-colors p-1"
+              onClick={handleRemoveClick}
+              className="text-gray-400 hover:text-red-500 transition-colors p-1 h-fit"
               aria-label="Remove item"
             >
               <Trash2 size={16} />
             </button>
           </div>
+
+          {/* Inline Delete Confirmation */}
+          <AnimatePresence>
+            {showConfirm && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: "auto", marginTop: 8 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
+                <div className="flex items-center justify-between gap-2 rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 px-3 py-2">
+                  <div className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
+                    <AlertTriangle size={13} />
+                    <span>Remove this item?</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={handleCancelRemove}
+                      className="flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                    >
+                      <X size={11} />
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleConfirmRemove}
+                      className="flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors cursor-pointer"
+                    >
+                      <Check size={11} />
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Price and Quantity */}
           <div className="mt-2 flex items-center justify-between flex-wrap gap-2">

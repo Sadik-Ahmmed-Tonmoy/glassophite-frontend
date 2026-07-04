@@ -4,7 +4,7 @@ import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CountUp from "react-countup";
 import { AiOutlineHeart } from "react-icons/ai";
 import { BsPerson } from "react-icons/bs";
@@ -49,6 +49,23 @@ const PCNavBar = () => {
     router.push("/auth/login");
   };
   const [shakeCartFloatingButton, setShakeCartFloatingButton] = useState(false);
+  const prevTotalItemsRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    // Skip on initial load (when prevTotalItemsRef is null) or while loading
+    if (isCartLoading || isCartFetching) return;
+    if (prevTotalItemsRef.current === null) {
+      prevTotalItemsRef.current = totalItems;
+      return;
+    }
+    if (totalItems > prevTotalItemsRef.current) {
+      setShakeCartFloatingButton(true);
+      const timer = setTimeout(() => setShakeCartFloatingButton(false), 1200);
+      prevTotalItemsRef.current = totalItems;
+      return () => clearTimeout(timer);
+    }
+    prevTotalItemsRef.current = totalItems;
+  }, [totalItems, isCartLoading, isCartFetching]);
   const [searchValue, setSearchValue] = useState("");
   // search bar start
   const placeholders = [

@@ -28,6 +28,16 @@ export default function CheckoutPageClient() {
   const [orderComplete, setOrderComplete] = useState(false)
   const [orderId, setOrderId] = useState("")
 
+  // ── Read cart context from sessionStorage (set by CartDrawer) ──────────────
+  const getCartContext = () => {
+    if (typeof window === "undefined") return null
+    try {
+      const raw = sessionStorage.getItem("cart_checkout_context")
+      return raw ? JSON.parse(raw) : null
+    } catch { return null }
+  }
+  const cartCtx = getCartContext()
+
   // Form data states
   const [shippingDetails, setShippingDetails] = useState({
     firstName: "",
@@ -38,7 +48,7 @@ export default function CheckoutPageClient() {
     city: "",
     state: "",
     zipCode: "",
-    country: "United States",
+    country: "Bangladesh",
   })
 
   const [paymentMethod, setPaymentMethod] = useState("credit-card")
@@ -54,14 +64,18 @@ export default function CheckoutPageClient() {
   const [shippingMethod, setShippingMethod] = useState("standard")
   const shippingCost = shippingMethod === "express" ? 15 : shippingMethod === "standard" ? 5 : 0
 
-  // Coupon and discount
-  const [couponCode, setCouponCode] = useState("")
-  const [discount, setDiscount] = useState(0)
+  // Coupon and discount — pre-fill from cart context
+  const [couponCode, setCouponCode] = useState(cartCtx?.couponCode ?? "")
+  const [discount, setDiscount] = useState(cartCtx?.couponDiscount ?? 0)
+
+  // Reward points — pre-fill from cart context
+  const [rewardPointsUsed] = useState<number>(cartCtx?.rewardPointsUsed ?? 0)
+  const [rewardDiscount] = useState<number>(cartCtx?.rewardDiscount ?? 0)
 
   // Calculate totals
   const subtotal = totalPrice
   const tax = subtotal * 0.08 // 8% tax
-  const grandTotal = subtotal + tax + shippingCost - discount
+  const grandTotal = subtotal + tax + shippingCost - discount - rewardDiscount
 
   // Handle step navigation
   const nextStep = () => {
@@ -126,6 +140,7 @@ export default function CheckoutPageClient() {
             image: item.image || undefined,
           })),
           couponCode: couponCode || undefined,
+          rewardPointsUsed,
           shippingAddress: {
             name: `${shippingDetails.firstName} ${shippingDetails.lastName}`.trim(),
             street: shippingDetails.address,
@@ -151,6 +166,8 @@ export default function CheckoutPageClient() {
         const newOrderId = res?.data?.orderNumber || `ORD-${Date.now()}`
         setOrderId(newOrderId)
         clearCart()
+        // Clear cart checkout context
+        sessionStorage.removeItem("cart_checkout_context")
         toast({ title: "Order placed successfully!", description: `Your order #${newOrderId} has been placed.`, type: "success" })
         setOrderComplete(true)
         setCurrentStep(4)

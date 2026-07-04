@@ -41,6 +41,21 @@ const orderApi = baseApi.injectEndpoints({
     getStripeSession: builder.query({
       query: (sessionId: string) => ({ url: `payment/session/${sessionId}` }),
     }),
+
+    // Delivery settings (public)
+    getDeliverySettings: builder.query<{
+      data: {
+        standardDays: number;
+        expressDays: number;
+        freeShippingThreshold: number;
+        standardCost: number;
+        expressCost: number;
+        rewardPointRate: number;
+        rewardEarnRate: number;
+      }
+    }, void>({
+      query: () => ({ url: "orders/delivery-settings" }),
+    }),
   }),
 });
 
@@ -53,4 +68,5 @@ export const {
   useDeleteOrderMutation,
   useCreateStripeSessionMutation,
   useGetStripeSessionQuery,
+  useGetDeliverySettingsQuery,
 } = orderApi;

@@ -1,18 +1,39 @@
 "use client"
 
 import { Truck, Calendar, Info } from "lucide-react"
+import { useGetDeliverySettingsQuery } from "@/redux/features/order/orderApi"
 
 export default function DeliveryInfo() {
-  // Calculate estimated delivery dates
+  const { data, isLoading } = useGetDeliverySettingsQuery()
+
+  const settings = data?.data ?? {
+    standardDays: 5,
+    expressDays: 2,
+    freeShippingThreshold: 1000,
+    standardCost: 5,
+    expressCost: 15,
+  }
+
   const today = new Date()
   const standardDelivery = new Date(today)
-  standardDelivery.setDate(today.getDate() + 5)
+  standardDelivery.setDate(today.getDate() + settings.standardDays)
 
   const expressDelivery = new Date(today)
-  expressDelivery.setDate(today.getDate() + 2)
+  expressDelivery.setDate(today.getDate() + settings.expressDays)
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+
+  if (isLoading) {
+    return (
+      <div className="px-4 py-3 border-t">
+        <div className="bg-blue-50 rounded-lg p-3 animate-pulse">
+          <div className="h-4 bg-blue-200 rounded w-1/2 mb-2" />
+          <div className="h-3 bg-blue-100 rounded w-3/4 mb-1" />
+          <div className="h-3 bg-blue-100 rounded w-2/3" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -27,7 +48,7 @@ export default function DeliveryInfo() {
           <div className="flex items-start">
             <Calendar size={14} className="text-blue-600 mr-2 mt-0.5" />
             <div>
-              <p className="text-blue-800">Standard Delivery</p>
+              <p className="text-blue-800 font-medium">Standard Delivery</p>
               <p className="text-blue-600 text-xs">Estimated by {formatDate(standardDelivery)}</p>
             </div>
           </div>
@@ -35,7 +56,7 @@ export default function DeliveryInfo() {
           <div className="flex items-start">
             <Calendar size={14} className="text-blue-600 mr-2 mt-0.5" />
             <div>
-              <p className="text-blue-800">Express Delivery</p>
+              <p className="text-blue-800 font-medium">Express Delivery</p>
               <p className="text-blue-600 text-xs">Estimated by {formatDate(expressDelivery)}</p>
             </div>
           </div>
@@ -44,7 +65,7 @@ export default function DeliveryInfo() {
         <div className="mt-2 pt-2 border-t border-blue-200 flex items-start">
           <Info size={14} className="text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
           <p className="text-xs text-blue-600 text-wrap">
-            Free shipping on orders over ₹1000. Orders placed before 2 PM are processed the same day.
+            Free shipping on orders over ৳{settings.freeShippingThreshold}. Orders placed before 2 PM are processed the same day.
           </p>
         </div>
       </div>

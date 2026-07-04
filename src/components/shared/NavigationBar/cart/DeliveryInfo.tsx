@@ -9,9 +9,8 @@ export default function DeliveryInfo() {
   const settings = data?.data ?? {
     standardDays: 5,
     expressDays: 2,
-    freeShippingThreshold: 1000,
-    standardCost: 5,
-    expressCost: 15,
+    standardCost: 60,
+    expressCost: 120,
   }
 
   const today = new Date()
@@ -65,7 +64,7 @@ export default function DeliveryInfo() {
         <div className="mt-2 pt-2 border-t border-blue-200 flex items-start">
           <Info size={14} className="text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
           <p className="text-xs text-blue-600 text-wrap">
-            Free shipping on orders over ৳{settings.freeShippingThreshold}. Orders placed before 2 PM are processed the same day.
+            Orders placed before 2 PM are processed the same day.
           </p>
         </div>
       </div>

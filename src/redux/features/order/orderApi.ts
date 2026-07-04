@@ -34,12 +34,12 @@ const orderApi = baseApi.injectEndpoints({
       invalidatesTags: ["orders"],
     }),
 
-    // Stripe: create checkout session
-    createStripeSession: builder.mutation({
+    // Payment: create SSL Commerz session or place COD order
+    createSslSession: builder.mutation({
       query: (body) => ({ url: "payment/create-session", method: "POST", body }),
     }),
-    getStripeSession: builder.query({
-      query: (sessionId: string) => ({ url: `payment/session/${sessionId}` }),
+    verifySslPayment: builder.query({
+      query: (tranId: string) => ({ url: `payment/verify/${tranId}` }),
     }),
 
     // Delivery settings (public)
@@ -47,7 +47,6 @@ const orderApi = baseApi.injectEndpoints({
       data: {
         standardDays: number;
         expressDays: number;
-        freeShippingThreshold: number;
         standardCost: number;
         expressCost: number;
         rewardPointRate: number;
@@ -66,7 +65,7 @@ export const {
   useCreateOrderMutation,
   useUpdateOrderStatusMutation,
   useDeleteOrderMutation,
-  useCreateStripeSessionMutation,
-  useGetStripeSessionQuery,
+  useCreateSslSessionMutation,
+  useVerifySslPaymentQuery,
   useGetDeliverySettingsQuery,
 } = orderApi;

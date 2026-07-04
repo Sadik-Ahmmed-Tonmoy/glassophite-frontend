@@ -15,7 +15,7 @@ type TInputProps = {
   parentClassName?: string;
   labelClassName?: string;
   inputClassName?: string;
-  [key: string]: any; // Allow other props
+  [key: string]: any;
 };
 
 const MyFormInputAceternity = React.forwardRef<HTMLInputElement, TInputProps>(
@@ -34,18 +34,27 @@ const MyFormInputAceternity = React.forwardRef<HTMLInputElement, TInputProps>(
     ref,
   ) => {
     const [isShowPassword, setIsShowPassword] = useState(false);
-
-    const radius = 100; // change this to increase the radius of the hover effect
     const [visible, setVisible] = React.useState(false);
 
+    const radius = 100;
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
+    const background = useMotionTemplate`
+      radial-gradient(
+        ${visible ? radius + "px" : "0px"} circle at ${mouseX}px ${mouseY}px,
+        #00a76b,
+        transparent 80%
+      )
+    `;
 
-    function handleMouseMove({ currentTarget, clientX, clientY }: any) {
-      const { left, top } = currentTarget.getBoundingClientRect();
-      mouseX.set(clientX - left);
-      mouseY.set(clientY - top);
-    }
+    const handleMouseMove = React.useCallback(
+      ({ currentTarget, clientX, clientY }: any) => {
+        const { left, top } = currentTarget.getBoundingClientRect();
+        mouseX.set(clientX - left);
+        mouseY.set(clientY - top);
+      },
+      [mouseX, mouseY],
+    );
 
     const { control } = useFormContext();
 
@@ -67,15 +76,7 @@ const MyFormInputAceternity = React.forwardRef<HTMLInputElement, TInputProps>(
           render={({ field, fieldState: { error } }) => (
             <>
               <motion.div
-                style={{
-                  background: useMotionTemplate`
-                  radial-gradient(
-                    ${visible ? radius + "px" : "0px"} circle at ${mouseX}px ${mouseY}px,
-                    #00a76b,
-                    transparent 80%
-                    )
-                    `,
-                }}
+                style={{ background }}
                 onMouseMove={handleMouseMove}
                 onMouseEnter={() => setVisible(true)}
                 onMouseLeave={() => setVisible(false)}
@@ -95,7 +96,7 @@ const MyFormInputAceternity = React.forwardRef<HTMLInputElement, TInputProps>(
                   placeholder={placeholder}
                   {...field}
                   {...rest}
-                  value={field.value ?? ""} // Ensure the input is always controlled
+                  value={field.value ?? ""}
                   ref={ref}
                 />
                 {type === "password" && (
@@ -120,7 +121,6 @@ const MyFormInputAceternity = React.forwardRef<HTMLInputElement, TInputProps>(
   },
 );
 
-// Adding the display name for the component
 MyFormInputAceternity.displayName = "MyFormInputAceternity";
 
 export default MyFormInputAceternity;

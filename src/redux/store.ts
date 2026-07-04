@@ -6,6 +6,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 import { persistReducer, persistStore, FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE } from "redux-persist";
 import authReducer from "./features/auth/authSlice";
+import checkoutReducer from "./features/checkout/checkoutSlice";
 import { baseApi } from "./api/baseApi";
 
 const createNoopStorage = () => {
@@ -36,6 +37,7 @@ export const makeStore = () => {
     reducer: {
       [baseApi.reducerPath]: baseApi.reducer,
       auth: persistedAuthReducer,
+      checkout: checkoutReducer,
     },
     middleware: (getDefaultMiddlewares) =>
       getDefaultMiddlewares({

@@ -2,31 +2,43 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronDown, ChevronUp } from "lucide-react"
+import { ChevronDown, ChevronUp, X, Tag } from "lucide-react"
 
 interface CartSummaryProps {
   subtotal: number
   shipping?: number
-  tax?: number
   couponDiscount?: number
   couponCode?: string
   rewardDiscount?: number
   rewardPointsUsed?: number
+  onRemoveCoupon?: () => void
+  onApplyCoupon?: (code: string) => void
 }
 
 export default function CartSummary({
   subtotal,
   shipping = 0,
-  tax = 0,
   couponDiscount = 0,
   couponCode,
   rewardDiscount = 0,
   rewardPointsUsed = 0,
+  onRemoveCoupon,
+  onApplyCoupon,
 }: CartSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(true)
+  const [couponInput, setCouponInput] = useState("")
+  const [isCouponExpanded, setIsCouponExpanded] = useState(false)
 
   const totalDiscount = couponDiscount + rewardDiscount
-  const total = Math.max(0, subtotal + shipping + tax - totalDiscount)
+  const total = Math.max(0, subtotal - totalDiscount)
+
+  const handleApplyCoupon = () => {
+    if (couponInput.trim() && onApplyCoupon) {
+      onApplyCoupon(couponInput)
+      setCouponInput("")
+      setIsCouponExpanded(false)
+    }
+  }
 
   return (
     <div className="px-4 py-3">
@@ -53,6 +65,8 @@ export default function CartSummary({
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
+           
+
             <div className="space-y-2 text-sm pb-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
@@ -66,12 +80,6 @@ export default function CartSummary({
                 </div>
               )}
 
-              {tax > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tax</span>
-                  <span>৳{tax.toFixed(2)}</span>
-                </div>
-              )}
 
               {couponDiscount > 0 && (
                 <div className="flex justify-between text-green-600">
@@ -103,7 +111,7 @@ export default function CartSummary({
       </AnimatePresence>
 
       <div className="flex justify-between pt-2 border-t">
-        <span className="font-semibold">Grand Total</span>
+        <span className="font-semibold">Grand Total <span className="text-xs text-gray-500">(excluding shipping)</span></span>
         <span className="font-semibold text-lg">৳{total.toFixed(2)}</span>
       </div>
     </div>

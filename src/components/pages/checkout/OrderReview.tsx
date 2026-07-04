@@ -3,6 +3,7 @@
 
 import { motion } from "framer-motion"
 import { useTheme } from "next-themes"
+import { useState } from "react"
 import { ArrowLeft, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
@@ -28,7 +29,6 @@ interface OrderReviewProps {
   shippingMethod: string
   subtotal: number
   shipping: number
-  tax: number
   discount: number
   total: number
   onBack: () => void
@@ -44,7 +44,6 @@ export default function OrderReview({
   shippingMethod,
   subtotal,
   shipping,
-  tax,
   discount,
   total,
   onBack,
@@ -53,6 +52,7 @@ export default function OrderReview({
 }: OrderReviewProps) {
   const { theme } = useTheme()
   const isDark = theme === "dark"
+  const [termsAccepted, setTermsAccepted] = useState(false)
 
   // Theme styles
   const themeStyles = {
@@ -103,9 +103,9 @@ export default function OrderReview({
   const getShippingMethodLabel = () => {
     switch (shippingMethod) {
       case "express":
-        return "Express Shipping ($15.00)"
+        return "Express Shipping (৳15.00)"
       case "standard":
-        return "Standard Shipping ($5.00)"
+        return "Standard Shipping (৳5.00)"
       case "free":
         return "Free Shipping"
       default:
@@ -115,16 +115,8 @@ export default function OrderReview({
 
   // Get payment method label
   const getPaymentMethodLabel = () => {
-    switch (paymentMethod) {
-      case "credit-card":
-        return "Credit Card"
-      case "paypal":
-        return "PayPal"
-      case "bank-transfer":
-        return "Bank Transfer"
-      default:
-        return "Credit Card"
-    }
+    if (paymentMethod === "CASH_ON_DELIVERY") return "Cash on Delivery"
+    return "SSL Commerz (Card, bKash, Nagad)"
   }
 
   // Animation variants
@@ -187,11 +179,11 @@ export default function OrderReview({
               </div>
               <div className="text-right">
                 <p className={`text-sm font-medium ${styles.text}`}>
-                  ${((item.discountPrice || item.price) * item.quantity).toFixed(2)}
+                  ৳{((item.discountPrice || item.price) * item.quantity).toFixed(2)}
                 </p>
                 {item.discountPrice && (
                   <p className={`text-xs ${styles.textMutedLighter} line-through`}>
-                    ${(item.price * item.quantity).toFixed(2)}
+                    ৳{(item.price * item.quantity).toFixed(2)}
                   </p>
                 )}
               </div>
@@ -229,24 +221,11 @@ export default function OrderReview({
         </h3>
         <div className={`p-4 rounded-lg border ${styles.infoBg}`}>
           <p className={`font-medium ${styles.text}`}>{getPaymentMethodLabel()}</p>
-          {paymentMethod === "credit-card" && paymentDetails.cardNumber && (
-            <>
-              <p className={styles.textMuted}>{formatCardNumber(paymentDetails.cardNumber)}</p>
-              <p className={styles.textMuted}>
-                <span data-translate="review.expires">Expires:</span> {paymentDetails.expiryDate}
-              </p>
-            </>
-          )}
-          {paymentMethod === "paypal" && (
-            <p className={`text-sm ${styles.textMuted}`} data-translate="review.paypalNote">
-              You will be redirected to PayPal after placing your order.
-            </p>
-          )}
-          {paymentMethod === "bank-transfer" && (
-            <p className={`text-sm ${styles.textMuted}`} data-translate="review.bankNote">
-              Bank details will be sent to your email after placing your order.
-            </p>
-          )}
+          <p className={`text-sm ${styles.textMuted} mt-1`}>
+            {paymentMethod === "CASH_ON_DELIVERY"
+              ? "You will pay in cash when your order is delivered."
+              : "You will be redirected to the SSL Commerz gateway to complete your payment."}
+          </p>
         </div>
       </motion.div>
 
@@ -259,26 +238,23 @@ export default function OrderReview({
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className={styles.textMuted} data-translate="review.subtotal">Subtotal</span>
-              <span className={styles.text}>${subtotal.toFixed(2)}</span>
+              <span className={styles.text}>৳{subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span className={styles.textMuted} data-translate="review.shipping">Shipping</span>
-              <span className={styles.text}>${shipping.toFixed(2)}</span>
+              <span className={styles.text}>৳{shipping.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className={styles.textMuted} data-translate="review.tax">Tax</span>
-              <span className={styles.text}>${tax.toFixed(2)}</span>
-            </div>
+
             {discount > 0 && (
               <div className="flex justify-between">
                 <span className={styles.textMuted} data-translate="review.discount">Discount</span>
-                <span className={styles.discountText}>-${discount.toFixed(2)}</span>
+                <span className={styles.discountText}>-৳{discount.toFixed(2)}</span>
               </div>
             )}
             <div className={`border-t ${styles.border} pt-2 mt-2`}>
               <div className="flex justify-between font-medium">
                 <span className={styles.text} data-translate="review.total">Total</span>
-                <span className={styles.text}>${total.toFixed(2)}</span>
+                <span className={styles.text}>৳{total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -291,6 +267,8 @@ export default function OrderReview({
           <input
             id="terms"
             type="checkbox"
+            checked={termsAccepted}
+            onChange={(e) => setTermsAccepted(e.target.checked)}
             className={cn(
               "h-4 w-4 rounded focus:ring-[#007C74] transition-colors",
               isDark ? "bg-white/5 border-white/30" : "border-gray-300 bg-white"
@@ -325,7 +303,7 @@ export default function OrderReview({
         <Button
           onClick={onPlaceOrder}
           className={styles.buttonPrimary}
-          disabled={isSubmitting}
+          disabled={isSubmitting || !termsAccepted}
         >
           {isSubmitting ? (
             <>

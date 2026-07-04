@@ -16,6 +16,7 @@ export interface CartItem {
   name: string
   brand: string
   size: string
+  sku?: string
   price: number
   discountPrice?: number
   image?: string
@@ -25,6 +26,7 @@ export interface CartItem {
   colorName?: string
   productId?: string
   variantId?: string
+  selectedColor?: string
 }
 
 interface CartContextType {
@@ -35,9 +37,6 @@ interface CartContextType {
   removeItem: (id: string) => void
   updateItemQuantity: (id: string | number, quantity: number) => void
   clearCart: () => void
-  saveForLater: (id: string) => void
-  moveToCart: (id: string) => void
-  savedItems: CartItem[]
   recentlyViewed: CartItem[]
   addToRecentlyViewed: (item: CartItem) => void
   isLoading: boolean
@@ -57,7 +56,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const [items, setItems] = useState<CartItem[]>([])
   const [mounted, setMounted] = useState(false)
-  const [savedItems, setSavedItems] = useState<CartItem[]>([])
   const [recentlyViewed, setRecentlyViewed] = useState<CartItem[]>([])
 
   // Initialize cart from localStorage (only runs for guests or initial mount)
@@ -77,10 +75,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Sync DB cart items to local state for authenticated users
   useEffect(() => {
     if (token && dbCartData?.data?.items) {
+      const adjustments: Array<{ itemId: string; quantity: number }> = [];
       const mappedItems = dbCartData.data.items.map((backendItem: any) => {
         const variant = backendItem.variant || backendItem.product?.variants?.[0];
+        const maxQty = variant?.quantity || 99;
+        let qty = backendItem.quantity;
+        if (qty > maxQty) {
+          qty = maxQty;
+          adjustments.push({ itemId: backendItem.id, quantity: maxQty });
+        }
         return {
-          id: backendItem.id, // the cartItem ID (used for update and delete)
+          id: backendItem.id,
           productId: backendItem.productId,
           variantId: backendItem.variantId || variant?.id,
           name: backendItem.product?.title || "Unnamed Frame",
@@ -89,15 +94,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
           price: variant?.priceAfterDiscount || variant?.mainPrice || 0,
           discountPrice: variant?.priceAfterDiscount,
           image: variant?.imgList?.[0]?.image || backendItem.product?.variants?.[0]?.imgList?.[0]?.image || "/placeholder.svg",
-          quantity: backendItem.quantity,
-          maxQuantity: variant?.quantity || 99,
+          quantity: qty,
+          maxQuantity: maxQty,
           color: backendItem.color || variant?.color,
           colorName: backendItem.colorName || variant?.title,
         };
       });
       setItems(mappedItems);
+
+      // Fire DB corrections after state is set, outside of the render phase
+      if (adjustments.length > 0) {
+        Promise.resolve().then(() => {
+          adjustments.forEach(({ itemId, quantity }) => {
+            apiUpdateCartItem({ itemId, quantity });
+          });
+          toast.warning("Stock limit reached", {
+            description: "Some items in your cart exceeded the available stock and have been adjusted to the maximum available quantity.",
+          });
+        });
+      }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dbCartData, token]);
+  // NOTE: apiUpdateCartItem is intentionally omitted — RTK mutation refs change every render
+
 
   // Update localStorage when cart changes (only for guests)
   useEffect(() => {
@@ -137,22 +157,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setPrevToken(token);
     };
     handleLoginSync();
-  }, [token, prevToken, apiAddToCart, refetch]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, prevToken]);
+  // NOTE: apiAddToCart and refetch intentionally omitted — RTK refs change every render
 
-  // Saved items and recently viewed storage configuration (stays local)
+  // Recently viewed storage configuration (stays local)
   useEffect(() => {
     if (mounted) {
-      const storedSavedItems = localStorage.getItem("savedItems")
       const storedRecentlyViewed = localStorage.getItem("recentlyViewed")
-
-      if (storedSavedItems) {
-        try {
-          setSavedItems(JSON.parse(storedSavedItems))
-        } catch (error) {
-          console.error("Failed to parse saved items from localStorage:", error)
-          setSavedItems([])
-        }
-      }
 
       if (storedRecentlyViewed) {
         try {
@@ -167,10 +179,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (mounted) {
-      localStorage.setItem("savedItems", JSON.stringify(savedItems))
       localStorage.setItem("recentlyViewed", JSON.stringify(recentlyViewed))
     }
-  }, [savedItems, recentlyViewed, mounted])
+  }, [recentlyViewed, mounted])
 
   const totalItems = items.reduce((total, item) => total + item.quantity, 0)
 
@@ -269,27 +280,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const saveForLater = (id: string) => {
-    setItems((prevItems) => {
-      const itemToSave = prevItems.find((item) => item.id === id)
-      if (itemToSave) {
-        setSavedItems((prev) => [...prev, itemToSave])
-        return prevItems.filter((item) => item.id !== id)
-      }
-      return prevItems
-    })
-  }
 
-  const moveToCart = (id: string) => {
-    setSavedItems((prevItems) => {
-      const itemToMove = prevItems.find((item) => item.id === id)
-      if (itemToMove) {
-        addItem(itemToMove)
-        return prevItems.filter((item) => item.id !== id)
-      }
-      return prevItems
-    })
-  }
 
   const addToRecentlyViewed = useCallback(
     (item: CartItem) => {
@@ -315,9 +306,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeItem,
         updateItemQuantity,
         clearCart,
-        saveForLater,
-        moveToCart,
-        savedItems,
         recentlyViewed,
         addToRecentlyViewed,
         isLoading: token ? isCartLoading : false,

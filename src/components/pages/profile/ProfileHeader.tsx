@@ -1,11 +1,12 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useTheme } from "next-themes"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { useProfileTheme } from "@/hooks/useProfileTheme"
+import { fadeInDown } from "@/lib/profileAnimations"
 
 interface ProfileHeaderProps {
   title: string
@@ -20,62 +21,36 @@ export default function ProfileHeader({
   showBackButton = false,
   backUrl = "/my-profile",
 }: ProfileHeaderProps) {
-  const { theme } = useTheme()
-  const isDark = theme === "dark"
+  const { theme: styles } = useProfileTheme()
   const pathname = usePathname()
   const isSubpage = pathname !== "/my-profile"
 
-  // Theme styles
-  const themeStyles = {
-    dark: {
-      text: "text-white",
-      textMuted: "text-neutral-300",
-      textMutedLighter: "text-neutral-400",
-      link: "text-neutral-400 hover:text-[#007C74]",
-    },
-    light: {
-      text: "text-gray-900",
-      textMuted: "text-gray-700",
-      textMutedLighter: "text-gray-500",
-      link: "text-gray-600 hover:text-[#007C74]",
-    },
-  }
-
-  const styles = isDark ? themeStyles.dark : themeStyles.light
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0, y: -10 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.4, ease: "easeOut" as const },
-    },
-  }
-
   return (
     <motion.div
-      variants={containerVariants}
+      variants={fadeInDown}
       initial="hidden"
       animate="visible"
-      className="flex flex-col space-y-2"
+      className="relative"
     >
+      <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-[#007C74] to-[#3C55A5] rounded-full opacity-60" />
       {(showBackButton || isSubpage) && (
         <Link href={backUrl}>
           <motion.div
-            className={cn("inline-flex items-center text-sm mb-2", styles.link)}
+            className={cn("inline-flex items-center text-sm mb-2", styles.textMutedLighter, "hover:text-[#007C74] transition-colors duration-300")}
             whileHover={{ x: -3 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
           >
-            <ArrowLeft size={16} className="mr-1" />
-            <span data-translate="profile.back">Back</span>
+            <ArrowLeft size={15} className="mr-1" />
+            Back
           </motion.div>
         </Link>
       )}
-      <h1 className={cn("text-2xl font-bold", styles.text)} data-translate="profile.header.title">
-        {title}
-      </h1>
-      <p className={cn("text-sm", styles.textMutedLighter)} data-translate="profile.header.description">
+      <div className="flex items-center gap-3 mb-1">
+        <h1 className={cn("text-2xl sm:text-3xl font-bold tracking-tight", styles.text)}>
+          {title}
+        </h1>
+        <Sparkles size={20} className="text-[#007C74] opacity-60 hidden sm:block" />
+      </div>
+      <p className={cn("text-sm max-w-xl leading-relaxed", styles.textMutedLighter)}>
         {description}
       </p>
     </motion.div>

@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { TOrderItem } from "@/types/types";
+import type { TOrderItem } from "@/types/types";
 import {
   AlertCircle,
   AlertTriangle,
@@ -30,7 +30,7 @@ import {
   RotateCcw,
   XCircle,
 } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useProfileTheme } from "@/hooks/useProfileTheme";
 import Image from "next/image";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -62,66 +62,18 @@ export default function ReturnDialog({
   orderItems,
   isDelivered,
 }: ReturnDialogProps) {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark, theme: styles } = useProfileTheme();
   const [open, setOpen] = useState(false);
-  const [returnItems, setReturnItems] = useState<{ [key: string]: boolean }>(
-    {}
-  );
+  const [returnItems, setReturnItems] = useState<{ [key: string]: boolean }>({});
   const [returnReason, setReturnReason] = useState("");
   const [returnAdditionalDetails, setReturnAdditionalDetails] = useState("");
   const [returnMethod, setReturnMethod] = useState("mail");
   const [refundMethod, setRefundMethod] = useState("original");
   const [returnImages, setReturnImages] = useState<string[]>([]);
   const [returnStep, setReturnStep] = useState(1);
-  const [returnRequest, setReturnRequest] = useState<ReturnRequest | null>(
-    null
-  );
+  const [returnRequest, setReturnRequest] = useState<ReturnRequest | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Theme styles
-  const themeStyles = {
-    dark: {
-      card: "bg-black border-white/10",
-      text: "text-white",
-      textMuted: "text-neutral-300",
-      textMutedLighter: "text-neutral-400",
-      border: "border-white/10",
-      input: "bg-white/5 border-white/10 text-white placeholder:text-neutral-500",
-      label: "text-neutral-300",
-      bgMuted: "bg-white/5",
-      bgWarning: "bg-yellow-500/10 border-yellow-500/20 text-yellow-500",
-      bgSuccess: "bg-green-500/10 border-green-500/20 text-green-500",
-      bgInfo: "bg-blue-500/10 border-blue-500/20 text-blue-500",
-      icon: "text-neutral-400",
-      badgePending: "bg-yellow-500/20 text-yellow-500 border-yellow-500/30",
-      buttonPrimary: "bg-primary text-white hover:bg-primary/90",
-      buttonOutline: "border-white/20 text-white hover:bg-white/10",
-      checkbox: "border-white/30 bg-white/5 data-[state=checked]:bg-primary data-[state=checked]:border-primary",
-      select: "bg-white/5 border-white/10 text-white",
-    },
-    light: {
-      card: "bg-white border-gray-200",
-      text: "text-gray-900",
-      textMuted: "text-gray-700",
-      textMutedLighter: "text-gray-500",
-      border: "border-gray-200",
-      input: "bg-white border-gray-300 text-gray-900",
-      label: "text-gray-700",
-      bgMuted: "bg-gray-50",
-      bgWarning: "bg-yellow-50 border-yellow-200 text-yellow-800",
-      bgSuccess: "bg-green-50 border-green-200 text-green-800",
-      bgInfo: "bg-blue-50 border-blue-200 text-blue-800",
-      icon: "text-gray-400",
-      badgePending: "bg-yellow-100 text-yellow-800 border-yellow-200",
-      buttonPrimary: "bg-primary text-white hover:bg-primary/90",
-      buttonOutline: "border-gray-300 text-gray-700 hover:bg-gray-50",
-      checkbox: "border-gray-300 bg-white data-[state=checked]:bg-primary data-[state=checked]:border-primary",
-      select: "bg-white border-gray-300 text-gray-900",
-    },
-  };
-
-  const styles = isDark ? themeStyles.dark : themeStyles.light;
+  const [validationError, setValidationError] = useState("");
 
   // Initialize return items state
   useEffect(() => {
@@ -165,31 +117,18 @@ export default function ReturnDialog({
     setReturnImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Validate return form
   const validateReturnForm = () => {
-    const selectedItems = Object.entries(returnItems).filter(
-      ([, isSelected]) => isSelected
-    );
-    if (selectedItems.length === 0) {
-      alert("Please select at least one item to return");
-      return false;
-    }
-    if (!returnReason) {
-      alert("Please select a reason for your return");
-      return false;
-    }
-    if (returnReason === "other" && !returnAdditionalDetails) {
-      alert("Please provide additional details for your return reason");
-      return false;
-    }
+    const selectedItems = Object.entries(returnItems).filter(([, s]) => s);
+    if (selectedItems.length === 0) { setValidationError("Please select at least one item to return"); return false; }
+    if (!returnReason) { setValidationError("Please select a reason for your return"); return false; }
+    if (returnReason === "other" && !returnAdditionalDetails) { setValidationError("Please provide additional details for your return reason"); return false; }
+    setValidationError("");
     return true;
   };
 
-  // Handle next step in return process
   const handleReturnNextStep = () => {
-    if (returnStep === 1 && !validateReturnForm()) {
-      return;
-    }
+    if (returnStep === 1 && !validateReturnForm()) return;
+    setValidationError("");
     setReturnStep((prev) => prev + 1);
   };
 
@@ -221,14 +160,10 @@ export default function ReturnDialog({
         requestDate: new Date().toISOString(),
       };
 
-      console.log("Return request submitted:", newReturnRequest);
       setReturnRequest(newReturnRequest);
       setReturnStep(3);
-    } catch (error) {
-      console.error("Error submitting return request:", error);
-      alert(
-        "There was an error submitting your return request. Please try again."
-      );
+    } catch {
+      setValidationError("There was an error submitting your return request. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -346,17 +281,19 @@ export default function ReturnDialog({
               </div>
             )}
 
-            <div className={cn("p-4 rounded-lg border", styles.bgWarning)}>
-              <p className={cn("text-sm flex items-start", styles.textMuted)}>
-                <AlertTriangle size={16} className="mr-2 mt-0.5 flex-shrink-0" />
-                <span>
-                  <strong data-translate="return.policyTitle">Return Policy:</strong>{" "}
-                  <span data-translate="return.policyText">
-                    Items must be returned within 30 days of delivery in their original condition.
-                    Once your return is approved, you will receive a return shipping label via email.
-                  </span>
-                </span>
-              </p>
+            {validationError && (
+              <div className={cn("p-3 rounded-xl border flex items-start gap-2 text-sm", isDark ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-red-50 border-red-200 text-red-700")}>
+                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                <span>{validationError}</span>
+              </div>
+            )}
+
+            <div className={cn("p-4 rounded-xl border flex items-start gap-2 text-sm", isDark ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-400" : "bg-yellow-50 border-yellow-200 text-yellow-800")}>
+              <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+              <div>
+                <strong>Return Policy:</strong> Items must be returned within 30 days of delivery in their original condition.
+                Once your return is approved, you will receive a return shipping label via email.
+              </div>
             </div>
           </div>
         );

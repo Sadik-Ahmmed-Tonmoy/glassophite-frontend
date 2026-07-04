@@ -63,11 +63,11 @@ export default function RecentlyViewed() {
                     <p className="text-white/80 text-xs">
                       {item.discountPrice ? (
                         <>
-                          <span className="font-medium">₹{item.discountPrice}</span>
-                          <span className="ml-1 line-through">₹{item.price}</span>
+                          <span className="font-medium">৳{item.discountPrice}</span>
+                          <span className="ml-1 line-through">৳{item.price}</span>
                         </>
                       ) : (
-                        <span>₹{item.price}</span>
+                        <span>৳{item.price}</span>
                       )}
                     </p>
                   </div>

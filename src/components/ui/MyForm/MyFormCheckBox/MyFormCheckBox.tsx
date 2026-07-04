@@ -17,11 +17,12 @@ const MyFormCheckBox = ({ title, titleClassName, handleCheckboxChange = () => {}
   return (
     <label
       className="flex items-center hover:cursor-pointer gap-3 text-[#252728] font-inter text-sm font-normal leading-normal w-fit h-min"
-      onChange={handleIsCheckboxChange}
     >
       <div className="relative flex items-center overflow-hidden">
         <input
           type="checkbox"
+          checked={selectedCheckbox}
+          onChange={handleIsCheckboxChange}
           className={`rounded h-4 w-4 transition-all duration-300 hover:cursor-pointer ${
             selectedCheckbox == true ? `bg-[${checkBoxColor}] text-white` : "bg-white"
           } border border-[#0094CF] appearance-none`}

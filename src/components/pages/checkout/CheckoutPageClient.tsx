@@ -5,7 +5,9 @@ import { useCart } from "@/hooks/use-cart"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
 import { useValidateCouponMutation } from "@/redux/features/coupon/couponApi"
-import { useCreateOrderMutation, useCreateStripeSessionMutation } from "@/redux/features/order/orderApi"
+import { useCreateOrderMutation, useCreateSslSessionMutation } from "@/redux/features/order/orderApi"
+import { useAppSelector, useAppDispatch } from "@/redux/hooks"
+import { setCoupon } from "@/redux/features/checkout/checkoutSlice"
 
 import CheckoutStepper from "@/components/pages/checkout/CheckoutStepper"
 import CheckoutSummary from "@/components/pages/checkout/CheckoutSummary"
@@ -18,17 +20,18 @@ import { ArrowLeft, ShoppingCart } from "lucide-react"
 import Link from "next/link"
 
 export default function CheckoutPageClient() {
-  const { items, totalPrice, clearCart } = useCart()
+  const { items, totalPrice, clearCart, updateItemQuantity } = useCart()
   const { toast } = useToast()
   const [validateCoupon] = useValidateCouponMutation()
   const [createOrder] = useCreateOrderMutation()
-  const [createStripeSession] = useCreateStripeSessionMutation()
+  const [createSslSession] = useCreateSslSessionMutation()
+  const dispatch = useAppDispatch()
+  const reduxCoupon = useAppSelector((state) => state.checkout.coupon)
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderComplete, setOrderComplete] = useState(false)
-  const [orderId, setOrderId] = useState("")
+  const [orderData, setOrderData] = useState<any>(null)
 
-  // ── Read cart context from sessionStorage (set by CartDrawer) ──────────────
   const getCartContext = () => {
     if (typeof window === "undefined") return null
     try {
@@ -38,7 +41,6 @@ export default function CheckoutPageClient() {
   }
   const cartCtx = getCartContext()
 
-  // Form data states
   const [shippingDetails, setShippingDetails] = useState({
     firstName: "",
     lastName: "",
@@ -49,35 +51,32 @@ export default function CheckoutPageClient() {
     state: "",
     zipCode: "",
     country: "Bangladesh",
+    saveAddress: false,
   })
 
-  const [paymentMethod, setPaymentMethod] = useState("credit-card")
-  const [paymentDetails, setPaymentDetails] = useState({
-    cardNumber: "",
-    cardName: "",
-    expiryDate: "",
-    cvv: "",
-    saveCard: false,
-  })
+  const [paymentMethod, setPaymentMethod] = useState("SSLCO")
+  const [paymentDetails, setPaymentDetails] = useState<any>({})
 
-  // Shipping options
   const [shippingMethod, setShippingMethod] = useState("standard")
-  const shippingCost = shippingMethod === "express" ? 15 : shippingMethod === "standard" ? 5 : 0
+  const shippingCost = shippingMethod === "express" ? 120 : 60
 
-  // Coupon and discount — pre-fill from cart context
-  const [couponCode, setCouponCode] = useState(cartCtx?.couponCode ?? "")
-  const [discount, setDiscount] = useState(cartCtx?.couponDiscount ?? 0)
+  const subtotal = totalPrice
+  const initialCode = reduxCoupon?.code ?? cartCtx?.couponCode ?? ""
+  const [couponCode, setCouponCode] = useState(initialCode)
+  const initialDiscount = reduxCoupon
+    ? subtotal * (reduxCoupon.discount / 100)
+    : (cartCtx?.couponDiscountRate
+      ? subtotal * (cartCtx.couponDiscountRate / 100)
+      : (cartCtx?.couponDiscount ?? 0))
+  const [discount, setDiscount] = useState(initialDiscount)
 
-  // Reward points — pre-fill from cart context
   const [rewardPointsUsed] = useState<number>(cartCtx?.rewardPointsUsed ?? 0)
   const [rewardDiscount] = useState<number>(cartCtx?.rewardDiscount ?? 0)
 
-  // Calculate totals
-  const subtotal = totalPrice
-  const tax = subtotal * 0.08 // 8% tax
-  const grandTotal = subtotal + tax + shippingCost - discount - rewardDiscount
+  const tax = 0
+  const grandTotal = subtotal + shippingCost - discount - rewardDiscount
+  const displayTotal = subtotal + shippingCost - discount - rewardDiscount
 
-  // Handle step navigation
   const nextStep = () => {
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1)
@@ -92,9 +91,12 @@ export default function CheckoutPageClient() {
     }
   }
 
-  // Handle form submissions
   const handleShippingSubmit = (data: any) => {
-    setShippingDetails(data)
+    setShippingDetails((prev) => ({
+      ...prev,
+      ...data,
+      country: data.country || prev.country || "Bangladesh",
+    }))
     nextStep()
   }
 
@@ -104,83 +106,81 @@ export default function CheckoutPageClient() {
     nextStep()
   }
 
-  // Handle order placement
+  const orderPayload = {
+    paymentMethod,
+    couponCode: couponCode || undefined,
+    shippingAddress: {
+      name: `${shippingDetails.firstName} ${shippingDetails.lastName}`.trim(),
+      street: shippingDetails.address,
+      city: shippingDetails.city,
+      state: shippingDetails.state,
+      zipCode: shippingDetails.zipCode,
+      country: shippingDetails.country || "Bangladesh",
+      phone: shippingDetails.phone,
+      // Pass original fields for backend compatibility
+      firstName: shippingDetails.firstName,
+      lastName: shippingDetails.lastName,
+      address: shippingDetails.address,
+    },
+    shippingMethod,
+    saveAddress: shippingDetails.saveAddress,
+    rewardPointsUsed: rewardPointsUsed || undefined,
+  }
+
   const placeOrder = async () => {
+    let adjusted = false
+    for (const item of items) {
+      if (item.quantity > item.maxQuantity) {
+        await updateItemQuantity(item.id, item.maxQuantity)
+        adjusted = true
+      }
+    }
+
+    if (adjusted) {
+      toast({
+        title: "Stock levels adjusted",
+        description: "Some items in your cart exceeded the available stock and have been adjusted to the maximum available quantity. Please review your total.",
+        type: "destructive",
+      })
+      return
+    }
+
     setIsSubmitting(true)
     try {
-      if (paymentMethod === "stripe") {
-        // Stripe checkout session
-        const session = await createStripeSession({
-          items: items.map((item) => ({
-            name: item.name,
-            price: item.discountPrice || item.price,
-            quantity: item.quantity,
-            image: item.image,
-          })),
-          couponCode: couponCode || undefined,
-          shippingAddress: shippingDetails,
-          shippingMethod,
-        }).unwrap()
-        // Redirect to Stripe
-        if (session?.data?.url) {
-          window.location.href = session.data.url
-          return
-        }
-      } else {
-        // COD / Bank Transfer order
-        const res = await createOrder({
-          items: items.map((item) => ({
-            productId: item.id,
-            name: item.name,
-            sku: `${item.name.replace(/\s+/g, "-").toUpperCase()}-${item.size || "STD"}`,
-            price: item.discountPrice || item.price,
-            originalPrice: item.price,
-            quantity: item.quantity,
-            variant: item.colorName || item.color || undefined,
-            image: item.image || undefined,
-          })),
-          couponCode: couponCode || undefined,
-          rewardPointsUsed,
-          shippingAddress: {
-            name: `${shippingDetails.firstName} ${shippingDetails.lastName}`.trim(),
-            street: shippingDetails.address,
-            city: shippingDetails.city,
-            state: shippingDetails.state,
-            zipCode: shippingDetails.zipCode,
-            country: shippingDetails.country,
-            phone: shippingDetails.phone,
-          },
-          shippingMethod,
-          paymentMethod:
-            paymentMethod === "cod"
-              ? "CASH_ON_DELIVERY"
-              : paymentMethod === "stripe"
-              ? "STRIPE"
-              : "CREDIT_CARD",
-          subtotal,
-          shipping: shippingCost,
-          tax,
-          discount,
-          total: grandTotal,
-        }).unwrap()
-        const newOrderId = res?.data?.orderNumber || `ORD-${Date.now()}`
-        setOrderId(newOrderId)
-        clearCart()
-        // Clear cart checkout context
-        sessionStorage.removeItem("cart_checkout_context")
-        toast({ title: "Order placed successfully!", description: `Your order #${newOrderId} has been placed.`, type: "success" })
+      if (paymentMethod === "CASH_ON_DELIVERY") {
+        const result = await createOrder(orderPayload).unwrap()
+        const newOrder = result?.data?.order || result?.data
+        setOrderData(newOrder)
         setOrderComplete(true)
-        setCurrentStep(4)
+        clearCart()
+        sessionStorage.removeItem("cart_checkout_context")
+        return
       }
+
+      // SSL Commerz
+      const response = await createSslSession(orderPayload).unwrap()
+      const paymentUrl = response?.data?.url || response?.url
+      if (paymentUrl) {
+        window.location.href = paymentUrl
+        return
+      }
+
+      throw new Error("No payment URL returned from server")
     } catch (error: any) {
       console.error("Error placing order:", error)
-      toast({ title: "Error placing order", description: error?.data?.message || "There was an error processing your order. Please try again.", type: "destructive" })
+      const errorMsg = error?.data?.errorMessages?.[0]?.message
+        ? `${error.data.message}: ${error.data.errorMessages[0].path} - ${error.data.errorMessages[0].message}`
+        : error?.data?.message || error?.message || "There was an error processing your order. Please try again."
+      toast({
+        title: "Error placing order",
+        description: errorMsg,
+        type: "destructive",
+      })
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  // Handle coupon application
   const applyCoupon = async (code: string) => {
     try {
       const result = await validateCoupon({ code: code.toUpperCase().trim() }).unwrap()
@@ -189,6 +189,7 @@ export default function CheckoutPageClient() {
         const discountAmount = subtotal * (couponData.discount / 100)
         setDiscount(discountAmount)
         setCouponCode(couponData.code)
+        dispatch(setCoupon({ code: couponData.code, discount: couponData.discount }))
         toast({ title: "Coupon applied", description: `${couponData.discount}% discount has been applied.`, type: "success" })
       }
     } catch (err: any) {
@@ -196,52 +197,46 @@ export default function CheckoutPageClient() {
     }
   }
 
-  // If order is complete, show confirmation
+  const removeCoupon = () => {
+    setCouponCode("")
+    setDiscount(0)
+    dispatch(setCoupon(null))
+    toast({ title: "Coupon removed", description: "Coupon has been removed from your order.", type: "success" })
+  }
+
   if (orderComplete) {
     return (
       <OrderConfirmation
-        orderId={orderId}
-        orderDate={new Date().toISOString()}
-        shippingDetails={shippingDetails}
+        orderData={orderData}
         items={items}
-        subtotal={subtotal}
-        shipping={shippingCost}
-        tax={tax}
-        discount={discount}
-        total={grandTotal}
       />
     )
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header */}
       <div className="mb-8">
-        <Link href="/products" className="inline-flex items-center text-sm text-gray-600 hover:text-primary mb-4">
+        <Link href="/product-filter" className="inline-flex items-center text-sm text-gray-600 hover:text-primary mb-4">
           <ArrowLeft size={16} className="mr-1" />
           Continue Shopping
         </Link>
         <h1 className="text-3xl font-bold">Checkout</h1>
       </div>
 
-      {/* Empty cart message */}
       {items.length === 0 ? (
         <div className="text-center py-16">
           <ShoppingCart size={48} className="mx-auto text-gray-300 mb-4" />
           <h2 className="text-xl font-medium text-gray-700 mb-2">Your cart is empty</h2>
           <p className="text-gray-500 mb-6">Add items to your cart to proceed with checkout.</p>
           <Button asChild className="bg-primary hover:bg-primary/90">
-            <Link href="/products">Browse Products</Link>
+            <Link href="/product-filter">Browse Products</Link>
           </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main checkout form */}
           <div className="lg:col-span-2">
-            {/* Checkout steps */}
             <CheckoutStepper currentStep={currentStep} />
 
-            {/* Step content */}
             <div className="mt-8">
               {currentStep === 1 && (
                 <ShippingForm
@@ -269,9 +264,8 @@ export default function CheckoutPageClient() {
                   shippingMethod={shippingMethod}
                   subtotal={subtotal}
                   shipping={shippingCost}
-                  tax={tax}
                   discount={discount}
-                  total={grandTotal}
+                  total={displayTotal}
                   onBack={prevStep}
                   onPlaceOrder={placeOrder}
                   isSubmitting={isSubmitting}
@@ -280,17 +274,16 @@ export default function CheckoutPageClient() {
             </div>
           </div>
 
-          {/* Order summary sidebar */}
           <div className="lg:col-span-1">
             <CheckoutSummary
               items={items}
               subtotal={subtotal}
               shipping={shippingCost}
-              tax={tax}
               discount={discount}
-              total={grandTotal}
-              couponCode={couponCode}
-              onApplyCoupon={applyCoupon}
+              total={displayTotal}
+  couponCode={couponCode}
+  onApplyCoupon={applyCoupon}
+  onRemoveCoupon={removeCoupon}
             />
           </div>
         </div>

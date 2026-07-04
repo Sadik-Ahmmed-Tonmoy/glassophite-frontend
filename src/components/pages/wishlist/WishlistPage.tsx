@@ -64,7 +64,8 @@ export default function WishlistPage() {
                 className="grid grid-cols-1 md:grid-cols-2 gap-6"
               >
                 {wishlistItems.map((product) => {
-                  const variant = product.variants[0];
+                  const variant = product.variants?.[0];
+                  if (!variant) return null;
                   return (
                     <motion.div
                       key={product.id}

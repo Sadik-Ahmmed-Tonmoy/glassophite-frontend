@@ -18,13 +18,14 @@ export function useToast() {
   const [toasts, setToasts] = useState<Toast[]>([])
 
   useEffect(() => {
-    // Auto-dismiss toasts after 5 seconds
+    if (toasts.length === 0) return
+    // Auto-dismiss the oldest toast after 5 seconds
     const timer = setTimeout(() => {
-      setToasts((toasts) => toasts.slice(1))
+      setToasts((prev) => prev.slice(1))
     }, 5000)
 
     return () => clearTimeout(timer)
-  }, [toasts])
+  }, [toasts.length])
 
   function toast({
     title,

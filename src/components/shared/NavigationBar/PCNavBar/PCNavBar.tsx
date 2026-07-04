@@ -2,27 +2,25 @@
 "use client";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
+import { useCart } from "@/hooks/use-cart";
+import { LanguageSwitcher, TranslateInitializer } from "@/lib/GoogleTranslateProvider";
 import { cn } from "@/lib/utils";
+import { useGetMeQuery, useLogoutMutation } from "@/redux/features/auth/authApi";
+import { logout } from "@/redux/features/auth/authSlice";
+import { useGetWishlistQuery } from "@/redux/features/wishlist/wishlistApi";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import CountUp from "react-countup";
 import { AiOutlineHeart } from "react-icons/ai";
 import { BsPerson } from "react-icons/bs";
-import { MdOutlineShoppingBag } from "react-icons/md";
 import { PiShoppingBagOpenFill } from "react-icons/pi";
+import { toast } from "sonner";
+import CartButton from "../cart/CartButton";
+import CartDrawer from "../cart/CartDrawer";
 import DropDownMenus from "../DropDownMenus/DropDownMenus";
 import styles from "./PCNavBar.module.css";
-import CartButton from "../cart/CartButton";
-import { LanguageSwitcher, TranslateInitializer } from "@/lib/GoogleTranslateProvider";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { logout } from "@/redux/features/auth/authSlice";
-import { useGetMeQuery, useLogoutMutation } from "@/redux/features/auth/authApi";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useGetWishlistQuery } from "@/redux/features/wishlist/wishlistApi";
-import { useCart } from "@/hooks/use-cart";
-import CartDrawer from "../cart/CartDrawer";
-import { Loader2 } from "lucide-react";
 
 const PCNavBar = () => {
   const dispatch = useAppDispatch();
@@ -130,7 +128,7 @@ const PCNavBar = () => {
                 <span className={styles.text} data-translate>{isLoggedIn ? (user?.fullName || "Profile") : "Account"}</span>
               </span>
             </button>
-            
+
             {/* Account Dropdown Menu */}
             <div className="absolute right-0 top-full pt-2 w-48 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 z-50">
               <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl overflow-hidden p-2 flex flex-col gap-1 text-xs">
@@ -176,7 +174,7 @@ const PCNavBar = () => {
             >
               <AiOutlineHeart className="w-6 h-6 " />
               <span className="relative">
-               <span data-translate>Wishlist</span>
+                <span data-translate>Wishlist</span>
                 <span className={styles.text} data-translate>Wishlist</span>
               </span>
               {isWishlistLoading || isWishlistFetching ? (
@@ -199,7 +197,7 @@ const PCNavBar = () => {
             onClick={() => setIsCartOpen(true)}
             className={cn(
               shakeCartFloatingButton ? `${styles.addToBagCartShake}` : "",
-              "absolute top-[200%] w-[80px] right-0 rounded-ss-lg rounded-es-lg overflow-hidden hover:cursor-pointer z-50 shadow-lg"
+              "hidden 2xl:block absolute top-[200%] w-[80px] right-0 rounded-ss-lg rounded-es-lg overflow-hidden hover:cursor-pointer z-50 shadow-lg"
             )}
           >
             <div className="bg-[#192038]  py-3 px-4 flex flex-col items-center">
@@ -223,7 +221,7 @@ const PCNavBar = () => {
             </div>
           </div>
           <TranslateInitializer />
-           <LanguageSwitcher  />
+          <LanguageSwitcher />
           {/* floating button end*/}
 
           <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />

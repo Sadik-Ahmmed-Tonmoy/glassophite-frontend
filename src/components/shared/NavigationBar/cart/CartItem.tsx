@@ -10,7 +10,7 @@ import { toast } from "sonner"
 
 
 export default function CartItem({ item }: any) {
-  const { updateItemQuantity, removeItem, saveForLater } = useCart()
+  const { updateItemQuantity, removeItem } = useCart()
   const [isRemoving, setIsRemoving] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
@@ -154,25 +154,23 @@ export default function CartItem({ item }: any) {
               </button>
             </div>
 
-            <div className="text-right">
-              {item.discountPrice ? (
-                <>
-                  <span className="font-medium text-gray-900">₹{item.discountPrice}</span>
-                  <span className="ml-1.5 text-sm text-gray-500 line-through">₹{item.price}</span>
-                </>
-              ) : (
-                <span className="font-medium text-gray-900">₹{item.price}</span>
-              )}
+            <div className="text-right flex flex-col items-end">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                {item.quantity} × ৳{item.discountPrice || item.price} =
+              </div>
+              <div className="mt-0.5">
+                {item.discountPrice ? (
+                  <>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">৳{(item.discountPrice * item.quantity).toFixed(2)}</span>
+                    <span className="ml-1.5 text-xs text-gray-400 line-through">৳{(item.price * item.quantity).toFixed(2)}</span>
+                  </>
+                ) : (
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">৳{(item.price * item.quantity).toFixed(2)}</span>
+                )}
+              </div>
             </div>
           </div>
-          <div className="mt-2 flex justify-end">
-            <button
-              onClick={() => saveForLater(item.id)}
-              className="text-xs text-primary hover:text-primary/80 transition-colors"
-            >
-              Save for later
-            </button>
-          </div>
+          {/* Removed save for later container */}
         </div>
       </div>
     </motion.div>

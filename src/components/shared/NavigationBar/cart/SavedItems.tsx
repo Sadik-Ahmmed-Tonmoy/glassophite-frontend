@@ -53,11 +53,11 @@ export default function SavedItems() {
                     <p className="text-xs text-gray-500 mt-1">
                       {item.discountPrice ? (
                         <>
-                          <span className="font-medium">₹{item.discountPrice}</span>
-                          <span className="ml-1 line-through">₹{item.price}</span>
+                          <span className="font-medium">৳{item.discountPrice}</span>
+                          <span className="ml-1 line-through">৳{item.price}</span>
                         </>
                       ) : (
-                        <span>₹{item.price}</span>
+                        <span>৳{item.price}</span>
                       )}
                     </p>
                   </div>

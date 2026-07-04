@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Loader2 } from "lucide-react";
 import CartCoupon from "./CartCoupon";
 import CartItem from "./CartItem";
 import CartRewards from "./CartRewards";
@@ -17,15 +17,12 @@ import {
 import { DialogTitle } from "@radix-ui/react-dialog";
 import DeliveryInfo from "./DeliveryInfo";
 import RecentlyViewed from "./RecentlyViewed";
-import SavedItems from "./SavedItems";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useGetDeliverySettingsQuery } from "@/redux/features/order/orderApi";
-
-interface AppliedCoupon {
-  code: string;
-  discount: number;
-}
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
+import { setCoupon } from "@/redux/features/checkout/checkoutSlice";
+import { toast } from "sonner";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -33,15 +30,29 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { items, totalPrice, totalItems } = useCart()
+  const { items, totalPrice, totalItems, updateItemQuantity } = useCart()
   const router = useRouter()
+
+  const isApiPending = useAppSelector((state) => {
+    const queries = state.baseApi.queries;
+    const mutations = state.baseApi.mutations;
+    const hasPendingQuery = Object.values(queries).some(
+      (query) => query?.status === "pending"
+    );
+    const hasPendingMutation = Object.values(mutations).some(
+      (mutation) => mutation?.status === "pending"
+    );
+    return hasPendingQuery || hasPendingMutation;
+  });
+
+  const dispatch = useAppDispatch()
 
   // Fetch delivery settings for shipping cost calculation
   const { data: deliveryData } = useGetDeliverySettingsQuery()
   const deliverySettings = deliveryData?.data
 
-  // ── Coupon state ──────────────────────────────────────────────────────────
-  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null)
+  // ── Coupon state (shared via Redux) ────────────────────────────────────────
+  const appliedCoupon = useAppSelector((state) => state.checkout.coupon)
 
   const couponDiscount = appliedCoupon
     ? totalPrice * (appliedCoupon.discount / 100)
@@ -52,20 +63,29 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const POINT_RATE = deliverySettings?.rewardPointRate ?? 0.1
   const rewardDiscount = rewardPointsApplied * POINT_RATE
 
-  // ── Free shipping check ───────────────────────────────────────────────────
-  const freeShippingThreshold = deliverySettings?.freeShippingThreshold ?? 1000
-  const shippingCost = totalPrice >= freeShippingThreshold
-    ? 0
-    : (deliverySettings?.standardCost ?? 5)
+  const grandTotal = Math.max(0, totalPrice - couponDiscount - rewardDiscount)
 
-  const grandTotal = Math.max(0, totalPrice + shippingCost - couponDiscount - rewardDiscount)
+  const handleProceed = async () => {
+    let adjusted = false
+    for (const item of items) {
+      if (item.quantity > item.maxQuantity) {
+        await updateItemQuantity(item.id, item.maxQuantity)
+        adjusted = true
+      }
+    }
 
-  const handleProceed = () => {
+    if (adjusted) {
+      toast.warning("Cart quantity adjusted", {
+        description: "Some items in your cart exceeded the available stock and have been adjusted to the maximum available quantity.",
+      })
+      return
+    }
+
     onClose()
     // Pass cart discount context via sessionStorage so checkout can pre-fill
     const cartContext = {
       couponCode: appliedCoupon?.code ?? null,
-      couponDiscount,
+      couponDiscountRate: appliedCoupon?.discount ?? 0,
       rewardPointsUsed: rewardPointsApplied,
       rewardDiscount,
     }
@@ -136,15 +156,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   {/* Delivery Information */}
                   <DeliveryInfo />
 
-                  {/* Saved Items */}
-                  <SavedItems />
+
 
                   {/* Promotions */}
                   <div className="py-2">
                     <CartCoupon
                       appliedCoupon={appliedCoupon}
-                      onApply={setAppliedCoupon}
-                      onRemove={() => setAppliedCoupon(null)}
+                      onApply={(coupon) => dispatch(setCoupon(coupon))}
+                      onRemove={() => dispatch(setCoupon(null))}
                     />
                     <CartRewards
                       pointsApplied={rewardPointsApplied}
@@ -156,11 +175,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   {/* Order Summary */}
                   <CartSummary
                     subtotal={totalPrice}
-                    shipping={shippingCost}
                     couponDiscount={couponDiscount}
                     couponCode={appliedCoupon?.code}
                     rewardDiscount={rewardDiscount}
                     rewardPointsUsed={rewardPointsApplied}
+                    onRemoveCoupon={() => dispatch(setCoupon(null))}
                   />
 
                   {/* Recently Viewed */}
@@ -172,16 +191,26 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             {/* Footer */}
             {items.length > 0 && (
               <div className="p-4 border-t dark:border-neutral-800 bg-white dark:bg-neutral-900">
-                <div className="flex justify-between text-sm text-gray-500 mb-2">
-                  <span>Grand Total</span>
+                {/* <div className="flex justify-between text-sm text-gray-500 mb-2">
+                  <span>Grand Total <span className="text-xs text-gray-500">(excluding shipping)</span></span>
                   <span className="font-semibold text-gray-900 dark:text-white">৳{grandTotal.toFixed(2)}</span>
-                </div>
+                </div> */}
                 <Button
                   className="w-full bg-primary hover:bg-primary/90 text-white py-6"
                   onClick={handleProceed}
+                  disabled={isApiPending}
                 >
-                  <span className="mr-2">Proceed</span>
-                  <ChevronRight size={18} />
+                  {isApiPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <span>Updating Cart...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="mr-2">Proceed</span>
+                      <ChevronRight size={18} />
+                    </>
+                  )}
                 </Button>
               </div>
             )}

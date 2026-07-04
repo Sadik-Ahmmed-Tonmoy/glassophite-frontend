@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "next-themes";
 import {
   MessageCircle,
   CheckCircle,
@@ -29,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useProfileTheme } from "@/hooks/useProfileTheme";
 
 // Define a type for the support ticket
 interface SupportTicket {
@@ -51,56 +51,14 @@ export default function ContactSupportDialog({
   orderId,
   orderNumber,
 }: ContactSupportDialogProps) {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark, theme: styles } = useProfileTheme();
   const [open, setOpen] = useState(false);
   const [contactSubject, setContactSubject] = useState("order-issue");
   const [contactMessage, setContactMessage] = useState("");
   const [contactPriority, setContactPriority] = useState("medium");
-  const [supportTicket, setSupportTicket] = useState<SupportTicket | null>(
-    null
-  );
+  const [supportTicket, setSupportTicket] = useState<SupportTicket | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Theme styles
-  const themeStyles = {
-    dark: {
-      card: "bg-black border-white/10",
-      text: "text-white",
-      textMuted: "text-neutral-300",
-      textMutedLighter: "text-neutral-400",
-      border: "border-white/10",
-      input: "bg-white/5 border-white/10 text-white placeholder:text-neutral-500",
-      label: "text-neutral-300",
-      bgMuted: "bg-white/5",
-      bgInfo: "bg-blue-500/10 border-blue-500/20 text-blue-500",
-      bgSuccess: "bg-green-500/10 border-green-500/20 text-green-500",
-      icon: "text-neutral-400",
-      badge: "bg-blue-500/20 text-blue-500 border-blue-500/30",
-      buttonPrimary: "bg-primary text-white hover:bg-primary/90",
-      buttonOutline: "border-white/20 text-white hover:bg-white/10",
-      select: "bg-white/5 border-white/10 text-white",
-    },
-    light: {
-      card: "bg-white border-gray-200",
-      text: "text-gray-900",
-      textMuted: "text-gray-700",
-      textMutedLighter: "text-gray-500",
-      border: "border-gray-200",
-      input: "bg-white border-gray-300 text-gray-900",
-      label: "text-gray-700",
-      bgMuted: "bg-gray-50",
-      bgInfo: "bg-blue-50 border-blue-200 text-blue-800",
-      bgSuccess: "bg-green-50 border-green-200 text-green-800",
-      icon: "text-gray-400",
-      badge: "bg-blue-100 text-blue-800 border-blue-200",
-      buttonPrimary: "bg-primary text-white hover:bg-primary/90",
-      buttonOutline: "border-gray-300 text-gray-700 hover:bg-gray-50",
-      select: "bg-white border-gray-300 text-gray-900",
-    },
-  };
-
-  const styles = isDark ? themeStyles.dark : themeStyles.light;
+  const [error, setError] = useState("");
 
   // Reset state when dialog closes
   useEffect(() => {
@@ -109,43 +67,27 @@ export default function ContactSupportDialog({
     }
   }, [open]);
 
-  // Handle contact support submission
   const handleContactSubmit = async () => {
-    setIsSubmitting(true);
-
+    setError("");
     if (!contactMessage) {
-      alert("Please enter a message");
-      setIsSubmitting(false);
+      setError("Please enter a message");
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      const ticketId = `TKT-${Math.floor(Math.random() * 10000)
-        .toString()
-        .padStart(4, "0")}`;
-
+      const ticketId = `TKT-${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`;
       const newSupportTicket: SupportTicket = {
-        orderId,
-        orderNumber,
-        subject: contactSubject,
-        message: contactMessage,
-        status: "open",
-        priority: contactPriority as "low" | "medium" | "high",
-        createdAt: new Date().toISOString(),
-        ticketId,
+        orderId, orderNumber, subject: contactSubject, message: contactMessage,
+        status: "open", priority: contactPriority as "low" | "medium" | "high", createdAt: new Date().toISOString(), ticketId,
       };
-
-      console.log("Support request submitted:", newSupportTicket);
       setSupportTicket(newSupportTicket);
-
       setContactSubject("order-issue");
       setContactMessage("");
       setContactPriority("medium");
-    } catch (error) {
-      console.error("Error submitting support request:", error);
-      alert("There was an error sending your message. Please try again.");
+    } catch {
+      setError("There was an error sending your message. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -293,6 +235,13 @@ export default function ContactSupportDialog({
                   placeholder="Please describe your issue or question in detail..."
                 />
               </div>
+
+              {error && (
+                <div className={cn("p-3 rounded-xl border flex items-start gap-2 text-sm", isDark ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-red-50 border-red-200 text-red-700")}>
+                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
 
               <div className={cn("p-4 rounded-lg border", styles.bgInfo)}>
                 <p className={cn("text-sm flex items-start", styles.textMuted)}>

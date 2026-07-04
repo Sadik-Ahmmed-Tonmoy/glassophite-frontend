@@ -65,7 +65,8 @@ export default {
   			padding: '1.2rem'
   		},
   		screens: {
-  			xs: '540px'
+  			xs: '540px',
+  			'3xl': '1920px'	
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

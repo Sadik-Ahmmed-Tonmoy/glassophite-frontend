@@ -1,15 +1,19 @@
 "use client"
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import OrderDetails from "@/components/pages/profile/OrderDetails"
 import ProfileHeader from "@/components/pages/profile/ProfileHeader"
 import { useGetOrderByIdQuery } from "@/redux/features/order/orderApi"
 import { useParams, useRouter } from "next/navigation"
+import { useProfileTheme } from "@/hooks/useProfileTheme"
+import { cn } from "@/lib/utils"
 
 export default function OrderDetailsPageClient() {
   const params = useParams()
   const router = useRouter()
   const orderId = params.id as string
   const { data: orderData, isLoading, error } = useGetOrderByIdQuery(orderId, { skip: !orderId })
+  const { theme: styles } = useProfileTheme()
 
   const order = orderData?.data || orderData
 
@@ -23,7 +27,7 @@ export default function OrderDetailsPageClient() {
       <div className="max-w-5xl mx-auto">
         <ProfileHeader title="Order Details" description="Loading order information..." />
         <div className="mt-8 flex justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#007C74] border-t-transparent" />
         </div>
       </div>
     )
@@ -36,7 +40,7 @@ export default function OrderDetailsPageClient() {
         <div className="mt-8 text-center">
           <button
             onClick={() => router.push("/my-profile/order-history")}
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+            className={cn("px-5 py-2.5 rounded-xl font-medium text-sm transition-all", styles.buttonPrimary)}
           >
             Back to Order History
           </button>
@@ -46,7 +50,7 @@ export default function OrderDetailsPageClient() {
   }
 
   return (
-    <div className="">
+    <div className="max-w-5xl mx-auto">
       <ProfileHeader
         title={`Order #${order.orderNumber}`}
         description={`Placed on ${new Date(order.orderDate ?? order.createdAt ?? 0).toLocaleDateString()}`}

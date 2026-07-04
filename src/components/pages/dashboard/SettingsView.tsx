@@ -7,7 +7,6 @@ import { toast } from "sonner";
 export default function SettingsView() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(5000);
-  const [taxRate, setTaxRate] = useState(5);
   const [tryOnModelEnabled, setTryOnModelEnabled] = useState(true);
 
   return (
@@ -90,21 +89,6 @@ export default function SettingsView() {
           <p className="text-[10px] text-neutral-500">Free delivery threshold triggers inside cart summary sheets automatically.</p>
         </div>
 
-        {/* Tax Setup */}
-        <div className="space-y-3 border-t border-neutral-200 dark:border-neutral-800 pt-6">
-          <div className="flex justify-between items-center text-xs">
-            <h3 className="text-sm font-bold text-neutral-900 dark:text-white">VAT Setup</h3>
-            <span className="font-extrabold text-[#007C74]">{taxRate}% Rate</span>
-          </div>
-          <input
-            type="number"
-            min="0"
-            max="25"
-            value={taxRate}
-            onChange={(e) => setTaxRate(Number(e.target.value))}
-            className="px-3 py-2 border border-neutral-250 dark:border-[#1e1e1e] rounded-xl text-xs bg-white dark:bg-[#0c0c0c] text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-[#007C74]/50 w-full"
-          />
-        </div>
 
       </div>
     </motion.div>

@@ -110,6 +110,7 @@ export interface TOrder {
     | "PAYPAL"
     | "CASH_ON_DELIVERY"
     | "STRIPE"
+    | "SSLCO"
     // Legacy display strings (used by mock data / data.ts)
     | "Credit Card"
     | "PayPal"

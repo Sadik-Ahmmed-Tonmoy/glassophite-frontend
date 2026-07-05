@@ -27,6 +27,10 @@ const productApi = baseApi.injectEndpoints({
       query: (limit = 8) => ({ url: `products/new-arrivals`, params: { limit } }),
       providesTags: ["products"],
     }),
+    getCollections: builder.query({
+      query: () => ({ url: "products/collections" }),
+      providesTags: ["products"],
+    }),
     getProductById: builder.query({
       query: (id: string) => ({ url: `products/${id}` }),
       providesTags: (_result, _err, id) => [{ type: "product", id }],
@@ -79,6 +83,7 @@ export const {
   useGetFeaturedProductsQuery,
   useGetBestSellersQuery,
   useGetNewArrivalsQuery,
+  useGetCollectionsQuery,
   useGetProductByIdQuery,
   useCreateProductMutation,
   useUpdateProductMutation,

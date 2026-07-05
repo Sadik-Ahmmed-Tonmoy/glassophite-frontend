@@ -405,7 +405,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
       {/* Reviews Section */}
       <div className="mt-8 md:mt-16">
-        <ProductReview productId={product.id} initialReviews={reviewsData} />
+        <ProductReview productId={product.id} initialReviews={product.reviews || []} />
       </div>
     </motion.div>
   );

@@ -4,9 +4,9 @@ const reviewApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Public
     getProductReviews: builder.query({
-      query: ({ productId, page = 1, limit = 10 }) => ({
+      query: ({ productId, page = 1, limit = 10, sortBy = "newest" }) => ({
         url: `reviews/product/${productId}`,
-        params: { page, limit },
+        params: { page, limit, sortBy },
       }),
       providesTags: (_result, _err, { productId }) => [{ type: "reviews", id: productId }],
     }),

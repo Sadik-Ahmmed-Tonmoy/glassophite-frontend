@@ -20,6 +20,14 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useGetProductReviewsQuery,
+  useCreateReviewMutation,
+  useMarkHelpfulMutation,
+} from "@/redux/features/review/reviewApi";
+import { useAppSelector } from "@/redux/hooks";
+import { selectCurrentUser } from "@/redux/features/auth/authSlice";
+import { toast } from "sonner";
 
 // Import additional shadcn components
 import {
@@ -53,11 +61,23 @@ export default function ProductReview({
   productId,
   initialReviews,
 }: ProductReviewProps) {
-  void productId;
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
   const MAX_IMAGES = 6;
+
+  const token = useAppSelector((state) => state.auth.access_token);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortOption, setSortOption] = useState("newest");
+
+  const { data: dbReviewsData, isLoading: isReviewsLoading } = useGetProductReviewsQuery({
+    productId,
+    page: currentPage,
+    limit: 5,
+    sortBy: sortOption,
+  });
+  const [createReview] = useCreateReviewMutation();
+  const [markHelpfulMutation] = useMarkHelpfulMutation();
 
   const [reviews, setReviews] = useState<TReview[]>(initialReviews || []);
   const [showAllReviews, setShowAllReviews] = useState(false);
@@ -72,7 +92,17 @@ export default function ProductReview({
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [sortOption, setSortOption] = useState("newest");
+
+  const handleSortChange = (option: string) => {
+    setSortOption(option);
+    setCurrentPage(1);
+  };
+
+  useEffect(() => {
+    if (dbReviewsData?.data) {
+      setReviews(dbReviewsData.data);
+    }
+  }, [dbReviewsData]);
 
   const [showWarning, setShowWarning] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
@@ -81,6 +111,7 @@ export default function ProductReview({
 
   // Image upload state
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [modalImages, setModalImages] = useState<string[]>([]);
   const [showImageModal, setShowImageModal] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -164,27 +195,17 @@ export default function ProductReview({
     return { rating, count, percentage };
   });
 
-  // Sort reviews based on selected option
-  const sortedReviews = [...reviews].sort((a, b) => {
-    switch (sortOption) {
-      case "highest":
-        return b.rating - a.rating;
-      case "lowest":
-        return a.rating - b.rating;
-      case "helpful":
-        return (b.helpful || 0) - (a.helpful || 0);
-      case "newest":
-      default:
-        return (
-          new Date(b.date || "").getTime() - new Date(a.date || "").getTime()
-        );
-    }
-  });
+  const displayedReviews = reviews;
+  const totalReviewsCount = dbReviewsData?.meta?.total || reviews.length;
+  const totalPages = Math.ceil(totalReviewsCount / 5);
 
-  // Display limited reviews or all reviews
-  const displayedReviews = showAllReviews
-    ? sortedReviews
-    : sortedReviews.slice(0, 3);
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    const reviewsEl = document.getElementById("reviews-section-start");
+    if (reviewsEl) {
+      reviewsEl.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -218,16 +239,6 @@ export default function ProductReview({
   const validateForm = () => {
     const errors: Record<string, string> = {};
 
-    if (!(formData.name ?? "").trim()) {
-      errors.name = "Name is required";
-    }
-
-    if (!formData.email?.trim()) {
-      errors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Email is invalid";
-    }
-
     if (formData.rating === 0) {
       errors.rating = "Please select a rating";
     }
@@ -242,7 +253,7 @@ export default function ProductReview({
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -251,19 +262,14 @@ export default function ProductReview({
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      const newReview: TReview = {
-        ...formData,
-        id: Date.now().toString(),
-        date: new Date().toISOString(),
-        helpful: 0,
-        unhelpful: 0,
-        verified: true,
-        images: uploadedImages.length > 0 ? [...uploadedImages] : undefined,
-      };
+    try {
+      await createReview({
+        productId,
+        rating: formData.rating,
+        comment: formData.comment,
+        images: uploadedImages,
+      }).unwrap();
 
-      setReviews((prev) => [newReview, ...prev]);
       setFormData({
         name: "",
         email: "",
@@ -271,38 +277,91 @@ export default function ProductReview({
         comment: "",
       });
       setUploadedImages([]);
-      setIsSubmitting(false);
       setSubmitSuccess(true);
       setShowReviewForm(false);
+
+      toast.success("Review submitted successfully!");
 
       // Reset success message after 3 seconds
       setTimeout(() => {
         setSubmitSuccess(false);
       }, 3000);
-    }, 1000);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to submit review. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleHelpfulClick = (
+  const handleHelpfulClick = async (
     reviewId: string | undefined,
     isHelpful: boolean,
   ) => {
     if (!reviewId) return;
 
-    setReviews((prev) =>
-      prev.map((review) => {
-        if (review.id === reviewId) {
-          if (isHelpful) {
-            return { ...review, helpful: (review.helpful || 0) + 1 };
-          } else {
-            return { ...review, unhelpful: (review.unhelpful || 0) + 1 };
-          }
-        }
-        return review;
-      }),
-    );
+    if (!token) {
+      toast.error("Please log in", {
+        description: "You must be logged in to rate reviews.",
+      });
+      return;
+    }
+
+    try {
+      await markHelpfulMutation({
+        id: reviewId,
+        type: isHelpful ? "helpful" : "unhelpful",
+      }).unwrap();
+      toast.success("Thank you for your feedback!");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to submit feedback.");
+    }
   };
 
-  // Add these drag and drop handler functions after the other handler functions
+  const readFileAsDataURL = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          resolve(event.target.result as string);
+        } else {
+          reject(new Error('Failed to read file'));
+        }
+      };
+      reader.onerror = () => reject(reader.error || new Error('File read error'));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const processFiles = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (fileArray.length === 0) return;
+
+    const currentCount = uploadedImages.length;
+    const remainingSlots = Math.max(0, MAX_IMAGES - currentCount);
+    const filesToProcess = fileArray.slice(0, remainingSlots);
+
+    if (filesToProcess.length < fileArray.length) {
+      setWarningMessage(`You can only upload a maximum of ${MAX_IMAGES} images.`);
+      setShowWarning(true);
+      setTimeout(() => setShowWarning(false), 10000);
+    }
+
+    if (filesToProcess.length === 0) return;
+
+    const results = await Promise.allSettled(filesToProcess.map(readFileAsDataURL));
+    const newImages = results
+      .filter((r): r is PromiseFulfilledResult<string> => r.status === 'fulfilled')
+      .map(r => r.value);
+
+    if (results.length !== newImages.length) {
+      toast.error(`${results.length - newImages.length} image(s) failed to read.`);
+    }
+
+    if (newImages.length === 0) return;
+
+    setUploadedImages((prev) => [...prev, ...newImages].slice(0, MAX_IMAGES));
+  };
+
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(true);
@@ -317,128 +376,30 @@ export default function ProductReview({
     setIsDragging(false);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
 
     const files = e.dataTransfer.files;
     if (!files || files.length === 0) return;
 
-    // Check if adding these files would exceed the limit
-    if (uploadedImages.length + files.length > MAX_IMAGES) {
-      setWarningMessage(
-        `You can only upload a maximum of ${MAX_IMAGES} images.`,
-      );
-      setShowWarning(true);
-
-      // Auto-hide warning after 3 seconds
-      setTimeout(() => {
-        setShowWarning(false);
-      }, 10000);
-
-      // Still process files up to the limit
-      const remainingSlots = MAX_IMAGES - uploadedImages.length;
-      if (remainingSlots <= 0) return;
-
-      // Only process files up to the remaining slots
-      Array.from(files)
-        .slice(0, remainingSlots)
-        .forEach((file) => {
-          if (!file.type.startsWith("image/")) return;
-
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            if (event.target?.result) {
-              setUploadedImages((prev) => [
-                ...prev,
-                event.target!.result as string,
-              ]);
-            }
-          };
-          reader.readAsDataURL(file);
-        });
-    } else {
-      // Process all files if under the limit
-      Array.from(files).forEach((file) => {
-        if (!file.type.startsWith("image/")) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          if (event.target?.result) {
-            setUploadedImages((prev) => [
-              ...prev,
-              event.target!.result as string,
-            ]);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+    try {
+      await processFiles(files);
+    } catch {
+      toast.error("Failed to read some images. Please try again.");
     }
   };
 
-  // Replace the handleImageUpload function with this enhanced version
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    // Check if adding these files would exceed the limit
-    if (uploadedImages.length + files.length > MAX_IMAGES) {
-      setWarningMessage(
-        `You can only upload a maximum of ${MAX_IMAGES} images.`,
-      );
-      setShowWarning(true);
-
-      // Auto-hide warning after 3 seconds
-      setTimeout(() => {
-        setShowWarning(false);
-      }, 10000);
-
-      // Still process files up to the limit
-      const remainingSlots = MAX_IMAGES - uploadedImages.length;
-      if (remainingSlots <= 0) {
-        // Reset file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-        return;
-      }
-
-      // Only process files up to the remaining slots
-      Array.from(files)
-        .slice(0, remainingSlots)
-        .forEach((file) => {
-          if (!file.type.startsWith("image/")) return;
-
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            if (event.target?.result) {
-              setUploadedImages((prev) => [
-                ...prev,
-                event.target!.result as string,
-              ]);
-            }
-          };
-          reader.readAsDataURL(file);
-        });
-    } else {
-      // Process all files if under the limit
-      Array.from(files).forEach((file) => {
-        if (!file.type.startsWith("image/")) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          if (event.target?.result) {
-            setUploadedImages((prev) => [
-              ...prev,
-              event.target!.result as string,
-            ]);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+    try {
+      await processFiles(files);
+    } catch {
+      toast.error("Failed to read some images. Please try again.");
     }
 
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -449,26 +410,27 @@ export default function ProductReview({
   };
 
   const openImageModal = (index: number) => {
+    setModalImages(uploadedImages);
     setCurrentImageIndex(index);
     setShowImageModal(true);
   };
 
   const goToPrevImage = useCallback(() => {
     setCurrentImageIndex((prev) =>
-      prev === 0 ? uploadedImages.length - 1 : prev - 1,
+      prev === 0 ? modalImages.length - 1 : prev - 1,
     );
-  }, [uploadedImages.length]);
+  }, [modalImages.length]);
 
   const goToNextImage = useCallback(() => {
     setCurrentImageIndex((prev) =>
-      prev === uploadedImages.length - 1 ? 0 : prev + 1,
+      prev === modalImages.length - 1 ? 0 : prev + 1,
     );
-  }, [uploadedImages.length]);
+  }, [modalImages.length]);
 
   // Handle review image click
   const handleReviewImageClick = (review: TReview, imageIndex: number) => {
     if (!review.images) return;
-    setUploadedImages(review.images);
+    setModalImages(review.images);
     setCurrentImageIndex(imageIndex);
     setShowImageModal(true);
   };
@@ -509,7 +471,7 @@ export default function ProductReview({
   };
 
   return (
-    <div>
+    <div id="reviews-section-start">
       <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -542,28 +504,28 @@ export default function ProductReview({
               <DropdownMenuContent className={styles.dropdown}>
                 <DropdownMenuItem
                   className={styles.dropdownItem}
-                  onClick={() => setSortOption("newest")}
+                  onClick={() => handleSortChange("newest")}
                   data-translate="reviews.sortNewest"
                 >
                   Newest
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className={styles.dropdownItem}
-                  onClick={() => setSortOption("highest")}
+                  onClick={() => handleSortChange("highest")}
                   data-translate="reviews.sortHighest"
                 >
                   Highest Rating
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className={styles.dropdownItem}
-                  onClick={() => setSortOption("lowest")}
+                  onClick={() => handleSortChange("lowest")}
                   data-translate="reviews.sortLowest"
                 >
                   Lowest Rating
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className={styles.dropdownItem}
-                  onClick={() => setSortOption("helpful")}
+                  onClick={() => handleSortChange("helpful")}
                   data-translate="reviews.sortHelpful"
                 >
                   Most Helpful
@@ -650,6 +612,12 @@ export default function ProductReview({
               {/* Write a Review Button */}
               <Button
                 onClick={() => {
+                  if (!token) {
+                    toast.error("Please log in", {
+                      description: "You must be logged in to write a review.",
+                    });
+                    return;
+                  }
                   setShowReviewForm((prev) => !prev);
                   setUploadedImages([]);
                 }}
@@ -731,7 +699,7 @@ export default function ProductReview({
                         <div className="flex flex-col">
                           <div className="flex items-center">
                             <span className={`font-semibold ${styles.text}`}>
-                              {review.name}
+                              {review.user?.fullName || review.name}
                             </span>
                             {review.verified && (
                               <span
@@ -754,7 +722,9 @@ export default function ProductReview({
                             >
                               {review.date
                                 ? new Date(review.date).toLocaleDateString()
-                                : ""}
+                                : review.createdAt
+                                  ? new Date(review.createdAt).toLocaleDateString()
+                                  : ""}
                             </span>
                           </div>
                         </div>
@@ -774,13 +744,10 @@ export default function ProductReview({
                             className={`relative h-16 w-16 rounded-md border ${styles.border} overflow-hidden cursor-pointer group`}
                             onClick={() => handleReviewImageClick(review, idx)}
                           >
-                            <Image
+                            <img
                               src={image || "/placeholder.svg"}
                               alt={`Review image ${idx + 1}`}
-                              fill
-                              sizes="64px"
-                              unoptimized
-                              className="object-cover"
+                              className="w-full h-full object-cover"
                             />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
                               <Eye className="h-4 w-4 text-white" />
@@ -818,27 +785,55 @@ export default function ProductReview({
                   </motion.div>
                 ))}
 
-                {reviews.length > 3 && (
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`w-full py-3 border ${styles.border} rounded-md ${styles.textMuted} transition-colors flex items-center justify-center font-medium shadow-sm hover:shadow`}
-                    onClick={() => setShowAllReviews((prev) => !prev)}
-                  >
-                    {showAllReviews ? (
-                      <>
-                        <span data-translate="reviews.showLess">Show Less</span>
-                        <ChevronUp className="ml-1 h-4 w-4" />
-                      </>
-                    ) : (
-                      <>
-                        <span data-translate="reviews.seeAll">
-                          See All Reviews ({reviews.length})
-                        </span>
-                        <ChevronDown className="ml-1 h-4 w-4" />
-                      </>
-                    )}
-                  </motion.button>
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center space-x-2 mt-8">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className={`p-2 border rounded-md transition-colors ${
+                        currentPage === 1
+                          ? "opacity-50 cursor-not-allowed"
+                          : isDark
+                            ? "border-white/10 text-white hover:bg-white/10"
+                            : "border-gray-200 text-gray-700 hover:bg-gray-100"
+                      }`}
+                      aria-label="Previous page"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNum) => (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                          currentPage === pageNum
+                            ? "bg-green-primary text-white"
+                            : isDark
+                              ? "border border-white/10 text-white hover:bg-white/10"
+                              : "border border-gray-200 text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    ))}
+
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className={`p-2 border rounded-md transition-colors ${
+                        currentPage === totalPages
+                          ? "opacity-50 cursor-not-allowed"
+                          : isDark
+                            ? "border-white/10 text-white hover:bg-white/10"
+                            : "border-gray-200 text-gray-700 hover:bg-gray-100"
+                      }`}
+                      aria-label="Next page"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
                 )}
               </motion.div>
             ) : (
@@ -859,7 +854,15 @@ export default function ProductReview({
                 </p>
 
                 <Button
-                  onClick={() => setShowReviewForm(true)}
+                  onClick={() => {
+                    if (!token) {
+                      toast.error("Please log in", {
+                        description: "You must be logged in to write a review.",
+                      });
+                      return;
+                    }
+                    setShowReviewForm(true);
+                  }}
                   className={`mt-8 w-fit px-16 sm:px-20 mx-auto ${styles.buttonPrimary} rounded-md h-10 font-medium`}
                 >
                   <div className="flex items-center justify-center gap-2">
@@ -891,7 +894,7 @@ export default function ProductReview({
             {/* Image container */}
             <div className="relative bg-black rounded-lg overflow-hidden h-[70vh] flex items-center justify-center">
               <AnimatePresence mode="wait">
-                {uploadedImages.map(
+                {modalImages.map(
                   (image, index) =>
                     index === currentImageIndex && (
                       <motion.div
@@ -902,13 +905,10 @@ export default function ProductReview({
                         transition={{ duration: 0.3 }}
                         className="absolute inset-0 flex items-center justify-center"
                       >
-                        <Image
+                        <img
                           src={image || "/placeholder.svg"}
                           alt={`Image ${index + 1}`}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 896px"
-                          unoptimized
-                          className="object-contain"
+                          className="max-w-full max-h-full object-contain"
                         />
                       </motion.div>
                     ),
@@ -916,7 +916,7 @@ export default function ProductReview({
               </AnimatePresence>
 
               {/* Navigation buttons */}
-              {uploadedImages.length > 1 && (
+              {modalImages.length > 1 && (
                 <>
                   <button
                     onClick={goToPrevImage}
@@ -937,15 +937,15 @@ export default function ProductReview({
 
               {/* Image counter */}
               <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm bg-black bg-opacity-5 py-1">
-                {currentImageIndex + 1} / {uploadedImages.length}
+                {currentImageIndex + 1} / {modalImages.length}
               </div>
             </div>
 
             {/* Thumbnails */}
-            {uploadedImages.length > 1 && (
+            {modalImages.length > 1 && (
               <DialogFooter className="flex justify-center p-4 bg-black/80 backdrop-blur-sm rounded-b-lg">
                 <div className="flex justify-center space-x-2 overflow-x-auto pb-2 pe-3">
-                  {uploadedImages.map((image, index) => (
+                  {modalImages.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
@@ -955,13 +955,10 @@ export default function ProductReview({
                           : "border-transparent opacity-70 hover:opacity-100"
                       }`}
                     >
-                      <Image
+                      <img
                         src={image || "/placeholder.svg"}
                         alt={`Thumbnail ${index + 1}`}
-                        fill
-                        sizes="64px"
-                        unoptimized
-                        className="object-cover"
+                        className="w-full h-full object-cover"
                       />
                     </button>
                   ))}
@@ -1034,58 +1031,7 @@ export default function ProductReview({
                   )}
                 </div>
 
-                {/* Name and Email */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label
-                      htmlFor="name"
-                      className={`block text-sm font-medium ${styles.label}`}
-                      data-translate="reviews.nameLabel"
-                    >
-                      Name*
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md ${styles.input} ${
-                        formErrors.name ? "border-red-500" : styles.border
-                      } focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all`}
-                    />
-                    {formErrors.name && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {formErrors.name}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <label
-                      htmlFor="email"
-                      className={`block text-sm font-medium ${styles.label}`}
-                      data-translate="reviews.emailLabel"
-                    >
-                      Email*
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md ${styles.input} ${
-                        formErrors.email ? "border-red-500" : styles.border
-                      } focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all`}
-                    />
-                    {formErrors.email && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {formErrors.email}
-                      </p>
-                    )}
-                  </div>
-                </div>
+                {/* Name and Email fields are omitted as the backend handles user data via authentication */}
 
                 {/* Comment */}
                 <div className="space-y-1">
@@ -1199,7 +1145,7 @@ export default function ProductReview({
                             className="relative group transform transition-all duration-200 hover:scale-105"
                           >
                             <div
-                              className="relative h-24 w-full rounded-md overflow-hidden border cursor-pointer shadow-sm hover:shadow-md transition-all duration-300"
+                              className="relative aspect-square w-full rounded-md overflow-hidden border cursor-pointer shadow-sm hover:shadow-md transition-all duration-300"
                               style={{
                                 borderColor: isDark
                                   ? "rgba(255,255,255,0.1)"
@@ -1207,13 +1153,10 @@ export default function ProductReview({
                               }}
                               onClick={() => openImageModal(index)}
                             >
-                              <Image
+                              <img
                                 src={image || "/placeholder.svg"}
                                 alt={`Preview ${index + 1}`}
-                                fill
-                                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                                unoptimized
-                                className="object-contain transition-opacity duration-300"
+                                className="w-full h-full object-cover transition-opacity duration-300"
                               />
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
                                 <Eye className="h-6 w-6 text-white" />
@@ -1234,7 +1177,7 @@ export default function ProductReview({
                         ))}
                         {uploadedImages.length < MAX_IMAGES && (
                           <div
-                            className={`h-24 w-full border-2 border-dashed ${styles.border} rounded-md flex items-center justify-center cursor-pointer hover:bg-opacity-50 transition-colors duration-300`}
+                            className={`relative aspect-square w-full border-2 border-dashed ${styles.border} rounded-md flex items-center justify-center cursor-pointer hover:bg-opacity-50 transition-colors duration-300`}
                             onClick={() => fileInputRef.current?.click()}
                           >
                             <div className="flex flex-col items-center text-gray-500">

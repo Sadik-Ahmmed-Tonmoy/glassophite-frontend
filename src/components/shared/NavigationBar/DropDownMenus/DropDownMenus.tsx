@@ -537,7 +537,7 @@ const DropDownMenus = () => {
                         >
                           <div className="relative h-24 bg-neutral-100 dark:bg-neutral-900">
                             {item.imageUrl && (
-                              <Image src={item.imageUrl} alt={item.title} fill className="object-cover" sizes="160px" />
+                              <Image src={item.imageUrl} alt={item.title || "Brand"} fill className="object-cover" sizes="160px" />
                             )}
                           </div>
                           <div className="p-3">

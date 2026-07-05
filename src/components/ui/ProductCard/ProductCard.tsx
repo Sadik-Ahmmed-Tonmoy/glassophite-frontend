@@ -188,13 +188,11 @@ function ProductCard({ product }: ProductCardProps) {
               >
                 <Image
                   src={variant.imgList?.[0]?.image || "/placeholder.svg"}
-                  alt={variant.title}
+                  alt={variant?.title || product?.title || "Product image"}
                   width={400}
                   height={400}
                   priority={index === 0}
                   quality={90}
-                  placeholder="blur"
-                  blurDataURL={variant.imgList?.[0]?.image}
                   className="h-full w-full object-cover"
                 />
 

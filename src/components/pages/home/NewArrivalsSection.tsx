@@ -4,12 +4,11 @@
 import { motion, useInView } from "framer-motion";
 import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, Sparkles, AlertCircle, ShieldCheck, Gem, Compass } from "lucide-react";
+import { ArrowRight, Sparkles, AlertCircle, ShieldCheck, Gem, Clock, Eye } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useGetNewArrivalsQuery, useGetAllProductsQuery } from "@/redux/features/product/productApi";
 import ProductCard from "@/components/ui/ProductCard/ProductCard";
 
-// Theme-based styles matching the Glassophite design system
 const getThemeStyles = (isDark: boolean) => ({
   background: isDark 
     ? "from-black via-gray-900 to-black" 
@@ -85,10 +84,6 @@ export default function NewArrivalsSection() {
   const isLoading = (isLoadingNewArrivals || isFetchingNewArrivals) && (isLoadingAll || isFetchingAll);
   const error = errorNewArrivals && errorAll;
 
-  // SEO details
-  const sectionTitle = "New Arrivals";
-  const sectionDescription = "Discover the latest additions to our curated luxury eyewear collection. Handcrafted frames designed to redefine style.";
-
   // Loading State
   if (isLoading) {
     return (
@@ -123,6 +118,13 @@ export default function NewArrivalsSection() {
     return null;
   }
 
+  const stats = [
+    { icon: Gem, label: "Italian Acetate", value: "Premium" },
+    { icon: ShieldCheck, label: "UV Protection", value: "100%" },
+    { icon: Clock, label: "Craft Time", value: "72 hrs" },
+    { icon: Eye, label: "New Styles", value: `${products.length}+` },
+  ];
+
   return (
     <motion.section
       id="new-arrivals-section"
@@ -133,11 +135,9 @@ export default function NewArrivalsSection() {
       className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.background} py-16 sm:py-24 lg:py-28 px-4 sm:px-6 md:px-8 border-t ${styles.border}`}
       aria-labelledby="new-arrivals-title"
     >
-      {/* Dynamic Background Glows */}
       <div className={`absolute top-1/4 right-[-10%] w-[500px] h-[500px] rounded-full blur-[150px] pointer-events-none transition-opacity duration-1000 ${styles.orbPrimary}`} />
       <div className={`absolute bottom-1/4 left-[-10%] w-[600px] h-[600px] rounded-full blur-[170px] pointer-events-none transition-opacity duration-1000 ${styles.orbSecondary}`} />
 
-      {/* Luxury Geometric Grid Accent */}
       <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
         <div
           className="absolute inset-0"
@@ -148,13 +148,85 @@ export default function NewArrivalsSection() {
         />
       </div>
 
+      {/* Section Header with View All link (mobile visible) */}
+      <div className="relative z-10 max-w-7xl mx-auto mb-8 lg:hidden">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="w-5 h-5 text-[#007C74]" />
+              <span className="text-xs font-semibold tracking-[0.2em] text-[#007C74] uppercase">Just Landed</span>
+            </div>
+            <h2 id="new-arrivals-title" className={`text-2xl sm:text-3xl font-bold ${styles.text}`}>New Arrivals</h2>
+          </div>
+          <Link
+            href="/new-arrivals"
+            className="group flex items-center gap-1.5 text-sm font-medium text-[#007C74] hover:text-[#00A693] transition-colors"
+          >
+            View All
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
+      </div>
+
       <div className="relative z-10 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          
-          {/* LEFT: Premium Editorial Introduction (Takes 4 cols on lg, full width on mobile) */}
-     
 
-          {/* RIGHT: Grid of Products (Takes 8 cols on lg, wraps on mobile) */}
+          {/* LEFT: Premium Editorial Introduction */}
+          <div className="lg:col-span-4">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="sticky top-24 space-y-6"
+            >
+              {/* Badge */}
+              <div className="hidden lg:flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-[#007C74]" />
+                <span className="text-xs font-semibold tracking-[0.2em] text-[#007C74] uppercase">Just Landed</span>
+              </div>
+
+              {/* Title */}
+              <h2 id="new-arrivals-title" className={`hidden lg:block text-3xl xl:text-4xl font-bold ${styles.text}`}>
+                New Arrivals
+              </h2>
+
+              {/* Description */}
+              <p className={`${styles.textMuted} text-sm leading-relaxed`}>
+                Discover the latest additions to our curated luxury eyewear collection. Each frame is handcrafted by master artisans using premium materials from around the world.
+              </p>
+
+              {/* Editorial gradient divider */}
+              <div className={`h-px w-16 bg-gradient-to-r ${styles.editorialGradient}`} />
+
+              {/* Stats grid */}
+              <div className="grid grid-cols-2 gap-3">
+                {stats.map((stat, idx) => (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.4, delay: 0.2 + idx * 0.1 }}
+                    className={`${styles.statBg} rounded-lg p-3 border ${styles.border}`}
+                  >
+                    <stat.icon className="w-4 h-4 text-[#007C74] mb-1" />
+                    <p className={`text-xs font-semibold ${styles.text}`}>{stat.value}</p>
+                    <p className={`text-[10px] ${styles.textMuted}`}>{stat.label}</p>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* CTA Button */}
+              <Link
+                href="/new-arrivals"
+                className="group hidden lg:inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#007C74] to-[#00A693] text-white text-sm font-semibold rounded-full hover:shadow-lg hover:shadow-[#007C74]/25 transition-all duration-300"
+              >
+                Explore New Collection
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* RIGHT: Grid of Products */}
           <div className="lg:col-span-8">
             <motion.div 
               className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8"
@@ -186,6 +258,17 @@ export default function NewArrivalsSection() {
                 </motion.div>
               ))}
             </motion.div>
+
+            {/* View All link below grid on mobile */}
+            <div className="mt-10 text-center lg:hidden">
+              <Link
+                href="/new-arrivals"
+                className="group inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#007C74] to-[#00A693] text-white text-sm font-semibold rounded-full hover:shadow-lg hover:shadow-[#007C74]/25 transition-all duration-300"
+              >
+                View All New Arrivals
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
           </div>
 
         </div>

@@ -519,7 +519,7 @@ export default function Testimonials() {
                       <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#007C74]/20">
                         <Image
                           src={review.avatar ?? review.profileImage ?? "/placeholder.svg"}
-                          alt={review.name}
+                          alt={review.name || "Customer"}
                           fill
                           className="object-cover"
                         />
@@ -564,7 +564,7 @@ export default function Testimonials() {
 
                     {/* Helpful/Unhelpful */}
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
-                      <div className="flex items-center gap-3">
+                      {/* <div className="flex items-center gap-3">
                         <button
                           onClick={() =>
                             review.id &&
@@ -601,7 +601,7 @@ export default function Testimonials() {
                             {likeState.unhelpful}
                           </span>
                         </button>
-                      </div>
+                      </div> */}
 
                       {/* Review Images Indicator */}
                       {review.images && review.images.length > 0 && (

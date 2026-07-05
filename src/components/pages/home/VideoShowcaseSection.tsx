@@ -104,15 +104,16 @@ export default function VideoShowcaseSection() {
       className="relative h-[300vh] bg-black"
     >
       {/* Sticky video container */}
-      <motion.div
-        style={{ opacity: springOpacity, scale: springScale }}
+      <div
+        // style={{ opacity: springOpacity, scale: springScale }}
         className="sticky top-[92px] h-scree w-full overflow-hidden h-[90vh] "
       >
         {/* Video element */}
         <video
           ref={videoRef}
           className="absolute inset-0 w-full h-full object-cover"
-          src="/sunglass_teardown.mp4"
+          // src="/sunglass.mp4"
+          src="/Make_transaction_website_smooth_202607051455.mp4"
           muted={isMuted}
           playsInline
           loop
@@ -189,7 +190,7 @@ export default function VideoShowcaseSection() {
             style={{ scaleX: scrollYProgress, transformOrigin: "left" }}
           />
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

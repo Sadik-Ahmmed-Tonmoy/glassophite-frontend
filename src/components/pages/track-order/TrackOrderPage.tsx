@@ -11,11 +11,14 @@ import {
   Calendar,
   FileText,
   User,
-  ShieldCheck
+  ShieldCheck,
+  Loader2,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
 import MyFormWrapper from "@/components/ui/MyForm/MyFormWrapper/MyFormWrapper";
 import MyFormInputAceternity from "@/components/ui/MyForm/MyFormInputAceternity/MyFormInputAceternity";
+import { useLazyTrackOrderQuery } from "@/redux/features/order/orderApi";
 
 interface Step {
   title: string;
@@ -25,7 +28,7 @@ interface Step {
   date: string;
 }
 
-interface SimulatedOrder {
+interface MappedOrder {
   orderId: string;
   email: string;
   status: "placed" | "processing" | "transit" | "delivered";
@@ -37,110 +40,148 @@ interface SimulatedOrder {
   steps: Step[];
 }
 
-// Predefined mock databases of orders for simulation
-const simulatedDb: Record<string, SimulatedOrder> = {
-  "GP-10001": {
-    orderId: "GP-10001",
-    email: "test@example.com",
-    status: "delivered",
-    statusText: "Delivered",
-    estimatedDelivery: "June 28, 2026",
-    shippingAddress: "House 45, Road 11, Banani, Dhaka",
-    item: "Aero Titanium Aviators (Gold / Green Polarized)",
-    price: "৳ 8,500",
-    steps: [
-      { title: "Order Placed", translateTitleKey: "track.step1_title", description: "Your order was successfully received.", translateDescKey: "track.step1_desc", date: "June 25, 2026 - 10:15 AM" },
-      { title: "Processing & Assembly", translateTitleKey: "track.step2_title", description: "Lenses custom cut and frame quality-inspected.", translateDescKey: "track.step2_desc", date: "June 26, 2026 - 11:30 AM" },
-      { title: "In Transit", translateTitleKey: "track.step3_title", description: "Handed over to Glassophite Premium Courier.", translateDescKey: "track.step3_desc", date: "June 27, 2026 - 09:00 AM" },
-      { title: "Delivered", translateTitleKey: "track.step4_title", description: "Package signed and received by recipient.", translateDescKey: "track.step4_desc", date: "June 28, 2026 - 03:45 PM" },
-    ],
-  },
-  "GP-10002": {
-    orderId: "GP-10002",
-    email: "test@example.com",
-    status: "transit",
-    statusText: "In Transit",
-    estimatedDelivery: "July 01, 2026",
-    shippingAddress: "Apt 4B, Concord Tower, Gulshan-2, Dhaka",
-    item: "Monarch Acetate Square (Tortoise / Brown Lenses)",
-    price: "৳ 6,200",
-    steps: [
-      { title: "Order Placed", translateTitleKey: "track.step1_title", description: "Your order was successfully received.", translateDescKey: "track.step1_desc", date: "June 27, 2026 - 02:40 PM" },
-      { title: "Processing & Assembly", translateTitleKey: "track.step2_title", description: "Lenses custom cut and frame quality-inspected.", translateDescKey: "track.step2_desc", date: "June 28, 2026 - 10:00 AM" },
-      { title: "In Transit", translateTitleKey: "track.step3_title", description: "Dispatched from warehouse via courier.", translateDescKey: "track.step3_desc", date: "June 29, 2026 - 08:30 AM" },
-      { title: "Delivered", translateTitleKey: "track.step4_title", description: "Courier on route to destination.", translateDescKey: "track.step4_desc_pending", date: "Pending Delivery" },
-    ],
-  },
-  "GP-10003": {
-    orderId: "GP-10003",
-    email: "test@example.com",
-    status: "processing",
-    statusText: "Processing & Assembly",
-    estimatedDelivery: "July 03, 2026",
-    shippingAddress: "Block D, Sugandha R/A, Cox's Bazar",
-    item: "Classic Clubmaster (Black / Silver Gradient)",
-    price: "৳ 7,800",
-    steps: [
-      { title: "Order Placed", translateTitleKey: "track.step1_title", description: "Your order was successfully received.", translateDescKey: "track.step1_desc", date: "June 28, 2026 - 09:12 PM" },
-      { title: "Processing & Assembly", translateTitleKey: "track.step2_title", description: "Our lab technicians are mounting lenses to the frames.", translateDescKey: "track.step2_desc_active", date: "In Progress" },
-      { title: "In Transit", translateTitleKey: "track.step3_title", description: "Awaiting dispatch.", translateDescKey: "track.step3_desc_pending", date: "Awaiting Shipment" },
-      { title: "Delivered", translateTitleKey: "track.step4_title", description: "Pending dispatch.", translateDescKey: "track.step4_desc_pending", date: "Pending Delivery" },
-    ],
-  },
-};
-
 export default function TrackOrderPage() {
-  const [trackedOrder, setTrackedOrder] = useState<SimulatedOrder | null>(null);
+  const [triggerTrackOrder, { data: trackResponse, isFetching }] = useLazyTrackOrderQuery();
   const [hasSearched, setHasSearched] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const defaultValues = {
     orderId: "",
     email: "",
   };
 
-  const handleFormSubmit = (data: { orderId: string; email: string }, reset: () => void) => {
-    const formattedId = data.orderId.trim().toUpperCase();
-    
-    // Regular validation check
-    if (!formattedId.startsWith("GP-") || formattedId.length < 5) {
-      toast.error("Invalid Order ID Format", {
-        description: "Please enter a valid order ID starting with GP- followed by digits (e.g. GP-10002).",
-      });
-      return;
-    }
-
+  const handleFormSubmit = async (data: { orderId: string; email: string }, reset: () => void) => {
+    const formattedId = data.orderId.trim();
+    setErrorMsg(null);
     setHasSearched(true);
 
-    // Look up in mock DB
-    const foundOrder = simulatedDb[formattedId];
-    if (foundOrder) {
-      setTrackedOrder(foundOrder);
-      toast.success("Order Located", {
-        description: `Order ${formattedId} tracking data updated.`,
+    try {
+      const res = await triggerTrackOrder({
+        orderNumber: formattedId,
+        email: data.email.trim(),
+      }).unwrap();
+
+      if (res?.success && res.data) {
+        toast.success("Order Located", {
+          description: `Order ${formattedId} tracking data updated.`,
+        });
+        reset();
+      } else {
+        setErrorMsg("Order not found. Please verify your order number and email.");
+        toast.error("Tracking Failed", {
+          description: "No order matched this ID and email combination.",
+        });
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.data?.message || "Verify your Order ID and billing email address.");
+      toast.error("Tracking Failed", {
+        description: err?.data?.message || "Verify your Order ID and email address.",
       });
-      reset();
-    } else {
-      // Simulate generic 'placed' order for any other valid format so user can explore
-      const generatedOrder: SimulatedOrder = {
-        orderId: formattedId,
-        email: data.email,
-        status: "placed",
-        statusText: "Order Placed",
-        estimatedDelivery: "July 05, 2026",
-        shippingAddress: "Provided shipping address",
-        item: "Glassophite Luxury Sunglasses (Polarized UV400)",
-        price: "৳ 7,500",
-        steps: [
-          { title: "Order Placed", translateTitleKey: "track.step1_title", description: "Your order was successfully received.", translateDescKey: "track.step1_desc", date: "Just Now" },
-          { title: "Processing & Assembly", translateTitleKey: "track.step2_title", description: "Awaiting quality inspection.", translateDescKey: "track.step2_desc_pending", date: "Awaiting Production" },
-          { title: "In Transit", translateTitleKey: "track.step3_title", description: "Awaiting dispatch.", translateDescKey: "track.step3_desc_pending", date: "Awaiting Shipment" },
-          { title: "Delivered", translateTitleKey: "track.step4_title", description: "Pending dispatch.", translateDescKey: "track.step4_desc_pending", date: "Pending Delivery" },
-        ],
-      };
-      setTrackedOrder(generatedOrder);
-      toast.success("Order Located (Simulation Mode)");
-      reset();
     }
+  };
+
+  const mapDbOrderToMappedOrder = (order: any, searchedEmail: string): MappedOrder => {
+    const shippingAddressObj = order.shippingAddress || {};
+    const street = shippingAddressObj.street || "";
+    const city = shippingAddressObj.city || "";
+    const country = shippingAddressObj.country || "";
+    const addressStr = [street, city, country].filter(Boolean).join(", ") || "No address provided";
+
+    const itemNames = order.items?.map((item: any) => `${item.name} (x${item.quantity})`).join(", ") || "Eyewear Collection Item";
+    
+    const formatDate = (dateStr: string | null | undefined, placeholder: string) => {
+      if (!dateStr) return placeholder;
+      return new Date(dateStr).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
+
+    const formatEstDate = (dateStr: string | null | undefined) => {
+      if (!dateStr) {
+        const d = new Date(order.createdAt);
+        d.setDate(d.getDate() + 5); // Default delivery estimate: 5 days
+        return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+      }
+      return new Date(dateStr).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    };
+
+    let stepStatus: "placed" | "processing" | "transit" | "delivered" = "placed";
+    let statusText = "Order Placed";
+    if (order.status === "DELIVERED") {
+      stepStatus = "delivered";
+      statusText = "Delivered";
+    } else if (order.status === "SHIPPED") {
+      stepStatus = "transit";
+      statusText = "In Transit";
+    } else if (order.status === "PROCESSING") {
+      stepStatus = "processing";
+      statusText = "Processing & Assembly";
+    } else if (order.status === "CANCELLED") {
+      statusText = "Cancelled";
+    }
+
+    const steps: Step[] = [
+      {
+        title: "Order Placed",
+        translateTitleKey: "track.step1_title",
+        description: "Your order was successfully received.",
+        translateDescKey: "track.step1_desc",
+        date: formatDate(order.createdAt, "Order Placed"),
+      },
+      {
+        title: "Processing & Assembly",
+        translateTitleKey: "track.step2_title",
+        description: order.status === "PROCESSING" 
+          ? "Our lab technicians are mounting lenses to the frames." 
+          : "Lenses custom cut and frame quality-inspected.",
+        translateDescKey: order.status === "PROCESSING" ? "track.step2_desc_active" : "track.step2_desc",
+        date: order.processingDate 
+          ? formatDate(order.processingDate, "") 
+          : (order.status !== "PROCESSING" && order.status !== "CANCELLED" ? formatDate(order.createdAt, "") : "In Progress"),
+      },
+      {
+        title: "In Transit",
+        translateTitleKey: "track.step3_title",
+        description: order.status === "SHIPPED" 
+          ? "Dispatched from warehouse via courier." 
+          : "Awaiting dispatch.",
+        translateDescKey: order.status === "SHIPPED" ? "track.step3_desc" : "track.step3_desc_pending",
+        date: order.shippingDate 
+          ? formatDate(order.shippingDate, "") 
+          : (order.status === "DELIVERED" ? formatDate(order.createdAt, "") : (order.status === "SHIPPED" ? "In Transit" : "Awaiting Shipment")),
+      },
+      {
+        title: "Delivered",
+        translateTitleKey: "track.step4_title",
+        description: order.status === "DELIVERED" 
+          ? "Package signed and received by recipient." 
+          : "Pending delivery.",
+        translateDescKey: order.status === "DELIVERED" ? "track.step4_desc" : "track.step4_desc_pending",
+        date: order.deliveryDate 
+          ? formatDate(order.deliveryDate, "") 
+          : "Pending Delivery",
+      },
+    ];
+
+    return {
+      orderId: order.orderNumber,
+      email: searchedEmail,
+      status: stepStatus,
+      statusText,
+      estimatedDelivery: formatEstDate(order.estimatedDelivery),
+      shippingAddress: addressStr,
+      item: itemNames,
+      price: `৳ ${order.total?.toLocaleString() || "0"}`,
+      steps,
+    };
   };
 
   const getStatusIndex = (status: string) => {
@@ -153,6 +194,9 @@ export default function TrackOrderPage() {
     }
   };
 
+  const dbOrder = trackResponse?.data;
+  const mappedOrder = dbOrder ? mapDbOrderToMappedOrder(dbOrder, defaultValues.email) : null;
+
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-[#0a0a0a] dark:via-neutral-900 dark:to-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-500 py-12">
       <div className="container mx-auto px-4 md:px-6 space-y-12">
@@ -163,7 +207,7 @@ export default function TrackOrderPage() {
             <span data-translate="track.title">Track Your Order</span>
           </h1>
           <p className="text-neutral-600 dark:text-neutral-400 font-medium max-w-xl mx-auto" data-translate="track.subtitle">
-            Enter your 5-digit Order ID (e.g., GP-10001, GP-10002, GP-10003) and billing email address to check the current delivery progress.
+            Enter your Order ID (e.g. ORD-XXXXXX) and your billing email address to check the live delivery progress.
           </p>
         </div>
 
@@ -180,7 +224,7 @@ export default function TrackOrderPage() {
                 <MyFormInputAceternity
                   name="orderId"
                   label="Order ID"
-                  placeholder="GP-10002"
+                  placeholder="ORD-XXXXXX"
                   required
                 />
                 <MyFormInputAceternity
@@ -195,10 +239,20 @@ export default function TrackOrderPage() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-3 bg-[#007C74] hover:bg-[#006059] text-white font-bold rounded-lg shadow-lg hover:shadow-[#007c74]/20 transition-all duration-300 flex items-center justify-center gap-2 group cursor-pointer"
+                  disabled={isFetching}
+                  className="w-full py-3 bg-[#007C74] hover:bg-[#006059] text-white font-bold rounded-lg shadow-lg hover:shadow-[#007c74]/20 transition-all duration-300 flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-50"
                 >
-                  <span data-translate="track.search_btn">Track Progress</span>
-                  <Search className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                  {isFetching ? (
+                    <>
+                      <span>Tracking...</span>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      <span data-translate="track.search_btn">Track Progress</span>
+                      <Search className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                    </>
+                  )}
                 </button>
               </div>
             </MyFormWrapper>
@@ -208,7 +262,19 @@ export default function TrackOrderPage() {
         {/* Tracking Results Animation */}
         <div className="max-w-3xl mx-auto">
           <AnimatePresence mode="wait">
-            {!hasSearched && (
+            {isFetching && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="text-center py-12 glass-panel rounded-2xl"
+              >
+                <Loader2 className="w-8 h-8 animate-spin mx-auto text-[#007C74] mb-3" />
+                <p className="text-sm text-neutral-500 font-medium">Fetching live delivery progress...</p>
+              </motion.div>
+            )}
+
+            {!isFetching && !hasSearched && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -225,9 +291,26 @@ export default function TrackOrderPage() {
               </motion.div>
             )}
 
-            {hasSearched && trackedOrder && (
+            {!isFetching && hasSearched && errorMsg && (
               <motion.div
-                key={trackedOrder.orderId}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="text-center py-12 glass-panel rounded-2xl space-y-4"
+              >
+                <div className="p-4 bg-red-100 dark:bg-red-950/30 rounded-full w-fit mx-auto text-red-500">
+                  <X className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white">Order Not Found</h3>
+                <p className="text-sm text-neutral-500 max-w-sm mx-auto">
+                  {errorMsg}
+                </p>
+              </motion.div>
+            )}
+
+            {!isFetching && hasSearched && mappedOrder && (
+              <motion.div
+                key={mappedOrder.orderId}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -242,7 +325,7 @@ export default function TrackOrderPage() {
                     </div>
                     <div>
                       <h4 className="text-xs uppercase font-extrabold text-neutral-400" data-translate="track.meta_id">Order Number</h4>
-                      <p className="text-base font-bold text-neutral-900 dark:text-white">{trackedOrder.orderId}</p>
+                      <p className="text-base font-bold text-neutral-900 dark:text-white">{mappedOrder.orderId}</p>
                     </div>
                   </div>
 
@@ -252,7 +335,7 @@ export default function TrackOrderPage() {
                     </div>
                     <div>
                       <h4 className="text-xs uppercase font-extrabold text-neutral-400" data-translate="track.meta_est">Est. Arrival</h4>
-                      <p className="text-base font-bold text-neutral-900 dark:text-white">{trackedOrder.estimatedDelivery}</p>
+                      <p className="text-base font-bold text-neutral-900 dark:text-white">{mappedOrder.estimatedDelivery}</p>
                     </div>
                   </div>
 
@@ -262,7 +345,7 @@ export default function TrackOrderPage() {
                     </div>
                     <div>
                       <h4 className="text-xs uppercase font-extrabold text-neutral-400" data-translate="track.meta_status">Current Status</h4>
-                      <p className="text-base font-bold text-[#00a76b]">{trackedOrder.statusText}</p>
+                      <p className="text-base font-bold text-[#00a76b]">{mappedOrder.statusText}</p>
                     </div>
                   </div>
                 </div>
@@ -279,7 +362,7 @@ export default function TrackOrderPage() {
                       <div 
                         className="h-full bg-gradient-to-r from-[#00a76b] to-[#007C74] transition-all duration-500" 
                         style={{
-                          width: `${(getStatusIndex(trackedOrder.status) / 3) * 100}%`
+                          width: `${(getStatusIndex(mappedOrder.status) / 3) * 100}%`
                         }}
                       />
                     </div>
@@ -289,15 +372,15 @@ export default function TrackOrderPage() {
                       <div 
                         className="w-full bg-[#00a76b] transition-all duration-500" 
                         style={{
-                          height: `${(getStatusIndex(trackedOrder.status) / 3) * 100}%`
+                          height: `${(getStatusIndex(mappedOrder.status) / 3) * 100}%`
                         }}
                       />
                     </div>
 
                     {/* Stepper items */}
-                    {trackedOrder.steps.map((step, idx) => {
-                      const isActive = getStatusIndex(trackedOrder.status) === idx;
-                      const isCompleted = getStatusIndex(trackedOrder.status) >= idx;
+                    {mappedOrder.steps.map((step, idx) => {
+                      const isActive = getStatusIndex(mappedOrder.status) === idx;
+                      const isCompleted = getStatusIndex(mappedOrder.status) >= idx;
                       
                       return (
                         <div key={idx} className="relative z-10 flex flex-row md:flex-col items-start md:items-center text-left md:text-center w-full gap-4 md:gap-2">
@@ -356,7 +439,7 @@ export default function TrackOrderPage() {
                         <span className="font-semibold" data-translate="track.recipient_addr_lbl">Delivery Address:</span>
                         <p className="mt-1 flex items-start gap-2">
                           <MapPin className="w-4 h-4 text-neutral-400 flex-shrink-0 mt-0.5" />
-                          <span>{trackedOrder.shippingAddress}</span>
+                          <span>{mappedOrder.shippingAddress}</span>
                         </p>
                       </div>
                     </div>
@@ -370,15 +453,15 @@ export default function TrackOrderPage() {
                     <div className="p-4 bg-neutral-100/50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3">
                       <div className="flex justify-between items-start gap-4 text-sm">
                         <div>
-                          <p className="font-bold text-neutral-900 dark:text-white">{trackedOrder.item}</p>
+                          <p className="font-bold text-neutral-900 dark:text-white">{mappedOrder.item}</p>
                           <p className="text-xs text-neutral-500 mt-0.5">Quantity: 1</p>
                         </div>
-                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">{trackedOrder.price}</span>
+                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">{mappedOrder.price}</span>
                       </div>
                       <div className="h-[1px] bg-neutral-200 dark:bg-neutral-800" />
                       <div className="flex justify-between items-center text-xs text-neutral-500">
                         <span data-translate="track.shipping_method">Shipping Method:</span>
-                        <span className="font-semibold text-[#007C74]">Glassophite Premium courier</span>
+                        <span className="font-semibold text-[#007C74]">Glassophite Premium Courier</span>
                       </div>
                     </div>
                   </div>

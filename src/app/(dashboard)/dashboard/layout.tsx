@@ -18,7 +18,8 @@ import {
   BookOpen,
   Store,
   Menu,
-  ClipboardList
+  ClipboardList,
+  HelpCircle
 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -35,6 +36,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     { label: "Customers", href: "/dashboard/customers", icon: Users },
     { label: "Promo Coupons", href: "/dashboard/coupons", icon: Tag },
     { label: "Reviews Moderation", href: "/dashboard/reviews", icon: Star },
+    { label: "FAQ Moderation", href: "/dashboard/faqs", icon: HelpCircle },
     { label: "Support Tickets", href: "/dashboard/support", icon: MessageSquare },
     { label: "Staff Directory", href: "/dashboard/staff", icon: Shield },
     { label: "Navbar Menus", href: "/dashboard/navigation", icon: Menu },

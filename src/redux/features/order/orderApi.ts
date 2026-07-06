@@ -55,6 +55,14 @@ const orderApi = baseApi.injectEndpoints({
     }, void>({
       query: () => ({ url: "orders/delivery-settings" }),
     }),
+
+    // Public Order Tracking
+    trackOrder: builder.query({
+      query: ({ orderNumber, email }: { orderNumber: string; email: string }) => ({
+        url: "orders/track",
+        params: { orderNumber, email },
+      }),
+    }),
   }),
 });
 
@@ -68,4 +76,5 @@ export const {
   useCreateSslSessionMutation,
   useVerifySslPaymentQuery,
   useGetDeliverySettingsQuery,
+  useLazyTrackOrderQuery,
 } = orderApi;

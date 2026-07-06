@@ -46,11 +46,11 @@ const footerSections = {
     title: "Quick Links",
     translateKey: "footer.quickLinks",
     items: [
-      { label: "Shop All", href: "/shop", translateKey: "footer.shopAll" },
+      { label: "Shop All", href: "product-filter", translateKey: "footer.shopAll" },
       { label: "Brands", href: "/brands", translateKey: "footer.brands" },
-      { label: "New Arrivals", href: "/new-arrivals", translateKey: "footer.newArrivals" },
-      { label: "Best Sellers", href: "/best-sellers", translateKey: "footer.bestSellers" },
-      { label: "Limited Edition", href: "/limited-edition", translateKey: "footer.limited" },
+      { label: "New Arrivals", href: "product-filter?category=new+arrivals", translateKey: "footer.newArrivals" },
+      { label: "Best Sellers", href: "product-filter?category=best+sellers", translateKey: "footer.bestSellers" },
+      { label: "Featured", href: "product-filter?category=featured+picks", translateKey: "footer.limited" },
     ],
   },
   customerService: {

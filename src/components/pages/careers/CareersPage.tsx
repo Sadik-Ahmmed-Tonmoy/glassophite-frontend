@@ -121,7 +121,7 @@ export default function CareersPage() {
             Even if we don&apos;t have an exact matching position, send your portfolio or CV to our recruitment team at:
           </p>
           <p className="text-base font-bold text-[#007C74]">
-            <a href="mailto:careers@glassophite.com" className="hover:underline">careers@glassophite.com</a>
+            <a href="mailto:glassophite@gmail.com" className="hover:underline">glassophite@gmail.com</a>
           </p>
         </div>
 

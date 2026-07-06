@@ -80,6 +80,27 @@ export default function ProductReview({
   const [reviews, setReviews] = useState<TReview[]>(initialReviews || []);
   const [userVotes, setUserVotes] = useState<Record<string, "helpful" | "unhelpful">>({});
 
+  // Ref to track pending vote changes to debounce rapid clicks
+  const pendingVotesRef = useRef<Record<string, {
+    originalVote: "helpful" | "unhelpful" | undefined;
+    originalHelpfulCount: number;
+    originalUnhelpfulCount: number;
+    timeoutId: any;
+  }>>({});
+
+  useEffect(() => {
+    return () => {
+      // Clear any pending vote timeouts on unmount
+      if (pendingVotesRef.current) {
+        Object.values(pendingVotesRef.current).forEach((pending) => {
+          if (pending?.timeoutId) {
+            clearTimeout(pending.timeoutId);
+          }
+        });
+      }
+    };
+  }, []);
+
   useEffect(() => {
     const savedVotes = localStorage.getItem("voted_reviews");
     if (savedVotes) {
@@ -319,63 +340,177 @@ export default function ProductReview({
     const currentVote = userVotes[reviewId];
     const targetVote = isHelpful ? "helpful" : "unhelpful";
 
-    try {
+    // 1. Initialize or get pending vote info for this review to track rapid clicks
+    if (!pendingVotesRef.current[reviewId]) {
+      const targetReview = reviews.find((r) => r.id === reviewId);
+      pendingVotesRef.current[reviewId] = {
+        originalVote: currentVote,
+        originalHelpfulCount: targetReview?.helpful || 0,
+        originalUnhelpfulCount: targetReview?.unhelpful || 0,
+        timeoutId: 0,
+      };
+    } else {
+      // Clear existing timeout since the user clicked again within the debounce window
+      clearTimeout(pendingVotesRef.current[reviewId].timeoutId);
+    }
+
+    // 2. Compute the new state optimistically
+    const updatedVotes = { ...userVotes };
+    const updatedReviews = reviews.map((review) => {
+      if (review.id !== reviewId) return review;
+
+      const newReview = { ...review };
+
       if (currentVote === targetVote) {
         // Toggle off / Undo vote
-        await markHelpfulMutation({
-          id: reviewId,
-          productId,
-          type: targetVote,
-          action: "decrement",
-        }).unwrap();
-
-        const updatedVotes = { ...userVotes };
-        delete updatedVotes[reviewId];
-        setUserVotes(updatedVotes);
-        localStorage.setItem("voted_reviews", JSON.stringify(updatedVotes));
-        toast.success("Feedback removed.");
+        if (targetVote === "helpful") {
+          newReview.helpful = Math.max(0, (newReview.helpful || 0) - 1);
+        } else {
+          newReview.unhelpful = Math.max(0, (newReview.unhelpful || 0) - 1);
+        }
       } else if (currentVote) {
         // Switch vote: decrement old, increment new
         const oldType = currentVote;
-        
-        // Decrement old
-        await markHelpfulMutation({
-          id: reviewId,
-          productId,
-          type: oldType,
-          action: "decrement",
-        }).unwrap();
-
-        // Increment new
-        await markHelpfulMutation({
-          id: reviewId,
-          productId,
-          type: targetVote,
-          action: "increment",
-        }).unwrap();
-
-        const updatedVotes = { ...userVotes, [reviewId]: targetVote };
-        setUserVotes(updatedVotes);
-        localStorage.setItem("voted_reviews", JSON.stringify(updatedVotes));
-        toast.success("Feedback updated!");
+        if (oldType === "helpful") {
+          newReview.helpful = Math.max(0, (newReview.helpful || 0) - 1);
+          newReview.unhelpful = (newReview.unhelpful || 0) + 1;
+        } else {
+          newReview.unhelpful = Math.max(0, (newReview.unhelpful || 0) - 1);
+          newReview.helpful = (newReview.helpful || 0) + 1;
+        }
       } else {
         // First time vote
-        await markHelpfulMutation({
-          id: reviewId,
-          productId,
-          type: targetVote,
-          action: "increment",
-        }).unwrap();
-
-        const updatedVotes = { ...userVotes, [reviewId]: targetVote };
-        setUserVotes(updatedVotes);
-        localStorage.setItem("voted_reviews", JSON.stringify(updatedVotes));
-        toast.success("Thank you for your feedback!");
+        if (targetVote === "helpful") {
+          newReview.helpful = (newReview.helpful || 0) + 1;
+        } else {
+          newReview.unhelpful = (newReview.unhelpful || 0) + 1;
+        }
       }
-    } catch (err) {
-      const error = err as { data?: { message?: string } };
-      toast.error(error?.data?.message || "Failed to submit feedback.");
+      return newReview;
+    });
+
+    if (currentVote === targetVote) {
+      delete updatedVotes[reviewId];
+    } else {
+      updatedVotes[reviewId] = targetVote;
     }
+
+    // 3. Apply state changes and success toast instantly
+    setUserVotes(updatedVotes);
+    setReviews(updatedReviews);
+    localStorage.setItem("voted_reviews", JSON.stringify(updatedVotes));
+
+    if (currentVote === targetVote) {
+      toast.success("Feedback removed.");
+    } else if (currentVote) {
+      toast.success("Feedback updated!");
+    } else {
+      toast.success("Thank you for your feedback!");
+    }
+
+    // 4. Schedule server sync in the background after a debounce period (500ms)
+    const pending = pendingVotesRef.current[reviewId];
+    pending.timeoutId = setTimeout(async () => {
+      const finalVote = updatedVotes[reviewId];
+      const { originalVote, originalHelpfulCount, originalUnhelpfulCount } = pending;
+
+      // Clean up the pending entry from ref
+      delete pendingVotesRef.current[reviewId];
+
+      try {
+        if (originalVote === finalVote) {
+          // Clicks balanced out to no-op
+          return;
+        }
+
+        if (originalVote === undefined) {
+          if (finalVote === "helpful" || finalVote === "unhelpful") {
+            await markHelpfulMutation({
+              id: reviewId,
+              productId,
+              type: finalVote,
+              action: "increment",
+            }).unwrap();
+          }
+        } else if (originalVote === "helpful") {
+          if (finalVote === undefined) {
+            await markHelpfulMutation({
+              id: reviewId,
+              productId,
+              type: "helpful",
+              action: "decrement",
+            }).unwrap();
+          } else if (finalVote === "unhelpful") {
+            // Decrement old
+            await markHelpfulMutation({
+              id: reviewId,
+              productId,
+              type: "helpful",
+              action: "decrement",
+            }).unwrap();
+            // Increment new
+            await markHelpfulMutation({
+              id: reviewId,
+              productId,
+              type: "unhelpful",
+              action: "increment",
+            }).unwrap();
+          }
+        } else if (originalVote === "unhelpful") {
+          if (finalVote === undefined) {
+            await markHelpfulMutation({
+              id: reviewId,
+              productId,
+              type: "unhelpful",
+              action: "decrement",
+            }).unwrap();
+          } else if (finalVote === "helpful") {
+            // Decrement old
+            await markHelpfulMutation({
+              id: reviewId,
+              productId,
+              type: "unhelpful",
+              action: "decrement",
+            }).unwrap();
+            // Increment new
+            await markHelpfulMutation({
+              id: reviewId,
+              productId,
+              type: "helpful",
+              action: "increment",
+            }).unwrap();
+          }
+        }
+      } catch (err) {
+        // Rollback state on failure ONLY if the user hasn't started a new sequence of clicks
+        if (!pendingVotesRef.current[reviewId]) {
+          setUserVotes((prev) => {
+            const rollbackVotes = { ...prev };
+            if (originalVote === undefined) {
+              delete rollbackVotes[reviewId];
+            } else {
+              rollbackVotes[reviewId] = originalVote;
+            }
+            localStorage.setItem("voted_reviews", JSON.stringify(rollbackVotes));
+            return rollbackVotes;
+          });
+
+          setReviews((prevReviews) => {
+            return prevReviews.map((review) => {
+              if (review.id !== reviewId) return review;
+              return {
+                ...review,
+                helpful: originalHelpfulCount,
+                unhelpful: originalUnhelpfulCount,
+              };
+            });
+          });
+        }
+
+        const error = err as { data?: { message?: string } };
+        toast.error(error?.data?.message || "Failed to sync feedback with server.");
+      }
+    }, 500);
   };
 
   const readFileAsDataURL = (file: File): Promise<string> => {

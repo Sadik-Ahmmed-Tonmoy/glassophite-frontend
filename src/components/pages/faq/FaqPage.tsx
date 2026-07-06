@@ -10,7 +10,10 @@ import {
   ShieldAlert, 
   Sparkles,
   ArrowRight,
-  MessageCircle
+  MessageCircle,
+  CreditCard,
+  Package,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
 import { 
@@ -19,126 +22,52 @@ import {
   AccordionTrigger, 
   AccordionContent 
 } from "@/components/ui/accordion";
+import { useGetFAQsQuery } from "@/redux/features/faq/faqApi";
 
-interface FaqItem {
-  id: string;
-  q: string;
-  a: string;
-  translateQKey: string;
-  translateAKey: string;
-}
-
-interface FaqCategory {
-  id: string;
-  title: string;
-  translateTitleKey: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  items: FaqItem[];
-}
-
-const faqData: FaqCategory[] = [
-  {
-    id: "shipping",
-    title: "Shipping & Delivery",
-    translateTitleKey: "faq.cat_shipping",
-    icon: Truck,
-    items: [
-      {
-        id: "ship-1",
-        q: "What are your delivery times and rates in Bangladesh?",
-        translateQKey: "faq.ship1_q",
-        a: "We offer free home delivery inside Dhaka within 24–48 hours. For deliveries outside Dhaka, we partner with premium couriers; delivery takes 3–5 business days and incurs a flat charge of 120 BDT.",
-        translateAKey: "faq.ship1_a",
-      },
-      {
-        id: "ship-2",
-        q: "Can I inspect the product before accepting delivery?",
-        translateQKey: "faq.ship2_q",
-        a: "Yes! For deliveries within Dhaka, you can request open-box delivery. Inspect the package in front of our delivery executive. If you decide not to take it, simply return it instantly without any extra charge.",
-        translateAKey: "faq.ship2_a",
-      },
-      {
-        id: "ship-3",
-        q: "How can I track my package?",
-        translateQKey: "faq.ship3_q",
-        a: "Once shipped, you will receive a tracking link via SMS. You can also track the real-time package status directly on our portal at `/track-order` using your Order ID.",
-        translateAKey: "faq.ship3_a",
-      },
-    ],
-  },
-  {
-    id: "try-on",
-    title: "Virtual Try-On & Sizing",
-    translateTitleKey: "faq.cat_tryon",
-    icon: Sparkles,
-    items: [
-      {
-        id: "try-1",
-        q: "How does the Virtual Try-On work?",
-        translateQKey: "faq.try1_q",
-        a: "Our virtual try-on engine accesses your webcam and maps the 3D geometry of your face in real-time. You can toggle frames to see precisely how their dimensions, color, and frame type suit your facial structure.",
-        translateAKey: "faq.try1_a",
-      },
-      {
-        id: "try-2",
-        q: "How do I choose the correct frame size?",
-        translateQKey: "faq.try2_q",
-        a: "Every product page includes specific frame dimensions (Lens Width - Bridge - Temple Length) in millimeters. You can look at the inner temple of your current glasses for similar numbers to find your exact match.",
-        translateAKey: "faq.try2_a",
-      },
-    ],
-  },
-  {
-    id: "returns",
-    title: "Returns & Exchanges",
-    translateTitleKey: "faq.cat_returns",
-    icon: RefreshCcw,
-    items: [
-      {
-        id: "ret-1",
-        q: "What is Glassophite's return policy?",
-        translateQKey: "faq.ret1_q",
-        a: "We offer a 7-day hassle-free return and exchange policy for unused items in their original packaging, including the designer case and cleaning cloth. Customized prescription lenses cannot be refunded.",
-        translateAKey: "faq.ret1_a",
-      },
-      {
-        id: "ret-2",
-        q: "How do I initiate a return or exchange?",
-        translateQKey: "faq.ret2_q",
-        a: "Send us a request at support.glassophite@gmail.com or call our hotline. For customers in Dhaka, our courier will collect the package from your doorstep. For customers outside Dhaka, please dispatch it via courier to our Gulshan showroom.",
-        translateAKey: "faq.ret2_a",
-      },
-    ],
-  },
-  {
-    id: "product-care",
-    title: "Product Care & Warranty",
-    translateTitleKey: "faq.cat_care",
-    icon: ShieldAlert,
-    items: [
-      {
-        id: "care-1",
-        q: "How should I clean and protect my luxury lenses?",
-        translateQKey: "faq.care1_q",
-        a: "Always use the microfiber cloth provided in the case. Avoid paper towels or clothing, which can create micro-scratches. Wash lenses under lukewarm running water with a drop of mild dish soap to remove oil prints.",
-        translateAKey: "faq.care1_a",
-      },
-      {
-        id: "care-2",
-        q: "Do you offer a product warranty?",
-        translateQKey: "faq.care2_q",
-        a: "Yes, all Glassophite eyewear comes with a 1-Year Limited Warranty covering manufacturing defects on hinges, frame welds, and coatings. Accidental lens scratches or frame breakage from misuse are not covered.",
-        translateAKey: "faq.care2_a",
-      },
-    ],
-  },
-];
+const getCategoryIcon = (category: string) => {
+  const cat = category.toLowerCase();
+  if (cat.includes("shipping") || cat.includes("deliver")) return Truck;
+  if (cat.includes("return") || cat.includes("refund") || cat.includes("exchange")) return RefreshCcw;
+  if (cat.includes("try") || cat.includes("size") || cat.includes("camera") || cat.includes("fit")) return Sparkles;
+  if (cat.includes("care") || cat.includes("warranty") || cat.includes("safety") || cat.includes("protect")) return ShieldAlert;
+  if (cat.includes("payment") || cat.includes("price") || cat.includes("bill") || cat.includes("pay")) return CreditCard;
+  if (cat.includes("product") || cat.includes("glass") || cat.includes("frame")) return Package;
+  return HelpCircle;
+};
 
 export default function FaqPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { data: dbFAQsData, isLoading } = useGetFAQsQuery({ status: "Active" });
+
+  const rawFAQs = dbFAQsData?.data || [];
+
+  // Group FAQs by category dynamically
+  const categoriesMap: Record<string, { id: string; title: string; icon: any; items: any[] }> = {};
+  
+  rawFAQs.forEach((faq: any) => {
+    const cat = faq.category || "General";
+    const catId = cat.toLowerCase().replace(/\s+/g, "-");
+    
+    if (!categoriesMap[catId]) {
+      categoriesMap[catId] = {
+        id: catId,
+        title: cat,
+        icon: getCategoryIcon(cat),
+        items: [],
+      };
+    }
+    
+    categoriesMap[catId].items.push({
+      id: faq.id,
+      q: faq.question,
+      a: faq.answer,
+    });
+  });
+  
+  const faqCategories = Object.values(categoriesMap);
 
   // Filter FAQs based on query
-  const filteredFaqs = faqData
+  const filteredFaqs = faqCategories
     .map((category) => {
       const items = category.items.filter(
         (item) =>
@@ -148,6 +77,17 @@ export default function FaqPage() {
       return { ...category, items };
     })
     .filter((category) => category.items.length > 0);
+
+  if (isLoading) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-[#0a0a0a] dark:via-neutral-900 dark:to-[#0a0a0a]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-[#007C74]" />
+          <p className="text-sm text-neutral-500 font-medium" data-translate="faq.loading">Loading Help Center...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-[#0a0a0a] dark:via-neutral-900 dark:to-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-500 py-12">
@@ -194,7 +134,7 @@ export default function FaqPage() {
                   >
                     <div className="flex items-center gap-3 border-b border-neutral-200/50 dark:border-neutral-800/50 pb-3 text-[#007C74]">
                       <IconComponent className="w-5 h-5" />
-                      <h2 className="text-lg font-bold text-neutral-900 dark:text-white" data-translate={category.translateTitleKey}>
+                      <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
                         {category.title}
                       </h2>
                     </div>
@@ -203,10 +143,10 @@ export default function FaqPage() {
                       {category.items.map((item) => (
                         <AccordionItem key={item.id} value={item.id} className="border-b border-neutral-200/30 dark:border-neutral-800/30 last:border-b-0">
                           <AccordionTrigger className="text-left font-semibold text-neutral-800 dark:text-neutral-200 hover:no-underline hover:text-[#007C74] dark:hover:text-[#007C74]">
-                            <span data-translate={item.translateQKey}>{item.q}</span>
+                            <span>{item.q}</span>
                           </AccordionTrigger>
                           <AccordionContent className="text-neutral-600 dark:text-neutral-400 leading-relaxed text-sm pt-1 pb-4">
-                            <span data-translate={item.translateAKey}>{item.a}</span>
+                            <span>{item.a}</span>
                           </AccordionContent>
                         </AccordionItem>
                       ))}

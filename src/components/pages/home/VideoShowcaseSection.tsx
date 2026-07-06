@@ -5,7 +5,7 @@ import React, { useRef, useCallback, useEffect, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 
 // Playback speed multiplier for the video (1 = normal speed).
-const VIDEO_PLAYBACK_RATE = 3.5
+const VIDEO_PLAYBACK_RATE = 2.5
 
 // A scroll progress value is considered "outside" the section's active
 // range when it's at the clamped edge (0 or 1).
@@ -111,9 +111,9 @@ export default function VideoShowcaseSection() {
         {/* Video element */}
         <video
           ref={videoRef}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-top"
           // src="/sunglass.mp4"
-          src="/Make_transaction_website_smooth_202607051455.mp4"
+          src="/sunglass_final_1080p.mp4"
           muted={isMuted}
           playsInline
           loop

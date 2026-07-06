@@ -5,11 +5,11 @@ import { ReactNode } from "react";
 
 const layout = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="relative">
-      <NavigationBar />
-      <div className="h-full min-h-screen lg:mt-[80px]">{children}</div>
-      <Footer />
-    </div>
+      <div className="relative">
+        <NavigationBar />
+        <div className="h-full min-h-screen lg:mt-[80px]">{children}</div>
+        <Footer />
+      </div>
   );
 };
 

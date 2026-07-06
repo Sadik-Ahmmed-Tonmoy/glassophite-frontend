@@ -2,8 +2,8 @@
 
 import { FloatButton } from "@/components/ui/FloatButton/FloatButton";
 import BestSellerCarouselSection from "./BestSellerCarouselSection";
-import NewArrivalsSection from "./NewArrivalsSection";
 import CollectionSpotlightSection from "./CollectionSpotlightSection";
+import NewArrivalsSection from "./NewArrivalsSection";
 // import BrandStatementSection from "./BrandStatementSection";
 import FeaturedCollectionSection from "./FeaturedCollectionSection";
 import GlassophitePromiseSection from "./GlassophitePromiseSection";
@@ -11,12 +11,10 @@ import HeroCinematicSection from "./HeroCinematicSection";
 // import HorizontalScroll from "./HorizontalScroll/HorizontalScroll";
 import SEOContentSection from "./SEOContentSection";
 // import SocialProofSection from "./SocialProofSection";
+import ScrollAnimationEffect from "./ScrollAnimationEffect";
 import Testimonials from "./TestimonialsSection";
 import WhyChooseGlassophiteSection from "./WhyChooseGlassophiteSection";
 import HeroParallaxDemo from "./hero-parallax-demo";
-import CollectionParallaxSection from "./CollectionParallaxSection";
-import VideoShowcaseSection from "./VideoShowcaseSection";
-import VirtualTryOn from "./VirtualTryOn";
 
 const HomeComponent = () => {
   return (
@@ -31,7 +29,11 @@ const HomeComponent = () => {
       <NewArrivalsSection />
       <FeaturedCollectionSection />
       <HeroParallaxDemo />
-      <VideoShowcaseSection />
+      {/* <VideoShowcaseSection /> */}
+          {/* <SmoothScroll> */}
+
+      <ScrollAnimationEffect />
+          {/* </SmoothScroll> */}
       <Testimonials />
       {/* <VirtualTryOn /> */}
       {/* <StyleInspirationSection /> */}

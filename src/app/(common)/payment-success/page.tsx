@@ -1,17 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { useEffect, Suspense } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
-import { useVerifySslPaymentQuery } from "@/redux/features/order/orderApi"
-import { useCart } from "@/hooks/use-cart"
 import { Button } from "@/components/ui/button"
+import { useCart } from "@/hooks/use-cart"
+import { useVerifySslPaymentQuery } from "@/redux/features/order/orderApi"
 import { motion } from "framer-motion"
-import { CheckCircle2, ShoppingBag, ArrowRight, Loader2, AlertCircle } from "lucide-react"
+import { AlertCircle, ArrowRight, CheckCircle2, Loader2, ShoppingBag } from "lucide-react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
+import { Suspense, useEffect } from "react"
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams()
-  const router = useRouter()
+
   const { clearCart } = useCart()
 
   const tranId = searchParams.get("tran_id") || ""

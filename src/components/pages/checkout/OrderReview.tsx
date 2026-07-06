@@ -40,7 +40,6 @@ export default function OrderReview({
   items,
   shippingDetails,
   paymentMethod,
-  paymentDetails,
   shippingMethod,
   subtotal,
   shipping,
@@ -92,12 +91,7 @@ export default function OrderReview({
 
   const styles = isDark ? themeStyles.dark : themeStyles.light
 
-  // Format credit card number for display
-  const formatCardNumber = (cardNumber: string) => {
-    if (!cardNumber) return ""
-    const last4 = cardNumber.replace(/\s/g, "").slice(-4)
-    return `•••• •••• •••• ${last4}`
-  }
+
 
   // Get shipping method label
   const getShippingMethodLabel = () => {

@@ -73,8 +73,7 @@ export default function CheckoutPageClient() {
   const [rewardPointsUsed] = useState<number>(cartCtx?.rewardPointsUsed ?? 0)
   const [rewardDiscount] = useState<number>(cartCtx?.rewardDiscount ?? 0)
 
-  const tax = 0
-  const grandTotal = subtotal + shippingCost - discount - rewardDiscount
+
   const displayTotal = subtotal + shippingCost - discount - rewardDiscount
 
   const nextStep = () => {

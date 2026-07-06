@@ -26,7 +26,6 @@ export default function CheckoutSummary({
   shipping,
   discount,
   total,
-  couponCode,
   onApplyCoupon,
   onRemoveCoupon,
 }: CheckoutSummaryProps) {

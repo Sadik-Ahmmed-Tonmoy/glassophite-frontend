@@ -1,15 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   useGetAllStockRequestsQuery,
   useUpdateStockRequestStatusMutation,
 } from "@/redux/features/stockRequest/stockRequestApi";
-import { Bell, CheckCircle2, Clock, Loader2, Mail, User, ShieldAlert, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
+import { motion } from "framer-motion";
+import {
+  AlertCircle,
+  Bell,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  Mail,
+  User,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { toast } from "sonner";
 
 type TStockRequest = {
   id: string;
@@ -50,8 +58,10 @@ type TStockRequest = {
 };
 
 export default function StockRequestsView() {
-  const { data, isLoading, isFetching, refetch } = useGetAllStockRequestsQuery(undefined);
-  const [updateStatus, { isLoading: isUpdating }] = useUpdateStockRequestStatusMutation();
+  const { data, isLoading, isFetching, refetch } =
+    useGetAllStockRequestsQuery(undefined);
+  const [updateStatus, { isLoading: isUpdating }] =
+    useUpdateStockRequestStatusMutation();
 
   const requests: TStockRequest[] = data?.data || [];
 
@@ -85,16 +95,21 @@ export default function StockRequestsView() {
             <span>Stock Requests</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Monitor and resolve out-of-stock notification requests submitted by customers.
+            Monitor and resolve out-of-stock notification requests submitted by
+            customers.
           </p>
         </div>
-        
+
         <button
           onClick={() => refetch()}
           className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
           disabled={isLoading || isFetching}
         >
-          {isFetching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Refresh"}
+          {isFetching ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            "Refresh"
+          )}
         </button>
       </div>
 
@@ -105,8 +120,12 @@ export default function StockRequestsView() {
             <Clock className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase">Pending Requests</p>
-            <h3 className="text-xl font-black">{requests.filter(r => r.status === "PENDING").length}</h3>
+            <p className="text-[10px] text-muted-foreground font-bold uppercase">
+              Pending Requests
+            </p>
+            <h3 className="text-xl font-black">
+              {requests.filter((r) => r.status === "PENDING").length}
+            </h3>
           </div>
         </div>
 
@@ -115,8 +134,12 @@ export default function StockRequestsView() {
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase">Notified / Resolved</p>
-            <h3 className="text-xl font-black">{requests.filter(r => r.status === "NOTIFIED").length}</h3>
+            <p className="text-[10px] text-muted-foreground font-bold uppercase">
+              Notified / Resolved
+            </p>
+            <h3 className="text-xl font-black">
+              {requests.filter((r) => r.status === "NOTIFIED").length}
+            </h3>
           </div>
         </div>
 
@@ -125,9 +148,18 @@ export default function StockRequestsView() {
             <Bell className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase">Ready to Notify</p>
+            <p className="text-[10px] text-muted-foreground font-bold uppercase">
+              Ready to Notify
+            </p>
             <h3 className="text-xl font-black">
-              {requests.filter(r => r.status === "PENDING" && r.variant?.inStock && r.variant?.quantity > 0).length}
+              {
+                requests.filter(
+                  (r) =>
+                    r.status === "PENDING" &&
+                    r.variant?.inStock &&
+                    r.variant?.quantity > 0,
+                ).length
+              }
             </h3>
           </div>
         </div>
@@ -149,24 +181,37 @@ export default function StockRequestsView() {
           <tbody className="divide-y divide-border">
             {isLoading || isFetching ? (
               <tr>
-                <td colSpan={6} className="p-12 text-center text-muted-foreground">
+                <td
+                  colSpan={6}
+                  className="p-12 text-center text-muted-foreground"
+                >
                   <Loader2 className="w-6 h-6 animate-spin mx-auto text-[#007C74]" />
                   <p className="text-xs mt-2">Loading stock requests...</p>
                 </td>
               </tr>
             ) : requests.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-12 text-center text-muted-foreground bg-card/25">
+                <td
+                  colSpan={6}
+                  className="p-12 text-center text-muted-foreground bg-card/25"
+                >
                   <AlertCircle className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
                   <p className="font-bold">No Stock Requests found</p>
-                  <p className="text-[11px] text-neutral-450 mt-1">When users request restocks of out-of-stock items, they will list here.</p>
+                  <p className="text-[11px] text-neutral-450 mt-1">
+                    When users request restocks of out-of-stock items, they will
+                    list here.
+                  </p>
                 </td>
               </tr>
             ) : (
               requests.map((req) => {
-                const isReadyToNotify = req.variant?.inStock && req.variant?.quantity > 0;
+                const isReadyToNotify =
+                  req.variant?.inStock && req.variant?.quantity > 0;
                 return (
-                  <tr key={req.id} className="hover:bg-muted/10 transition-colors">
+                  <tr
+                    key={req.id}
+                    className="hover:bg-muted/10 transition-colors"
+                  >
                     {/* Customer Info */}
                     <td className="p-4">
                       <div className="flex items-center gap-2.5">
@@ -174,7 +219,9 @@ export default function StockRequestsView() {
                           <User className="w-3.5 h-3.5" />
                         </div>
                         <div>
-                          <p className="font-bold text-foreground line-clamp-1">{req.user?.fullName || "Guest User"}</p>
+                          <p className="font-bold text-foreground line-clamp-1">
+                            {req.user?.fullName || "Guest User"}
+                          </p>
                           <span className="text-[10px] text-neutral-500 flex items-center gap-0.5 mt-0.5">
                             <Mail className="w-2.5 h-2.5" />
                             {req.user?.email}
@@ -188,7 +235,10 @@ export default function StockRequestsView() {
                       <div className="flex items-center gap-3">
                         <div className="relative w-12 h-12 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-border overflow-hidden flex-shrink-0">
                           <Image
-                            src={req.variant?.imgList?.[0]?.image || "/placeholder.svg"}
+                            src={
+                              req.variant?.imgList?.[0]?.image ||
+                              "/placeholder.svg"
+                            }
                             alt={req.variant?.title || "Frame"}
                             fill
                             className="object-cover"
@@ -196,12 +246,22 @@ export default function StockRequestsView() {
                         </div>
                         <div>
                           <p className="font-bold text-foreground">
-                            <Link href={`/product/${req.productId}`} className="hover:text-[#007C74] hover:underline">
+                            <Link
+                              href={`/product/${req.productId}`}
+                              className="hover:text-[#007C74] hover:underline"
+                            >
                               {req.product?.title}
                             </Link>
                           </p>
                           <p className="text-[10px] text-muted-foreground mt-0.5">
-                            Color: <span className="font-semibold">{req.variant?.color}</span> | SKU: <span className="font-mono">{req.variant?.productCode}</span>
+                            Color:{" "}
+                            <span className="font-semibold">
+                              {req.variant?.color}
+                            </span>{" "}
+                            | SKU:{" "}
+                            <span className="font-mono">
+                              {req.variant?.productCode}
+                            </span>
                           </p>
                         </div>
                       </div>
@@ -249,7 +309,9 @@ export default function StockRequestsView() {
                       <div className="flex justify-center items-center gap-2">
                         {req.status === "PENDING" ? (
                           <button
-                            onClick={() => handleResolve(req.id, req.user?.email)}
+                            onClick={() =>
+                              handleResolve(req.id, req.user?.email)
+                            }
                             disabled={isUpdating}
                             className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer ${
                               isReadyToNotify
@@ -258,7 +320,11 @@ export default function StockRequestsView() {
                             }`}
                           >
                             <Bell className="w-3 h-3" />
-                            <span>{isReadyToNotify ? "Notify Customer" : "Mark Notified"}</span>
+                            <span>
+                              {isReadyToNotify
+                                ? "Notify Customer"
+                                : "Mark Notified"}
+                            </span>
                           </button>
                         ) : (
                           <span className="text-green-500 flex items-center gap-1 font-bold text-[10px]">

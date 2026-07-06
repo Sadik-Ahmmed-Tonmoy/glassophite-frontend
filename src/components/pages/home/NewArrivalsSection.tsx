@@ -59,7 +59,7 @@ export default function NewArrivalsSection() {
     isFetching: isFetchingNewArrivals,
     error: errorNewArrivals,
   } = useGetNewArrivalsQuery(6);
-
+ 
   // Fetch all products sorted by newest as a fallback
   const {
     data: allProductsData,

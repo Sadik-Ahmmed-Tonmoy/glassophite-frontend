@@ -42,6 +42,8 @@ interface CartContextType {
   addToRecentlyViewed: (item: CartItem) => void
   isLoading: boolean
   isFetching: boolean
+  savedItems: CartItem[]
+  moveToCart: (id: string) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -58,6 +60,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [mounted, setMounted] = useState(false)
   const [recentlyViewed, setRecentlyViewed] = useState<CartItem[]>([])
+  const [savedItems, setSavedItems] = useState<CartItem[]>([])
 
   // Initialize cart from localStorage (only runs for guests or initial mount)
   useEffect(() => {
@@ -77,6 +80,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (token && dbCartData?.data?.items) {
       const adjustments: Array<{ itemId: string; quantity: number }> = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mappedItems = dbCartData.data.items.map((backendItem: any) => {
         const variant = backendItem.variant || backendItem.product?.variants?.[0];
         const maxQty = variant?.quantity || 99;
@@ -184,6 +188,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [recentlyViewed, mounted])
 
+  // Initialize savedItems from localStorage
+  useEffect(() => {
+    if (mounted) {
+      const storedSaved = localStorage.getItem("savedItems")
+      if (storedSaved) {
+        try {
+          setSavedItems(JSON.parse(storedSaved))
+        } catch (error) {
+          console.error("Failed to parse savedItems from localStorage:", error)
+        }
+      }
+    }
+  }, [mounted])
+
+  // Update localStorage when savedItems changes
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem("savedItems", JSON.stringify(savedItems))
+    }
+  }, [savedItems, mounted])
+
   const totalItems = items.reduce((total, item) => total + item.quantity, 0)
 
   const totalPrice = items.reduce((total, item) => {
@@ -201,9 +226,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
           color: newItem.color,
           colorName: newItem.colorName,
         }).unwrap();
-      } catch (error: any) {
+      } catch (error) {
+        const err = error as { data?: { message?: string } };
         toast.error("Failed to add to cart", {
-          description: error?.data?.message || "Something went wrong.",
+          description: err?.data?.message || "Something went wrong.",
         });
         throw error;
       }
@@ -232,15 +258,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   const removeItem = async (id: string) => {
+    setSavedItems((prev) => prev.filter((item) => item.id !== id))
     if (token) {
       const previousItems = [...items];
       setItems((prevItems) => prevItems.filter((item) => item.id !== id));
       try {
         await apiRemoveFromCart(id).unwrap();
-      } catch (error: any) {
+      } catch (error) {
+        const err = error as { data?: { message?: string } };
         setItems(previousItems);
         toast.error("Failed to remove item", {
-          description: error?.data?.message || "Something went wrong.",
+          description: err?.data?.message || "Something went wrong.",
         });
       }
     } else {
@@ -248,18 +276,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const moveToCart = (id: string) => {
+    const itemToMove = savedItems.find((item) => item.id === id)
+    if (itemToMove) {
+      addItem(itemToMove)
+      setSavedItems((prev) => prev.filter((item) => item.id !== id))
+    }
+  }
+
   const updateItemQuantity = async (id: string | number, quantity: number) => {
     if (token) {
       const previousItems = [...items];
       setItems((prevItems) =>
-        prevItems.map((item) => (item.id === id ? { ...item, quantity } : item))
+          prevItems.map((item) => (item.id === id ? { ...item, quantity } : item))
       );
       try {
         await apiUpdateCartItem({ itemId: id as string, quantity }).unwrap();
-      } catch (error: any) {
+      } catch (error) {
+        const err = error as { data?: { message?: string } };
         setItems(previousItems);
         toast.error("Failed to update quantity", {
-          description: error?.data?.message || "Something went wrong.",
+          description: err?.data?.message || "Something went wrong.",
         });
       }
     } else {
@@ -271,9 +308,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (token) {
       try {
         await apiClearCart(undefined).unwrap();
-      } catch (error: any) {
+      } catch (error) {
+        const err = error as { data?: { message?: string } };
         toast.error("Failed to clear cart", {
-          description: error?.data?.message || "Something went wrong.",
+          description: err?.data?.message || "Something went wrong.",
         });
       }
     } else {
@@ -311,6 +349,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         addToRecentlyViewed,
         isLoading: token ? isCartLoading : false,
         isFetching: token ? isCartFetching : false,
+        savedItems,
+        moveToCart,
       }}
     >
       {children}

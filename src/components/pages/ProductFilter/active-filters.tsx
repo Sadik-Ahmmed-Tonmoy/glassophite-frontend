@@ -9,11 +9,6 @@ import { normalizeCategoryForUI } from "@/lib/utils"
 
 interface ActiveFiltersProps {
   filters: FilterState
-  collectionOptions?: readonly {
-    label: string
-    value: string
-    type: "category" | "sale"
-  }[]
   allColors: { color: string; title: string }[]
   minPrice: number
   maxPrice: number
@@ -22,7 +17,6 @@ interface ActiveFiltersProps {
 
 export default function ActiveFilters({
   filters,
-  collectionOptions = [],
   allColors,
   minPrice,
   maxPrice,

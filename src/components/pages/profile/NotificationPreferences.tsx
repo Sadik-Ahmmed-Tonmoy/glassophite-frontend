@@ -10,7 +10,6 @@ import { useProfileTheme } from "@/hooks/useProfileTheme";
 import { staggerContainer, staggerItems } from "@/lib/profileAnimations";
 
 interface ToggleItem {
-  key: string;
   title: string;
   desc: string;
   checked: boolean;
@@ -87,11 +86,11 @@ export default function NotificationPreferences() {
           <p className={cn("text-xs mb-4", styles.textMutedLighter)}>Manage what emails you receive from us.</p>
           <div className="divide-y dark:divide-white/[0.04] divide-gray-100">
             {[
-              { key: "orderUpdates", title: "Order Updates", desc: "Receive updates about your orders", checked: emailPreferences.orderUpdates, onChange: () => setEmailPreferences(p => ({ ...p, orderUpdates: !p.orderUpdates })) },
-              { key: "promotions", title: "Promotions & Discounts", desc: "Receive special offers and discounts", checked: emailPreferences.promotions, onChange: () => setEmailPreferences(p => ({ ...p, promotions: !p.promotions })) },
-              { key: "newsletter", title: "Newsletter", desc: "Receive our weekly newsletter", checked: emailPreferences.newsletter, onChange: () => setEmailPreferences(p => ({ ...p, newsletter: !p.newsletter })) },
-              { key: "accountAlerts", title: "Account Alerts", desc: "Receive security and account-related alerts", checked: emailPreferences.accountAlerts, onChange: () => setEmailPreferences(p => ({ ...p, accountAlerts: !p.accountAlerts })) },
-            ].map(item => <ToggleItem key={item.key} {...item} />)}
+              { id: "orderUpdates", title: "Order Updates", desc: "Receive updates about your orders", checked: emailPreferences.orderUpdates, onChange: () => setEmailPreferences(p => ({ ...p, orderUpdates: !p.orderUpdates })) },
+              { id: "promotions", title: "Promotions & Discounts", desc: "Receive special offers and discounts", checked: emailPreferences.promotions, onChange: () => setEmailPreferences(p => ({ ...p, promotions: !p.promotions })) },
+              { id: "newsletter", title: "Newsletter", desc: "Receive our weekly newsletter", checked: emailPreferences.newsletter, onChange: () => setEmailPreferences(p => ({ ...p, newsletter: !p.newsletter })) },
+              { id: "accountAlerts", title: "Account Alerts", desc: "Receive security and account-related alerts", checked: emailPreferences.accountAlerts, onChange: () => setEmailPreferences(p => ({ ...p, accountAlerts: !p.accountAlerts })) },
+            ].map(({ id, ...item }) => <ToggleItem key={id} {...item} />)}
           </div>
         </motion.div>
 
@@ -107,10 +106,10 @@ export default function NotificationPreferences() {
           <p className={cn("text-xs mb-4", styles.textMutedLighter)}>Receive notifications directly in your browser.</p>
           <div className="divide-y dark:divide-white/[0.04] divide-gray-100">
             {[
-              { key: "orderUpdates", title: "Order Updates", desc: "Receive updates about your orders", checked: pushPreferences.orderUpdates, onChange: () => setPushPreferences(p => ({ ...p, orderUpdates: !p.orderUpdates })) },
-              { key: "promotions", title: "Promotions & Discounts", desc: "Receive special offers and discounts", checked: pushPreferences.promotions, onChange: () => setPushPreferences(p => ({ ...p, promotions: !p.promotions })) },
-              { key: "accountAlerts", title: "Account Alerts", desc: "Receive security and account-related alerts", checked: pushPreferences.accountAlerts, onChange: () => setPushPreferences(p => ({ ...p, accountAlerts: !p.accountAlerts })) },
-            ].map(item => <ToggleItem key={item.key} {...item} />)}
+              { id: "orderUpdates", title: "Order Updates", desc: "Receive updates about your orders", checked: pushPreferences.orderUpdates, onChange: () => setPushPreferences(p => ({ ...p, orderUpdates: !p.orderUpdates })) },
+              { id: "promotions", title: "Promotions & Discounts", desc: "Receive special offers and discounts", checked: pushPreferences.promotions, onChange: () => setPushPreferences(p => ({ ...p, promotions: !p.promotions })) },
+              { id: "accountAlerts", title: "Account Alerts", desc: "Receive security and account-related alerts", checked: pushPreferences.accountAlerts, onChange: () => setPushPreferences(p => ({ ...p, accountAlerts: !p.accountAlerts })) },
+            ].map(({ id, ...item }) => <ToggleItem key={id} {...item} />)}
           </div>
 
           <div className={cn("mt-5 flex items-center gap-3 p-4 rounded-xl border", isDark ? "border-white/[0.04] bg-white/[0.02]" : "border-gray-100 bg-gray-50/50")}>

@@ -42,7 +42,7 @@ const navbarApi = baseApi.injectEndpoints({
         );
         const errors = results.filter((r) => r.error);
         if (errors.length > 0) {
-          return { error: errors[0].error as any };
+          return { error: errors[0].error as { status: number; data: unknown } };
         }
         return { data: results.map((r) => r.data) };
       },

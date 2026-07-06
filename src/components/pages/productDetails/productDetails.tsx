@@ -16,7 +16,6 @@ import { useCart } from "@/hooks/use-cart";
 import {
   mockProducts,
   productMockData,
-  reviewsData,
 } from "@/lib/productMockData";
 import { cn } from "@/lib/utils";
 import { TProduct } from "@/types/types";

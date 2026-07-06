@@ -2,7 +2,7 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
 import Link from "next/link";
 import { ArrowRight, Sparkles, AlertCircle, ShieldCheck, Gem, Clock, Eye } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -50,14 +50,7 @@ export default function NewArrivalsSection() {
   const styles = getThemeStyles(isDark);
   const isInView = useInView(containerRef, { once: true, amount: 0.1 });
 
-  // Hook to detect screen width for interactive features
-  const [isLarge, setIsLarge] = useState(false);
-  useEffect(() => {
-    const check = () => setIsLarge(window.innerWidth >= 1024);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
+
 
   // Fetch specifically flagged new arrivals
   const {

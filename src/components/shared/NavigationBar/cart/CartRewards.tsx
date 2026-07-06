@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Gift, ChevronDown, Check, X, Loader2 } from "lucide-react"
+import { Gift, ChevronDown, Check, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useGetMyRewardsQuery } from "@/redux/features/user/rewardsApi"
 import { useAppSelector } from "@/redux/hooks"

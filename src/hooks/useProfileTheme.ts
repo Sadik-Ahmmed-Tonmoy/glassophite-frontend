@@ -49,6 +49,8 @@ const dark = {
   bgInfo: "bg-blue-500/10 border-blue-500/20",
   bgSuccess: "bg-green-500/10 border-green-500/20",
   bgWarning: "bg-yellow-500/10 border-yellow-500/20",
+  checkbox: "border-white/30 bg-white/5 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#007C74] data-[state=checked]:to-[#3C55A5] data-[state=checked]:border-transparent",
+  badgePending: "bg-yellow-50/15 text-yellow-400 border border-yellow-50/20",
   statusBadge: {
     delivered: "bg-green-500/15 text-green-400 border-green-500/20",
     shipped: "bg-blue-500/15 text-blue-400 border-blue-500/20",
@@ -105,6 +107,8 @@ const light = {
   bgInfo: "bg-blue-50 border-blue-200",
   bgSuccess: "bg-green-50 border-green-200",
   bgWarning: "bg-yellow-50 border-yellow-200",
+  checkbox: "border-gray-300 bg-white data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#007C74] data-[state=checked]:to-[#3C55A5] data-[state=checked]:border-transparent",
+  badgePending: "bg-yellow-100 text-yellow-800 border border-yellow-200",
   statusBadge: {
     delivered: "bg-green-100 text-green-700 border-green-200",
     shipped: "bg-blue-100 text-blue-700 border-blue-200",

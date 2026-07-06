@@ -25,7 +25,7 @@ const WishlistButton = ({ productId, productName }: WishlistButtonProps) => {
 
   const isWishlisted = useMemo(() => {
     if (!wishlistData?.data?.items || !productId) return false;
-    return wishlistData.data.items.some((item: any) => item.productId === productId);
+    return wishlistData.data.items.some((item: { productId: string }) => item.productId === productId);
   }, [wishlistData, productId]);
 
   const handleWishlistClick = async () => {
@@ -49,9 +49,10 @@ const WishlistButton = ({ productId, productName }: WishlistButtonProps) => {
           description: productName ? `${productName} has been saved to your items.` : "Product saved to wishlist.",
         });
       }
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as { data?: { message?: string } };
       toast.error("Wishlist action failed", {
-        description: err?.data?.message || "Something went wrong.",
+        description: error?.data?.message || "Something went wrong.",
       });
     }
   };

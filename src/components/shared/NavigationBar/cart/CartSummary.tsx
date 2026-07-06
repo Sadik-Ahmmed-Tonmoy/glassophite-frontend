@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronDown, ChevronUp, X, Tag } from "lucide-react"
+import { ChevronDown, ChevronUp } from "lucide-react"
 
 interface CartSummaryProps {
   subtotal: number
@@ -11,8 +11,6 @@ interface CartSummaryProps {
   couponCode?: string
   rewardDiscount?: number
   rewardPointsUsed?: number
-  onRemoveCoupon?: () => void
-  onApplyCoupon?: (code: string) => void
 }
 
 export default function CartSummary({
@@ -22,23 +20,11 @@ export default function CartSummary({
   couponCode,
   rewardDiscount = 0,
   rewardPointsUsed = 0,
-  onRemoveCoupon,
-  onApplyCoupon,
 }: CartSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(true)
-  const [couponInput, setCouponInput] = useState("")
-  const [isCouponExpanded, setIsCouponExpanded] = useState(false)
 
   const totalDiscount = couponDiscount + rewardDiscount
   const total = Math.max(0, subtotal - totalDiscount)
-
-  const handleApplyCoupon = () => {
-    if (couponInput.trim() && onApplyCoupon) {
-      onApplyCoupon(couponInput)
-      setCouponInput("")
-      setIsCouponExpanded(false)
-    }
-  }
 
   return (
     <div className="px-4 py-3">

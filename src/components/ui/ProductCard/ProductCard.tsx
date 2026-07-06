@@ -54,14 +54,14 @@ function ProductCard({ product }: ProductCardProps) {
     product?.variants[0]
   );
   const token = useAppSelector((state) => state.auth.access_token);
-  const { data: wishlistData, isFetching } = useGetWishlistQuery(undefined, { skip: !token });
+  const { data: wishlistData } = useGetWishlistQuery(undefined, { skip: !token });
   const [addToWishlist, { isLoading: isAdding }] = useAddToWishlistMutation();
   const [removeFromWishlist, { isLoading: isRemoving }] = useRemoveFromWishlistMutation();
   const isLoading = isAdding || isRemoving;
 
   const isWishlisted = useMemo(() => {
     if (!wishlistData?.data?.items) return false;
-    return wishlistData.data.items.some((item: any) => item.productId === product.id);
+    return wishlistData.data.items.some((item: { productId: string }) => item.productId === product.id);
   }, [wishlistData, product.id]);
 
   const [isHovered, setIsHovered] = useState(false);
@@ -93,9 +93,10 @@ function ProductCard({ product }: ProductCardProps) {
           description: `${selectedVariant.title} has been saved to your items.`,
         });
       }
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as { data?: { message?: string } };
       toast.error("Wishlist action failed", {
-        description: err?.data?.message || "Something went wrong.",
+        description: error?.data?.message || "Something went wrong.",
       });
     }
   };

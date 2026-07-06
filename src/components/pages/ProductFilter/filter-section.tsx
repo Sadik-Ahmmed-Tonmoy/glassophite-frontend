@@ -140,7 +140,6 @@ export default function FilterSection({
               </h4> */}
               <ActiveFilters
                 filters={filters}
-                collectionOptions={collectionOptions}
                 allColors={allColors}
                 minPrice={minPrice}
                 maxPrice={maxPrice}

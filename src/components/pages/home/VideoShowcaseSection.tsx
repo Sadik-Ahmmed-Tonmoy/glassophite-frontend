@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 import React, { useRef, useCallback, useEffect, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 
@@ -32,11 +32,11 @@ export default function VideoShowcaseSection() {
   // reset) the next time we actually start playback.
   const shouldRestartRef = useRef(false);
 
-  const opacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.95, 1, 1, 0.95]);
+  // const opacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0]);
+  // const scale = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.95, 1, 1, 0.95]);
 
-  const springOpacity = useSpring(opacity, { stiffness: 100, damping: 30 });
-  const springScale = useSpring(scale, { stiffness: 100, damping: 30 });
+  // const springOpacity = useSpring(opacity, { stiffness: 100, damping: 30 });
+  // const springScale = useSpring(scale, { stiffness: 100, damping: 30 });
 
   // Detect active scrolling: any change in scroll progress marks "scrolling",
   // then a short debounce marks it as "stopped" once changes cease.
@@ -86,8 +86,9 @@ export default function VideoShowcaseSection() {
 
   // Make sure playback stops if the component unmounts mid-scroll.
   useEffect(() => {
+    const video = videoRef.current;
     return () => {
-      videoRef.current?.pause();
+      video?.pause();
     };
   }, []);
 

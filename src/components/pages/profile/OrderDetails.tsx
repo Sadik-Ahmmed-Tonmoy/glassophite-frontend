@@ -41,7 +41,7 @@ export default function OrderDetails({ order }: OrderDetailsProps) {
       </motion.div>
 
       <motion.div variants={staggerItems}>
-        <OrderItemsList items={order.items} subtotal={order.subtotal} shipping={order.shipping} tax={order.tax} discount={order.discount} total={order.total} status={order.status as any} />
+        <OrderItemsList items={order.items} subtotal={order.subtotal} shipping={order.shipping} discount={order.discount} total={order.total} status={order.status as any} />
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

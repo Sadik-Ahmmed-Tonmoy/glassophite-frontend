@@ -13,13 +13,12 @@ interface OrderItemsListProps {
   items: TOrderItem[];
   subtotal: number;
   shipping: number;
-  tax: number;
   discount: number;
   total: number;
   status: "processing" | "shipped" | "delivered" | "cancelled";
 }
 
-export default function OrderItemsList({ items, subtotal, shipping, discount, total, status, tax: _tax }: OrderItemsListProps) {
+export default function OrderItemsList({ items, subtotal, shipping, discount, total, status }: OrderItemsListProps) {
   const { isDark, theme: styles } = useProfileTheme();
   const [expanded, setExpanded] = useState(true);
   const [addedItem, setAddedItem] = useState<string | null>(null);

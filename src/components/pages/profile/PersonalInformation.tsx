@@ -82,7 +82,7 @@ export default function PersonalInformation() {
     hidden: { opacity: 0, y: 8 },
     visible: (i: number) => ({
       opacity: 1, y: 0,
-      transition: { delay: i * 0.05, type: "spring", stiffness: 100 },
+      transition: { delay: i * 0.05, type: "spring" as const, stiffness: 100 },
     }),
   };
 

@@ -40,8 +40,9 @@ export default function CartCoupon({ appliedCoupon, onApply, onRemove }: CartCou
         setIsExpanded(false)
         toast.success(`Coupon applied! ${couponData.discount}% off your order.`)
       }
-    } catch (err: any) {
-      const msg = err?.data?.message || "Invalid or expired coupon code"
+    } catch (err) {
+      const error = err as { data?: { message?: string } };
+      const msg = error?.data?.message || "Invalid or expired coupon code"
       setError(msg)
     }
   }

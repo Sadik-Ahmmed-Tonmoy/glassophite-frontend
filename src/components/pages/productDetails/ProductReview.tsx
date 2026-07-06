@@ -7,7 +7,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   Eye,
   MessageSquare,
   PenLine,
@@ -26,7 +25,6 @@ import {
   useMarkHelpfulMutation,
 } from "@/redux/features/review/reviewApi";
 import { useAppSelector } from "@/redux/hooks";
-import { selectCurrentUser } from "@/redux/features/auth/authSlice";
 import { toast } from "sonner";
 
 // Import additional shadcn components
@@ -50,7 +48,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { TReview } from "@/types/types";
-import Image from "next/image";
+
 
 interface ProductReviewProps {
   productId: string;
@@ -70,7 +68,7 @@ export default function ProductReview({
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOption, setSortOption] = useState("newest");
 
-  const { data: dbReviewsData, isLoading: isReviewsLoading } = useGetProductReviewsQuery({
+  const { data: dbReviewsData } = useGetProductReviewsQuery({
     productId,
     page: currentPage,
     limit: 5,
@@ -80,7 +78,6 @@ export default function ProductReview({
   const [markHelpfulMutation] = useMarkHelpfulMutation();
 
   const [reviews, setReviews] = useState<TReview[]>(initialReviews || []);
-  const [showAllReviews, setShowAllReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [formData, setFormData] = useState<TReview>({
     name: "",
@@ -286,8 +283,9 @@ export default function ProductReview({
       setTimeout(() => {
         setSubmitSuccess(false);
       }, 3000);
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to submit review. Please try again.");
+    } catch (err) {
+      const error = err as { data?: { message?: string } };
+      toast.error(error?.data?.message || "Failed to submit review. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -312,8 +310,9 @@ export default function ProductReview({
         type: isHelpful ? "helpful" : "unhelpful",
       }).unwrap();
       toast.success("Thank you for your feedback!");
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to submit feedback.");
+    } catch (err) {
+      const error = err as { data?: { message?: string } };
+      toast.error(error?.data?.message || "Failed to submit feedback.");
     }
   };
 

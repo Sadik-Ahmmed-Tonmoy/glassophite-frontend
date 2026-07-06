@@ -38,8 +38,9 @@ export default function ProfilePicture() {
         await updateMe({ profileImage: base64 }).unwrap()
         setProfileImage(base64)
         toast.success("Profile picture updated")
-      } catch (err: any) {
-        toast.error(err?.data?.message || "Failed to upload image")
+      } catch (err) {
+        const error = err as { data?: { message?: string } };
+        toast.error(error?.data?.message || "Failed to upload image")
       }
     }
     reader.readAsDataURL(file)
@@ -73,8 +74,9 @@ export default function ProfilePicture() {
       setProfileImage(null)
       toast.success("Profile picture removed")
       if (fileInputRef.current) fileInputRef.current.value = ""
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to remove image")
+    } catch (err) {
+      const error = err as { data?: { message?: string } };
+      toast.error(error?.data?.message || "Failed to remove image")
     }
   }
 

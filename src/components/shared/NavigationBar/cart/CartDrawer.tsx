@@ -63,7 +63,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const POINT_RATE = deliverySettings?.rewardPointRate ?? 0.1
   const rewardDiscount = rewardPointsApplied * POINT_RATE
 
-  const grandTotal = Math.max(0, totalPrice - couponDiscount - rewardDiscount)
 
   const handleProceed = async () => {
     let adjusted = false
@@ -179,7 +178,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     couponCode={appliedCoupon?.code}
                     rewardDiscount={rewardDiscount}
                     rewardPointsUsed={rewardPointsApplied}
-                    onRemoveCoupon={() => dispatch(setCoupon(null))}
                   />
 
                   {/* Recently Viewed */}

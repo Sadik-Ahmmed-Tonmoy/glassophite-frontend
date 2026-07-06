@@ -20,7 +20,7 @@ const RequestStockButton = ({ productId, variantId }: RequestStockButtonProps) =
   const isAlreadyRequested = useMemo(() => {
     if (!myRequestsData?.data || !productId || !variantId) return false;
     return myRequestsData.data.some(
-      (req: any) => req.productId === productId && req.variantId === variantId && req.status === "PENDING"
+      (req: { productId: string; variantId: string; status: string }) => req.productId === productId && req.variantId === variantId && req.status === "PENDING"
     );
   }, [myRequestsData, productId, variantId]);
 
@@ -45,9 +45,10 @@ const RequestStockButton = ({ productId, variantId }: RequestStockButtonProps) =
       toast.success("Restock Request Placed", {
         description: "We will notify you once this variant is back in stock.",
       });
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as { data?: { message?: string } };
       toast.error("Request failed", {
-        description: err?.data?.message || "Something went wrong.",
+        description: error?.data?.message || "Something went wrong.",
       });
     }
   };

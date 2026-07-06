@@ -88,6 +88,7 @@ export default function BestSellerCarouselSection() {
 
   const bestSellers = (bestSellersData as any)?.data || [];
 
+
   const themeStyles = {
     dark: {
       bg: "from-black via-gray-900 to-black",
@@ -119,7 +120,6 @@ export default function BestSellerCarouselSection() {
   };
 
   const styles = isDark ? themeStyles.dark : themeStyles.light;
-
   // Error handling
   if (error) {
     console.error("Error fetching best sellers:", error);
@@ -149,7 +149,7 @@ export default function BestSellerCarouselSection() {
   };
 
   // ---------- Loading state ----------
-  if (isLoading || isFetching) {
+  if (isLoading || (isFetching && bestSellers.length === 0)) {
     return (
       <section
         className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.bg} transition-colors duration-500 py-16 sm:py-20 lg:py-24 px-4 sm:px-6`}

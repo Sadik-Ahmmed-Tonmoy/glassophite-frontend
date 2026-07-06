@@ -14,13 +14,19 @@
   }
   
   .swiper-pagination-bullet {
-    background: #888;
-    opacity: 0.5;
+    background: currentColor;
+    opacity: 0.3;
   }
   
   .swiper-pagination-bullet-active {
-    background: #333;
+    background: #007C74;
     opacity: 1;
+  }
+
+  @media (min-width: 640px) {
+    .similar-products-swiper .swiper-pagination {
+      display: none !important;
+    }
   }
   
   /* Hide scrollbar for Chrome, Safari and Opera */

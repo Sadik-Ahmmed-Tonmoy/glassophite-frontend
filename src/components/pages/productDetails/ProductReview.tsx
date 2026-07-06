@@ -78,6 +78,18 @@ export default function ProductReview({
   const [markHelpfulMutation] = useMarkHelpfulMutation();
 
   const [reviews, setReviews] = useState<TReview[]>(initialReviews || []);
+  const [userVotes, setUserVotes] = useState<Record<string, "helpful" | "unhelpful">>({});
+
+  useEffect(() => {
+    const savedVotes = localStorage.getItem("voted_reviews");
+    if (savedVotes) {
+      try {
+        setUserVotes(JSON.parse(savedVotes));
+      } catch (e) {
+        console.error("Failed to parse voted reviews", e);
+      }
+    }
+  }, []);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [formData, setFormData] = useState<TReview>({
     name: "",
@@ -304,12 +316,62 @@ export default function ProductReview({
       return;
     }
 
+    const currentVote = userVotes[reviewId];
+    const targetVote = isHelpful ? "helpful" : "unhelpful";
+
     try {
-      await markHelpfulMutation({
-        id: reviewId,
-        type: isHelpful ? "helpful" : "unhelpful",
-      }).unwrap();
-      toast.success("Thank you for your feedback!");
+      if (currentVote === targetVote) {
+        // Toggle off / Undo vote
+        await markHelpfulMutation({
+          id: reviewId,
+          productId,
+          type: targetVote,
+          action: "decrement",
+        }).unwrap();
+
+        const updatedVotes = { ...userVotes };
+        delete updatedVotes[reviewId];
+        setUserVotes(updatedVotes);
+        localStorage.setItem("voted_reviews", JSON.stringify(updatedVotes));
+        toast.success("Feedback removed.");
+      } else if (currentVote) {
+        // Switch vote: decrement old, increment new
+        const oldType = currentVote;
+        
+        // Decrement old
+        await markHelpfulMutation({
+          id: reviewId,
+          productId,
+          type: oldType,
+          action: "decrement",
+        }).unwrap();
+
+        // Increment new
+        await markHelpfulMutation({
+          id: reviewId,
+          productId,
+          type: targetVote,
+          action: "increment",
+        }).unwrap();
+
+        const updatedVotes = { ...userVotes, [reviewId]: targetVote };
+        setUserVotes(updatedVotes);
+        localStorage.setItem("voted_reviews", JSON.stringify(updatedVotes));
+        toast.success("Feedback updated!");
+      } else {
+        // First time vote
+        await markHelpfulMutation({
+          id: reviewId,
+          productId,
+          type: targetVote,
+          action: "increment",
+        }).unwrap();
+
+        const updatedVotes = { ...userVotes, [reviewId]: targetVote };
+        setUserVotes(updatedVotes);
+        localStorage.setItem("voted_reviews", JSON.stringify(updatedVotes));
+        toast.success("Thank you for your feedback!");
+      }
     } catch (err) {
       const error = err as { data?: { message?: string } };
       toast.error(error?.data?.message || "Failed to submit feedback.");
@@ -763,20 +825,40 @@ export default function ProductReview({
                         Was this review helpful?
                       </span>
                       <button
-                        className="ml-3 flex items-center hover:text-blue-500 group"
+                        className={cn(
+                          "ml-3 flex items-center group transition-colors duration-200",
+                          userVotes[review.id!] === "helpful"
+                            ? "text-blue-500 font-semibold"
+                            : `hover:text-blue-500 ${styles.textMutedLighter}`
+                        )}
                         onClick={() => handleHelpfulClick(review.id, true)}
                       >
                         <ThumbsUp
-                          className={`h-4 w-4 mr-1 group-hover:text-blue-500 ${styles.icon}`}
+                          className={cn(
+                            "h-4 w-4 mr-1 transition-colors duration-200",
+                            userVotes[review.id!] === "helpful"
+                              ? "text-blue-500 fill-blue-500"
+                              : `group-hover:text-blue-500 ${styles.icon}`
+                          )}
                         />
                         <span>{review.helpful || 0}</span>
                       </button>
                       <button
-                        className="ml-3 flex items-center hover:text-red-500 group"
+                        className={cn(
+                          "ml-3 flex items-center group transition-colors duration-200",
+                          userVotes[review.id!] === "unhelpful"
+                            ? "text-red-500 font-semibold"
+                            : `hover:text-red-500 ${styles.textMutedLighter}`
+                        )}
                         onClick={() => handleHelpfulClick(review.id, false)}
                       >
                         <ThumbsDown
-                          className={`h-4 w-4 mr-1 group-hover:text-red-500 ${styles.icon}`}
+                          className={cn(
+                            "h-4 w-4 mr-1 transition-colors duration-200",
+                            userVotes[review.id!] === "unhelpful"
+                              ? "text-red-500 fill-red-500"
+                              : `group-hover:text-red-500 ${styles.icon}`
+                          )}
                         />
                         <span>{review.unhelpful || 0}</span>
                       </button>

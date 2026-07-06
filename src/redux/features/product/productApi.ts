@@ -35,6 +35,13 @@ const productApi = baseApi.injectEndpoints({
       query: (id: string) => ({ url: `products/${id}` }),
       providesTags: (_result, _err, id) => [{ type: "product", id }],
     }),
+    getSimilarProducts: builder.query({
+      query: ({ id, page = 1, limit = 8 }) => ({
+        url: `products/${id}/similar`,
+        params: { page, limit },
+      }),
+      providesTags: (_result, _err, { id }) => [{ type: "product", id }],
+    }),
 
     // Admin CRUD
     createProduct: builder.mutation({
@@ -85,6 +92,7 @@ export const {
   useGetNewArrivalsQuery,
   useGetCollectionsQuery,
   useGetProductByIdQuery,
+  useGetSimilarProductsQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,

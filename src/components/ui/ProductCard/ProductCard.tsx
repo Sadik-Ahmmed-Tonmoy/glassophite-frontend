@@ -158,8 +158,8 @@ function ProductCard({ product }: ProductCardProps) {
             ) : (
               <Heart
                 className={`w-5 h-5 transition-all duration-300 ${isWishlisted
-                    ? "fill-red-500 text-red-500"
-                    : isDark ? "text-white" : "text-gray-700"
+                  ? "fill-red-500 text-red-500"
+                  : isDark ? "text-white" : "text-gray-700"
                   }`}
               />
             )}
@@ -250,10 +250,10 @@ function ProductCard({ product }: ProductCardProps) {
 
             <motion.span
               className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${!selectedVariant.inStock
-                  ? styles.stockOut
-                  : selectedVariant.quantity <= 5
-                    ? 'bg-yellow-500/10 text-yellow-500'
-                    : styles.stockIn
+                ? styles.stockOut
+                : selectedVariant.quantity <= 5
+                  ? 'bg-yellow-500/10 text-yellow-500'
+                  : styles.stockIn
                 }`}
               animate={!selectedVariant.inStock ? { opacity: [1, 0.7, 1] } : {}}
               transition={{ duration: 1.5, repeat: Infinity }}
@@ -298,20 +298,21 @@ function ProductCard({ product }: ProductCardProps) {
           </div>
 
           {/* Variant Selector */}
+          {/* Variant Selector */}
           <div className="flex justify-between items-center py-2">
             <div className="flex gap-2 items-center">
               <span className={`text-xs ${styles.textMutedLighter}`} data-translate="product.color">
                 Color:
               </span>
-              {product.variants.map((variant, index) => (
+              {product.variants.slice(0, 4).map((variant, index) => (
                 <motion.button
                   key={index}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleColorButtonClick(variant)}
                   className={`relative w-8 h-8 rounded-full border-2 transition-all ${selectedVariant.color === variant.color
-                      ? styles.colorButton.active
-                      : styles.colorButton.inactive
+                    ? styles.colorButton.active
+                    : styles.colorButton.inactive
                     } ${!variant.inStock ? "opacity-50" : ""}`}
                   title={variant.inStock ? `Available: ${variant.quantity}` : "Out of Stock"}
                   aria-label={`Select ${variant.color} color variant`}
@@ -329,15 +330,21 @@ function ProductCard({ product }: ProductCardProps) {
                   )}
                 </motion.button>
               ))}
-            </div>
 
-            {/* SKU */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className={`text-xs ${styles.textMutedLighter} font-mono`}
-            >
-              <span data-translate="product.sku">SKU</span>: {selectedVariant.productCode}
-            </motion.div>
+              {/* Show "More" button if there are more than 4 variants */}
+              {product.variants.length > 4 && (
+                <Link href={`/product/${product.id}`}>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className={`relative w-8 h-8 rounded-full border-2 ${styles.colorButton.inactive} flex items-center justify-center text-xs font-medium ${styles.textMuted}`}
+                    aria-label="View more colors"
+                  >
+                    <span>+{product.variants.length - 4}</span>
+                  </motion.button>
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* Action Buttons */}

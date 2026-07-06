@@ -13,10 +13,6 @@ import WishlistButton from "@/components/ui/buttons/WishlistButton/WishlistButto
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCart } from "@/hooks/use-cart";
-import {
-  mockProducts,
-  productMockData,
-} from "@/lib/productMockData";
 import { cn } from "@/lib/utils";
 import { TProduct } from "@/types/types";
 import ImageSlider from "./ImageSlider";
@@ -398,8 +394,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
       {/* Similar Products */}
       <SimilarProducts
-        allProducts={mockProducts}
-        currentProduct={productMockData}
+        productId={product.id}
       />
 
       {/* Reviews Section */}

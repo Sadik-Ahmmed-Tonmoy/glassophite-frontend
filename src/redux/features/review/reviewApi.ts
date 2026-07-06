@@ -35,9 +35,21 @@ const reviewApi = baseApi.injectEndpoints({
       invalidatesTags: ["reviews"],
     }),
     markHelpful: builder.mutation({
-      query: ({ id, type }: { id: string; type: "helpful" | "unhelpful" }) => ({
+      query: ({ id, type, action = "increment" }: { id: string; type: "helpful" | "unhelpful"; action?: "increment" | "decrement"; productId?: string }) => ({
         url: `reviews/${id}/${type}`,
         method: "POST",
+        body: { action },
+      }),
+      invalidatesTags: (_result, _err, { productId }) => [
+        { type: "reviews", id: productId },
+        "reviews",
+      ],
+    }),
+    approveReview: builder.mutation({
+      query: ({ id, isApproved }) => ({
+        url: `reviews/${id}/approve`,
+        method: "PATCH",
+        body: { isApproved },
       }),
       invalidatesTags: ["reviews"],
     }),
@@ -51,4 +63,5 @@ export const {
   useUpdateReviewMutation,
   useDeleteReviewMutation,
   useMarkHelpfulMutation,
+  useApproveReviewMutation,
 } = reviewApi;

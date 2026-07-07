@@ -182,7 +182,7 @@ export default function StockRequestsView() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {isLoading || isFetching ? (
+            {isLoading ? (
               <tr>
                 <td
                   colSpan={6}

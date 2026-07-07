@@ -4,7 +4,7 @@
 
 import ProductCard from "@/components/ui/ProductCard/ProductCard";
 import { useGetBestSellersQuery } from "@/redux/features/product/productApi";
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   Award,
@@ -20,7 +20,6 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay, FreeMode } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 
-// Import Swiper styles
 // @ts-ignore
 import "swiper/css";
 // @ts-ignore
@@ -28,7 +27,6 @@ import "swiper/css/navigation";
 // @ts-ignore
 import "swiper/css/free-mode";
 
-// Hook to detect large screen (lg breakpoint 1024px)
 function useLargeScreen() {
   const [isLarge, setIsLarge] = useState(false);
   useEffect(() => {
@@ -40,7 +38,6 @@ function useLargeScreen() {
   return isLarge;
 }
 
-// Skeleton loader for product cards
 function ProductCardSkeleton() {
   return (
     <div className="h-full rounded-2xl bg-white/5 dark:bg-white/5 border border-neutral-200/20 dark:border-neutral-800/20 overflow-hidden animate-pulse">
@@ -57,27 +54,51 @@ function ProductCardSkeleton() {
   );
 }
 
+// ─── Animation variants (fixed) ──────────────────────────────────────────────
+const sectionVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1, 
+    transition: { duration: 0.6 } // removed explicit ease to avoid TypeScript error
+  },
+};
+
+const headerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+};
+
+const controlsVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.5, delay: 0.3 } },
+};
+
+const viewAllVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.5 } },
+};
+
+const statsVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.5, delay: 0.6, staggerChildren: 0.1 },
+  },
+};
+
+const statItemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
+
 export default function BestSellerCarouselSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
-
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const isLarge = useLargeScreen();
-
-  const isInView = useInView(containerRef, { once: true, amount: 0.2 });
-
-  // ✅ FIX: Only pass target when ref is attached to avoid hydration error
-  const { scrollYProgress } = useScroll({
-    ...(containerRef?.current ? { target: containerRef } : {}),
-    offset: ["start end", "end start"],
-  });
-
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, -50]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [0, 50]);
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
 
   const {
     data: bestSellersData,
@@ -87,7 +108,6 @@ export default function BestSellerCarouselSection() {
   } = useGetBestSellersQuery(undefined);
 
   const bestSellers = (bestSellersData as any)?.data || [];
-
 
   const themeStyles = {
     dark: {
@@ -120,10 +140,6 @@ export default function BestSellerCarouselSection() {
   };
 
   const styles = isDark ? themeStyles.dark : themeStyles.light;
-  // Error handling
-  if (error) {
-    console.error("Error fetching best sellers:", error);
-  }
 
   const handleSwiperInit = (swiper: SwiperType) => {
     setSwiperInstance(swiper);
@@ -148,7 +164,7 @@ export default function BestSellerCarouselSection() {
     }
   };
 
-  // ---------- Loading state ----------
+  // ─── Loading state ──────────────────────────────────────────────────────
   if (isLoading || (isFetching && bestSellers.length === 0)) {
     return (
       <section
@@ -180,7 +196,7 @@ export default function BestSellerCarouselSection() {
     );
   }
 
-  // ---------- Error state ----------
+  // ─── Error state ──────────────────────────────────────────────────────
   if (error) {
     return (
       <section
@@ -198,7 +214,7 @@ export default function BestSellerCarouselSection() {
     );
   }
 
-  // ---------- Empty state ----------
+  // ─── Empty state ──────────────────────────────────────────────────────
   if (bestSellers.length === 0) {
     return (
       <section
@@ -218,15 +234,18 @@ export default function BestSellerCarouselSection() {
     );
   }
 
-  // ---------- Main carousel (data loaded) ----------
+  // ─── Main render ──────────────────────────────────────────────────────
   return (
     <motion.section
       ref={containerRef}
-      style={{ opacity }}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.2 }}
+      variants={sectionVariants}
       className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.bg} transition-colors duration-500 py-16 sm:py-20 lg:py-24 px-4 sm:px-6`}
       aria-label="Glassophite Best Sellers"
     >
-      {/* Background Pattern */}
+      {/* Background decorations (unchanged) */}
       <div className="absolute inset-0 opacity-5">
         <div
           className="absolute inset-0"
@@ -237,42 +256,14 @@ export default function BestSellerCarouselSection() {
         />
       </div>
 
-      {/* Floating Orbs */}
-      <motion.div
-        style={{ y: y1 }}
-        animate={
-          isLarge
-            ? {
-                scale: [1, 1.2, 1],
-                opacity: [0.1, 0.2, 0.1],
-              }
-            : {}
-        }
-        transition={{ duration: 8, repeat: Infinity }}
-        className="absolute top-20 left-20 w-72 h-72 bg-[#007C74]/10 rounded-full blur-[100px]"
-      />
-
-      <motion.div
-        style={{ y: y2 }}
-        animate={
-          isLarge
-            ? {
-                scale: [1.2, 1, 1.2],
-                opacity: [0.1, 0.15, 0.1],
-              }
-            : {}
-        }
-        transition={{ duration: 10, repeat: Infinity }}
-        className="absolute bottom-20 right-20 w-96 h-96 bg-[#3C55A5]/10 rounded-full blur-[120px]"
-      />
+      <div className="absolute top-20 left-20 w-72 h-72 bg-[#007C74]/10 rounded-full blur-[100px]" />
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-[#3C55A5]/10 rounded-full blur-[120px]" />
 
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-6 mb-8 md:mb-12">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
+            variants={headerVariants}
             className="text-center md:text-left"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full backdrop-blur-sm border border-neutral-200 dark:border-neutral-800 bg-white/5 mb-4">
@@ -302,9 +293,7 @@ export default function BestSellerCarouselSection() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.5, delay: 0.3 }}
+            variants={controlsVariants}
             className="flex items-center gap-2"
           >
             <button
@@ -382,7 +371,8 @@ export default function BestSellerCarouselSection() {
           {/* Mobile Swipe Indicator */}
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: isInView ? 1 : 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
             className="flex sm:hidden items-center justify-center gap-1 mt-2"
           >
             <div className="w-12 h-1 rounded-full bg-[#007C74]/30">
@@ -423,12 +413,7 @@ export default function BestSellerCarouselSection() {
         </div>
 
         {/* View All Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="text-center mt-8"
-        >
+        <motion.div variants={viewAllVariants} className="text-center mt-8">
           <Link href="/shop?sort=rating">
             <motion.button
               whileHover={isLarge ? { scale: 1.05 } : {}}
@@ -445,9 +430,7 @@ export default function BestSellerCarouselSection() {
 
         {/* Social Proof */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.5, delay: 0.6 }}
+          variants={statsVariants}
           className="flex flex-wrap items-center justify-center gap-6 md:gap-10 mt-8 pt-6 border-t border-neutral-200/50 dark:border-neutral-800/50"
         >
           {[
@@ -457,6 +440,7 @@ export default function BestSellerCarouselSection() {
           ].map((item, i) => (
             <motion.div
               key={i}
+              variants={statItemVariants}
               className="text-center"
               whileHover={isLarge ? { y: -2 } : {}}
             >

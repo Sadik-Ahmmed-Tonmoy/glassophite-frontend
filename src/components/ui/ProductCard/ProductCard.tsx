@@ -1,7 +1,6 @@
 "use client";
 
 import { TProduct, TVariant } from "@/types/types";
-import { Heart, XCircle, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,6 +18,14 @@ import {
 } from "@/redux/features/wishlist/wishlistApi";
 import { toast } from "sonner";
 import { useMemo } from "react";
+import { Heart, XCircle, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+
+// Swiper imports
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination, Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
+import "swiper/css/navigation";
 
 interface ProductCardProps {
   product: TProduct;
@@ -126,9 +133,13 @@ function ProductCard({ product }: ProductCardProps) {
   const imageVariants = {
     initial: { clipPath: "polygon(0 100%, 100% 100%, 100% 100%, 0% 100%)" },
     animate: { clipPath: "polygon(0 0, 100% 0, 100% 100%, 0% 100%)" },
-    exit: { clipPath: "polygon(0 100%, 100% 100%, 100% 100%, 0% 100%)" }
+    // exit: { clipPath: "polygon(0 100%, 100% 100%, 100% 100%, 0% 100%)" }
   };
-
+ // Prepare images for the selected variant
+  const images =
+    selectedVariant.imgList && selectedVariant.imgList.length > 0
+      ? selectedVariant.imgList
+      : [{ image: "/placeholder.svg" }];
   return (
     <motion.div
       variants={cardVariants}
@@ -141,14 +152,18 @@ function ProductCard({ product }: ProductCardProps) {
       className="w-full max-w-[350px] mx-auto"
     >
       <div className={`${styles.cardBg} rounded-xl overflow-hidden shadow-xl transition-colors duration-500 border`}>
-        {/* Image Container */}
+           {/* Image Container */}
         <div className="w-full h-52 relative overflow-hidden group">
           {/* Wishlist Button */}
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className={cn(`absolute top-3 right-3 z-20 p-2 rounded-full backdrop-blur-sm transition-colors duration-300 ${isDark ? 'bg-black/50 hover:bg-black/70' : 'bg-white/50 hover:bg-white/70'
-              }`, isHovered && "top-6")}
+            className={cn(
+              `absolute top-3 right-3 z-30 p-2 rounded-full backdrop-blur-sm transition-colors duration-300 ${
+                isDark ? "bg-black/50 hover:bg-black/70" : "bg-white/50 hover:bg-white/70"
+              }`,
+              // isHovered && "top-6"
+            )}
             onClick={handleWishlistClick}
             disabled={isLoading}
             aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
@@ -157,10 +172,13 @@ function ProductCard({ product }: ProductCardProps) {
               <Loader2 className="w-5 h-5 animate-spin text-[#007C74]" />
             ) : (
               <Heart
-                className={`w-5 h-5 transition-all duration-300 ${isWishlisted
-                  ? "fill-red-500 text-red-500"
-                  : isDark ? "text-white" : "text-gray-700"
-                  }`}
+                className={`w-5 h-5 transition-all duration-300 ${
+                  isWishlisted
+                    ? "fill-red-500 text-red-500"
+                    : isDark
+                    ? "text-white"
+                    : "text-gray-700"
+                }`}
               />
             )}
           </motion.button>
@@ -170,67 +188,107 @@ function ProductCard({ product }: ProductCardProps) {
             initial={{ x: -100 }}
             animate={{ x: isHovered ? 0 : -100 }}
             transition={{ type: "spring", stiffness: 100 }}
-            className={`absolute bottom-3 left-3 z-20 ${styles.productCode} backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1`}
+            className={`absolute top-3 left-3 z-30 ${styles.productCode} backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1`}
           >
-            <span data-translate="product.code">Code</span>
+            <span data-translate="product.code">Code : </span>
             <span className="font-mono">{selectedVariant.productCode}</span>
           </motion.div>
 
-          {/* Variant Images */}
+          {/* Variant Images with Swiper inside AnimatePresence */}
           <AnimatePresence mode="wait">
-            {product.variants.map((variant, index) => (
-              <motion.div
-                key={index}
-                initial="initial"
-                animate={selectedVariant.color === variant.color ? "animate" : "exit"}
-                variants={imageVariants}
-                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-                className="absolute inset-0"
+            <motion.div
+              key={selectedVariant.id}
+              variants={imageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+              className="absolute inset-0"
+            >
+              <Swiper
+                modules={[Autoplay, Pagination, Navigation]}
+                autoplay={{
+                  delay: 3000,
+                  disableOnInteraction: false,
+                  pauseOnMouseEnter: false,
+                }}
+                pagination={{
+                  clickable: true,
+                  dynamicBullets: true,
+                }}
+                navigation={{
+                  nextEl: `.swiper-button-next-${selectedVariant.id}`,
+                  prevEl: `.swiper-button-prev-${selectedVariant.id}`,
+                }}
+                loop={images.length > 1}
+                slidesPerView={1}
+                className="h-full w-full"
               >
-                <Image
-                  src={variant.imgList?.[0]?.image || "/placeholder.svg"}
-                  alt={variant?.title || product?.title || "Product image"}
-                  width={400}
-                  height={400}
-                  priority={index === 0}
-                  quality={90}
-                  className="h-full w-full object-cover"
-                />
+                {images.map((img, idx) => (
+                  <SwiperSlide key={`${selectedVariant.id}-${idx}`} className="relative h-full w-full">
+                    <Image
+                      src={img.image || "/placeholder.svg"}
+                      alt={selectedVariant?.title || product?.title || "Product image"}
+                      fill
+                      priority={idx === 0}
+                      quality={90}
+                      className="object-cover"
+                    />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
 
-                {/* Stock Overlay */}
-                <AnimatePresence>
-                  {selectedVariant.color === variant.color && !variant.inStock && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      className={`absolute inset-0 ${styles.overlay} z-20 flex flex-col items-center justify-center backdrop-blur-sm`}
-                    >
-                      <motion.div
-                        animate={{ rotate: [0, 10, -10, 0] }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                      >
-                        <XCircle className="w-12 h-12 text-white mb-2" />
-                      </motion.div>
-                      <motion.span
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.1 }}
-                        className="text-white font-bold text-xl tracking-wider"
-                        data-translate="product.stock.out"
-                      >
-                        STOCK OUT
-                      </motion.span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              {/* Custom Navigation Buttons (visible on hover) */}
+              {images.length > 1 && (
+                <>
+                  <button
+                    className={`swiper-button-prev-${selectedVariant.id} absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm transition-opacity duration-300 opacity-0 group-hover:opacity-100`}
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    className={`swiper-button-next-${selectedVariant.id} absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm transition-opacity duration-300 opacity-0 group-hover:opacity-100`}
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Stock Overlay */}
+          <AnimatePresence>
+            {!selectedVariant.inStock && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className={`absolute inset-0 ${styles.overlay} z-20 flex flex-col items-center justify-center backdrop-blur-sm`}
+              >
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  <XCircle className="w-12 h-12 text-white mb-2" />
+                </motion.div>
+                <motion.span
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-white font-bold text-xl tracking-wider"
+                  data-translate="product.stock.out"
+                >
+                  STOCK OUT
+                </motion.span>
               </motion.div>
-            ))}
+            )}
           </AnimatePresence>
 
           {/* Shine Effect on Hover */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none z-10"
             initial={{ x: "-100%" }}
             animate={{ x: isHovered ? "100%" : "-100%" }}
             transition={{ duration: 0.8 }}

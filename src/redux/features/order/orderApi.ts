@@ -42,6 +42,11 @@ const orderApi = baseApi.injectEndpoints({
       query: (tranId: string) => ({ url: `payment/verify/${tranId}` }),
     }),
 
+    // Get stock for order items (admin)
+    getOrderItemsStock: builder.query({
+      query: (itemIds: string[]) => ({ url: "orders/items-stock", params: { itemIds: itemIds.join(",") } }),
+    }),
+
     // Delivery settings (public)
     getDeliverySettings: builder.query<{
       data: {
@@ -77,4 +82,5 @@ export const {
   useVerifySslPaymentQuery,
   useGetDeliverySettingsQuery,
   useLazyTrackOrderQuery,
+  useGetOrderItemsStockQuery,
 } = orderApi;

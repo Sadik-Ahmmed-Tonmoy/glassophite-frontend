@@ -5,7 +5,7 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Wallet, Banknote } from "lucide-react"
+import { ArrowLeft, Banknote } from "lucide-react"
 
 interface PaymentMethodProps {
   onSubmit: (method: string, details: any) => void
@@ -15,13 +15,6 @@ interface PaymentMethodProps {
 }
 
 const paymentOptions = [
-  {
-    value: "SSLCO",
-    label: "SSL Commerz",
-    description: "Pay online with Visa, Mastercard, bKash, Nagad, Rocket, Upay & more",
-    badges: ["Visa", "Mastercard", "bKash", "Nagad"],
-    icon: Wallet,
-  },
   {
     value: "CASH_ON_DELIVERY",
     label: "Cash on Delivery",
@@ -38,7 +31,7 @@ export default function PaymentMethod({
   const { theme } = useTheme()
   const isDark = theme === "dark"
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selected, setSelected] = useState("SSLCO")
+  const [selected, setSelected] = useState("CASH_ON_DELIVERY")
 
   const themeStyles = {
     dark: {
@@ -177,24 +170,6 @@ export default function PaymentMethod({
             )
           })}
         </div>
-
-        {selected === "SSLCO" && (
-          <motion.div variants={itemVariants} className={`p-5 rounded-xl border ${styles.infoBox} mb-8`}>
-            <div className="flex items-start">
-              <Wallet className={`${styles.infoText} mr-3 flex-shrink-0 mt-0.5`} size={22} />
-              <div>
-                <p className={`text-sm font-semibold ${styles.infoTitle}`}>
-                  Secure Gateway Redirection
-                </p>
-                <p className={`text-sm ${styles.infoText} mt-2 leading-relaxed`}>
-                  After placing your order, you will be redirected to the secure SSL Commerz payment
-                  gateway. Once your transaction is completed, you will return automatically to see your
-                  order confirmation.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         {selected === "CASH_ON_DELIVERY" && (
           <motion.div variants={itemVariants} className={`p-5 rounded-xl border ${styles.infoBox} mb-8`}>

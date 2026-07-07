@@ -10,14 +10,15 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
-import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Truck, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { Copy, Loader2, Truck, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   useGetAllOrdersQuery,
   useUpdateOrderStatusMutation,
   useDeleteOrderMutation,
 } from "@/redux/features/order/orderApi";
+import DeliveryDialog from "./DeliveryDialog";
 
 const STATUS_COLORS: Record<string, string> = {
   PROCESSING: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
@@ -28,7 +29,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function OrdersView() {
   const [currentPage, setCurrentPage] = useState(1);
-  const limit = 20;
+  const limit = 10;
   const { data, isLoading, isFetching } = useGetAllOrdersQuery({ page: currentPage, limit });
   const orders = (data?.data || []) as any[];
   const totalItems = data?.meta?.total || 0;
@@ -46,18 +47,19 @@ export default function OrdersView() {
     }
   };
 
-  // Tracking number input state — keyed by orderId
-  const [trackingInputs, setTrackingInputs] = useState<Record<string, string>>({});
-  const [showTrackingFor, setShowTrackingFor] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  const handleStatusChange = async (orderId: string, newStatus: string) => {
-    if (newStatus === "SHIPPED") {
-      // Show tracking number prompt before saving
-      setShowTrackingFor(orderId);
+  // Delivery dialog state
+  const [dialogOrder, setDialogOrder] = useState<any>(null);
+  const [dialogStatus, setDialogStatus] = useState<"SHIPPED" | "DELIVERED">("DELIVERED");
+
+  const handleStatusChange = (order: any, newStatus: string) => {
+    if (newStatus === "SHIPPED" || newStatus === "DELIVERED") {
+      setDialogOrder(order);
+      setDialogStatus(newStatus);
       return;
     }
-    await commitStatusUpdate(orderId, newStatus, "");
+    commitStatusUpdate(order.id, newStatus, "");
   };
 
   const commitStatusUpdate = async (
@@ -75,8 +77,6 @@ export default function OrdersView() {
       toast.success("Order Status Updated", {
         description: `Order status set to ${newStatus}.`,
       });
-      setShowTrackingFor(null);
-      setTrackingInputs((prev) => ({ ...prev, [orderId]: "" }));
     } catch {
       toast.error("Failed to update order status.");
     } finally {
@@ -139,10 +139,26 @@ export default function OrdersView() {
                   <tr className="hover:bg-muted/20 transition-colors">
                     <td className="p-4 font-mono font-bold text-primary">{ord.orderNumber}</td>
                     <td className="p-4 font-semibold text-foreground">
-                      {ord.user?.fullName || "—"}
+                      {ord.user?.fullName || ord.shippingAddress?.name || (ord.shippingAddress?.firstName && `${ord.shippingAddress.firstName} ${ord.shippingAddress.lastName}`) || "—"}
                       {ord.user?.email && (
                         <p className="text-[10px] text-muted-foreground font-normal">
                           {ord.user.email}
+                        </p>
+                      )}
+                      {ord.shippingAddress?.phone && (
+                        <p className="text-[10px] text-muted-foreground font-normal flex items-center gap-1 mt-0.5">
+                          {ord.shippingAddress.phone}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigator.clipboard.writeText(ord.shippingAddress.phone);
+                              toast.success("Phone number copied");
+                            }}
+                            className="p-0.5 rounded hover:bg-muted transition-colors"
+                            title="Copy phone number"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </button>
                         </p>
                       )}
                     </td>
@@ -175,7 +191,7 @@ export default function OrdersView() {
                         ) : (
                           <select
                             value={ord.status}
-                            onChange={(e) => handleStatusChange(ord.id, e.target.value)}
+                            onChange={(e) => handleStatusChange(ord, e.target.value)}
                             className="px-2.5 py-1.5 text-[11px] font-bold rounded-lg border border-border bg-background text-foreground focus:outline-none cursor-pointer focus:ring-1 focus:ring-primary/50"
                           >
                             <option value="PROCESSING">Processing</option>
@@ -195,53 +211,7 @@ export default function OrdersView() {
                     </td>
                   </tr>
 
-                  {/* Tracking number input row — shown when SHIPPED is selected */}
-                  <AnimatePresence>
-                    {showTrackingFor === ord.id && (
-                      <tr>
-                        <td colSpan={7} className="px-4 pb-3 bg-blue-500/5 border-l-4 border-blue-500">
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="flex items-center gap-3 pt-2"
-                          >
-                            <Truck className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                            <input
-                              type="text"
-                              value={trackingInputs[ord.id] || ""}
-                              onChange={(e) =>
-                                setTrackingInputs((prev) => ({
-                                  ...prev,
-                                  [ord.id]: e.target.value,
-                                }))
-                              }
-                              placeholder="Enter tracking number (optional)"
-                              className="flex-1 px-3 py-1.5 border border-border rounded-xl bg-background text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/50"
-                            />
-                            <button
-                              onClick={() =>
-                                commitStatusUpdate(
-                                  ord.id,
-                                  "SHIPPED",
-                                  trackingInputs[ord.id] || ""
-                                )
-                              }
-                              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
-                            >
-                              Confirm Shipped
-                            </button>
-                            <button
-                              onClick={() => setShowTrackingFor(null)}
-                              className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground text-xs font-bold rounded-xl border border-border transition-colors cursor-pointer"
-                            >
-                              Cancel
-                            </button>
-                          </motion.div>
-                        </td>
-                      </tr>
-                    )}
-                  </AnimatePresence>
+
                 </React.Fragment>
               ))
             )}
@@ -294,6 +264,13 @@ export default function OrdersView() {
           </div>
         )}
       </div>
+
+      <DeliveryDialog
+        open={!!dialogOrder}
+        onOpenChange={(open) => { if (!open) setDialogOrder(null); }}
+        order={dialogOrder || { id: "", orderNumber: "", items: [] }}
+        status={dialogStatus}
+      />
     </motion.div>
   );
 }

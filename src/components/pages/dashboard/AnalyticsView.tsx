@@ -13,74 +13,26 @@ import {
   Loader2,
   TrendingUp,
 } from "lucide-react";
-import { useGetAllOrdersQuery } from "@/redux/features/order/orderApi";
-import { useGetAllUsersQuery } from "@/redux/features/user/userApi";
-import { useGetAllProductsQuery } from "@/redux/features/product/productApi";
+import { useGetDashboardStatsQuery } from "@/redux/features/dashboard/dashboardApi";
 
 export default function AnalyticsView() {
-  const { data: ordersData, isLoading: ordersLoading } = useGetAllOrdersQuery({ limit: 1000 });
-  const { data: usersData, isLoading: usersLoading } = useGetAllUsersQuery({ limit: 1000 });
-  const { data: productsData, isLoading: productsLoading } = useGetAllProductsQuery({ limit: 1000 });
+  const { data: statsData, isLoading } = useGetDashboardStatsQuery();
 
-  const orders = (ordersData?.data || []) as any[];
-  const users = (usersData?.data || []) as any[];
-  const products = (productsData?.data || []) as any[];
+  const stats = statsData?.data || {};
+  const kpi = stats.kpi || {};
+  const last6Months = stats.revenueTrends || [];
+  const orderStatusBreakdown = stats.orderStatusBreakdown || {};
+  const topCategories = stats.categoryDistribution || [];
+  const topProducts = stats.topProducts || [];
 
-  const isLoading = ordersLoading || usersLoading || productsLoading;
 
-  const deliveredOrders = orders.filter((o) => o.status === "DELIVERED");
-  const totalRevenue = deliveredOrders.reduce((s: number, o: any) => s + (o.total || 0), 0);
-  const avgOrderValue = deliveredOrders.length > 0 ? totalRevenue / deliveredOrders.length : 0;
-  const totalOrders = ordersData?.meta?.total ?? orders.length;
-  const deliveredCount = deliveredOrders.length;
-  const purchaseRate = totalOrders > 0 ? ((deliveredCount / totalOrders) * 100).toFixed(1) : "0.0";
-  const totalCustomers = usersData?.meta?.total ?? users.length;
+  const avgOrderValue = kpi.avgOrderValue || 0;
+  const totalOrders = kpi.totalOrders || 0;
+  const deliveredCount = kpi.deliveredCount || 0;
+  const purchaseRate = kpi.deliveryRate || 0;
+  const totalCustomers = kpi.totalCustomers || 0;
 
-  // Revenue by month for last 6 months
-  const now = new Date();
-  const last6Months = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
-    return {
-      label: d.toLocaleString("default", { month: "short" }),
-      month: d.getMonth(),
-      year: d.getFullYear(),
-      revenue: 0,
-      orderCount: 0,
-    };
-  });
-
-  orders.forEach((o: any) => {
-    if (o.status !== "DELIVERED") return;
-    const d = new Date(o.createdAt);
-    const entry = last6Months.find((m) => m.month === d.getMonth() && m.year === d.getFullYear());
-    if (entry) {
-      entry.revenue += o.total || 0;
-      entry.orderCount += 1;
-    }
-  });
-
-  const maxRevenue = Math.max(...last6Months.map((m) => m.revenue), 1);
-
-  // Category breakdown from products
-  const categoryMap: Record<string, number> = {};
-  products.forEach((p: any) => {
-    const cat = Array.isArray(p.categories) ? (p.categories[0] || "Uncategorized") : (p.categories || "Uncategorized");
-    categoryMap[cat] = (categoryMap[cat] || 0) + 1;
-  });
-  const totalProductCount = products.length || 1;
-  const topCategories = Object.entries(categoryMap)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([name, count]) => ({ name, count, pct: Math.round((count / totalProductCount) * 100) }));
-
-  // Top products by review count
-  const topProducts = [...products]
-    .sort((a: any, b: any) => (b.totalReviews || 0) - (a.totalReviews || 0))
-    .slice(0, 5);
-
-  // Order status breakdown
-  const statusCounts: Record<string, number> = { PROCESSING: 0, SHIPPED: 0, DELIVERED: 0, CANCELLED: 0 };
-  orders.forEach((o: any) => { if (o.status in statusCounts) statusCounts[o.status]++; });
+  const maxRevenue = Math.max(...last6Months.map((m: any) => m.revenue), 1);
 
   const BAR_COLORS = [
     "linear-gradient(to top, #007C74, #00BFB3)",
@@ -154,24 +106,24 @@ export default function AnalyticsView() {
           <h3 className="text-sm font-bold tracking-wide text-foreground">
             Delivered Revenue — Last 6 Months
           </h3>
-          {ordersLoading ? (
+          {isLoading ? (
             <div className="h-56 flex items-center justify-center">
               <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
             <div className="flex items-end gap-3 h-56 px-2">
-              {last6Months.map((m, i) => {
+              {last6Months.map((m: any, i: number) => {
                 const heightPct = maxRevenue > 0 ? (m.revenue / maxRevenue) * 100 : 0;
                 const isLatest = i === last6Months.length - 1;
                 return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1.5 group">
-                    <div className="text-[9px] font-bold text-muted-foreground group-hover:text-foreground transition-colors">
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
+                    <div className="text-[9px] font-bold text-muted-foreground">
                       {m.revenue > 0 ? `৳${(m.revenue / 1000).toFixed(0)}k` : "—"}
                     </div>
                     <div className="w-full flex items-end justify-center" style={{ height: "180px" }}>
                       <div
                         className="w-full rounded-t-lg transition-all duration-700"
-                        title={`${m.label}: ৳${m.revenue.toLocaleString()} (${m.orderCount} orders)`}
+                        title={`${m.label}: ৳${m.revenue.toLocaleString()}`}
                         style={{
                           height: `${Math.max(heightPct, 2)}%`,
                           background: isLatest ? BAR_COLORS[0] : BAR_COLORS[1],
@@ -192,7 +144,7 @@ export default function AnalyticsView() {
             <ShoppingCart className="w-4 h-4 text-primary" />
             Order Status
           </h3>
-          {ordersLoading ? (
+          {isLoading ? (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             </div>
@@ -204,7 +156,7 @@ export default function AnalyticsView() {
                 { label: "Delivered", key: "DELIVERED", color: "bg-green-500" },
                 { label: "Cancelled", key: "CANCELLED", color: "bg-red-500" },
               ].map(({ label, key, color }) => {
-                const count = statusCounts[key] || 0;
+                const count = orderStatusBreakdown[key] || 0;
                 const pct = totalOrders > 0 ? Math.round((count / totalOrders) * 100) : 0;
                 return (
                   <div key={key} className="space-y-1">
@@ -232,7 +184,7 @@ export default function AnalyticsView() {
             <Package className="w-4 h-4 text-primary" />
             Product Category Distribution
           </h3>
-          {productsLoading ? (
+          {isLoading ? (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             </div>
@@ -240,7 +192,7 @@ export default function AnalyticsView() {
             <p className="text-xs text-muted-foreground">No products yet.</p>
           ) : (
             <div className="space-y-4">
-              {topCategories.map((cat, i) => {
+              {topCategories.map((cat: any, i: number) => {
                 const COLORS = ["#007C74", "#3C55A5", "#00A693", "#8B5CF6", "#F59E0B"];
                 return (
                   <div key={cat.name} className="space-y-1.5">
@@ -267,7 +219,7 @@ export default function AnalyticsView() {
             <TrendingUp className="w-4 h-4 text-primary" />
             Top Products by Reviews
           </h3>
-          {productsLoading ? (
+          {isLoading ? (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             </div>

@@ -5,7 +5,7 @@ import { useCart } from "@/hooks/use-cart"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
 import { useValidateCouponMutation } from "@/redux/features/coupon/couponApi"
-import { useCreateOrderMutation, useCreateSslSessionMutation } from "@/redux/features/order/orderApi"
+import { useCreateOrderMutation } from "@/redux/features/order/orderApi"
 import { useAppSelector, useAppDispatch } from "@/redux/hooks"
 import { setCoupon } from "@/redux/features/checkout/checkoutSlice"
 
@@ -24,7 +24,6 @@ export default function CheckoutPageClient() {
   const { toast } = useToast()
   const [validateCoupon] = useValidateCouponMutation()
   const [createOrder] = useCreateOrderMutation()
-  const [createSslSession] = useCreateSslSessionMutation()
   const dispatch = useAppDispatch()
   const reduxCoupon = useAppSelector((state) => state.checkout.coupon)
   const [currentStep, setCurrentStep] = useState(1)
@@ -54,7 +53,7 @@ export default function CheckoutPageClient() {
     saveAddress: false,
   })
 
-  const [paymentMethod, setPaymentMethod] = useState("SSLCO")
+  const [paymentMethod, setPaymentMethod] = useState("CASH_ON_DELIVERY")
   const [paymentDetails, setPaymentDetails] = useState<any>({})
 
   const [shippingMethod, setShippingMethod] = useState("standard")
@@ -146,25 +145,12 @@ export default function CheckoutPageClient() {
 
     setIsSubmitting(true)
     try {
-      if (paymentMethod === "CASH_ON_DELIVERY") {
-        const result = await createOrder(orderPayload).unwrap()
-        const newOrder = result?.data?.order || result?.data
-        setOrderData(newOrder)
-        setOrderComplete(true)
-        clearCart()
-        sessionStorage.removeItem("cart_checkout_context")
-        return
-      }
-
-      // SSL Commerz
-      const response = await createSslSession(orderPayload).unwrap()
-      const paymentUrl = response?.data?.url || response?.url
-      if (paymentUrl) {
-        window.location.href = paymentUrl
-        return
-      }
-
-      throw new Error("No payment URL returned from server")
+      const result = await createOrder(orderPayload).unwrap()
+      const newOrder = result?.data?.order || result?.data
+      setOrderData(newOrder)
+      setOrderComplete(true)
+      clearCart()
+      sessionStorage.removeItem("cart_checkout_context")
     } catch (error: any) {
       console.error("Error placing order:", error)
       const errorMsg = error?.data?.errorMessages?.[0]?.message

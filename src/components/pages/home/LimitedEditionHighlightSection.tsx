@@ -714,7 +714,7 @@ export default function LimitedEditionHighlightSection() {
           transition={{ duration: 0.5, delay: 1.2 }}
           className="text-center mt-10 sm:mt-12"
         >
-          <Link href="/collections/limited">
+          <Link href="/product-filter?category=best+sellers">
             <motion.button
               whileHover={{ x: 5 }}
               className={`inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${styles.textMuted} hover:text-[#007C74] transition-colors`}

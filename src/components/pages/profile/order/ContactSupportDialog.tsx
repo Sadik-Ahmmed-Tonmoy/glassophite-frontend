@@ -29,18 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useProfileTheme } from "@/hooks/useProfileTheme";
-
-// Define a type for the support ticket
-interface SupportTicket {
-  orderId: string;
-  orderNumber: string;
-  subject: string;
-  message: string;
-  status: "open" | "in-progress" | "resolved" | "closed";
-  priority: "low" | "medium" | "high";
-  createdAt: string;
-  ticketId: string;
-}
+import { useCreateSupportTicketMutation } from "@/redux/features/supportTicket/supportTicketApi";
 
 interface ContactSupportDialogProps {
   orderId: string;

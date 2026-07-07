@@ -73,7 +73,7 @@ export default function ProductFilterPage() {
   const { data: productsData, isLoading, isFetching } = useGetAllProductsQuery({
     page: currentPage,
     limit: productsPerPage,
-    sortBy: sortOption === "price-low" ? "price_asc" : sortOption === "price-high" ? "price_desc" : sortOption === "newest" ? "newest" : sortOption === "rating" ? "rating" : undefined,
+    sortBy: sortOption === "featured" ? "featured" : sortOption === "popularity" ? "popularity" : sortOption === "price-low" ? "price_asc" : sortOption === "price-high" ? "price_desc" : sortOption === "newest" ? "newest" : sortOption === "rating" ? "rating" : undefined,
     categories: categoriesQueryParam,
     subCategories: filters.subCategories.length > 0 ? filters.subCategories.join(",") : undefined,
     types: filters.types.length > 0 ? filters.types.join(",") : undefined,

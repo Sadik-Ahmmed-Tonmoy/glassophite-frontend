@@ -10,56 +10,22 @@ import {
   Package,
   Loader2,
 } from "lucide-react";
-import { useGetAllOrdersQuery } from "@/redux/features/order/orderApi";
-import { useGetAllUsersQuery } from "@/redux/features/user/userApi";
-import { useGetAllProductsQuery } from "@/redux/features/product/productApi";
+import { useGetDashboardStatsQuery } from "@/redux/features/dashboard/dashboardApi";
 
 export default function OverviewView() {
-  const { data: ordersData, isLoading: ordersLoading } = useGetAllOrdersQuery({ limit: 1000 });
-  const { data: usersData, isLoading: usersLoading } = useGetAllUsersQuery({ limit: 1000 });
-  const { data: productsData, isLoading: productsLoading } = useGetAllProductsQuery({ limit: 1000 });
+  const { data: statsData, isLoading } = useGetDashboardStatsQuery();
 
-  const orders = (ordersData?.data || []) as any[];
-  const users = (usersData?.data || []) as any[];
-  const products = (productsData?.data || []) as any[];
+  const stats = statsData?.data || {};
+  const kpi = stats.kpi || {};
+  const last6Months = stats.revenueTrends || [];
+  const recentOrders = stats.recentOrders || [];
+  const orderStatusBreakdown = stats.orderStatusBreakdown || {};
 
-  const isLoading = ordersLoading || usersLoading || productsLoading;
-
-  const totalRevenue = orders
-    .filter((o) => o.status === "DELIVERED")
-    .reduce((sum: number, o: any) => sum + (o.total || 0), 0);
-
-  const totalOrders = ordersData?.meta?.total ?? orders.length;
-  const totalCustomers = usersData?.meta?.total ?? users.length;
-  const totalProducts = productsData?.meta?.total ?? products.length;
-
-  // Revenue by month for last 6 months
-  const now = new Date();
-  const last6Months = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
-    return {
-      label: d.toLocaleString("default", { month: "short" }),
-      month: d.getMonth(),
-      year: d.getFullYear(),
-      revenue: 0,
-    };
-  });
-
-  orders.forEach((o: any) => {
-    if (o.status !== "DELIVERED") return;
-    const d = new Date(o.createdAt);
-    const entry = last6Months.find(
-      (m) => m.month === d.getMonth() && m.year === d.getFullYear()
-    );
-    if (entry) entry.revenue += o.total || 0;
-  });
-
-  const maxRevenue = Math.max(...last6Months.map((m) => m.revenue), 1);
-
-  // Recent orders for activity feed
-  const recentOrders = [...orders]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 5);
+  const totalRevenue = kpi.totalRevenue || 0;
+  const totalOrders = kpi.totalOrders || 0;
+  const totalCustomers = kpi.totalCustomers || 0;
+  const totalProducts = kpi.totalProducts || 0;
+  const maxRevenue = Math.max(...last6Months.map((m: any) => m.revenue), 1);
 
   const metrics = [
     {
@@ -136,13 +102,13 @@ export default function OverviewView() {
           <h3 className="text-sm font-bold tracking-wide text-foreground">
             Delivered Revenue (Last 6 Months)
           </h3>
-          {ordersLoading ? (
+          {isLoading ? (
             <div className="h-56 flex items-center justify-center">
               <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
             <div className="flex items-end gap-3 h-56 px-2">
-              {last6Months.map((m, i) => {
+              {last6Months.map((m: any, i: number) => {
                 const heightPct = maxRevenue > 0 ? (m.revenue / maxRevenue) * 100 : 0;
                 return (
                   <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
@@ -174,7 +140,7 @@ export default function OverviewView() {
         {/* Recent Activity Feed */}
         <div className="lg:col-span-4 glass-panel p-6 rounded-2xl space-y-4 border border-border">
           <h3 className="text-sm font-bold tracking-wide text-foreground">Recent Orders</h3>
-          {ordersLoading ? (
+          {isLoading ? (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             </div>
@@ -215,19 +181,19 @@ export default function OverviewView() {
         <div className="glass-panel p-5 rounded-2xl border border-border space-y-1">
           <p className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground">Processing Orders</p>
           <p className="text-2xl font-black text-foreground">
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : orders.filter((o) => o.status === "PROCESSING").length}
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : orderStatusBreakdown["PROCESSING"] || 0}
           </p>
         </div>
         <div className="glass-panel p-5 rounded-2xl border border-border space-y-1">
           <p className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground">Shipped Orders</p>
           <p className="text-2xl font-black text-foreground">
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : orders.filter((o) => o.status === "SHIPPED").length}
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : orderStatusBreakdown["SHIPPED"] || 0}
           </p>
         </div>
         <div className="glass-panel p-5 rounded-2xl border border-border space-y-1">
           <p className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground">Delivered Orders</p>
           <p className="text-2xl font-black text-foreground">
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : orders.filter((o) => o.status === "DELIVERED").length}
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : orderStatusBreakdown["DELIVERED"] || 0}
           </p>
         </div>
       </div>

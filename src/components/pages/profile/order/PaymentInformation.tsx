@@ -24,6 +24,7 @@ interface PaymentInformationProps {
 
 const paymentLabels: Record<string, string> = {
   CASH_ON_DELIVERY: "Cash on Delivery",
+  PIPRAPAY: "PipraPay",
   SSLCO: "SSL Commerz (Card, bKash, Nagad)",
   STRIPE: "Credit/Debit Card",
   CREDIT_CARD: "Credit Card",
@@ -106,11 +107,15 @@ export default function PaymentInformation({ paymentMethod, paymentDetails, ship
             <div>
               <div className="flex items-center gap-2">
                 <p className={cn("font-semibold", styles.text)}>{paymentDetails.cardType}</p>
-                <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", isDark ? "bg-white/[0.06] text-neutral-400" : "bg-gray-200 text-gray-600")}>
-                  •••• {paymentDetails.lastFourDigits}
-                </span>
+                {paymentDetails.lastFourDigits && (
+                  <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", isDark ? "bg-white/[0.06] text-neutral-400" : "bg-gray-200 text-gray-600")}>
+                    •••• {paymentDetails.lastFourDigits}
+                  </span>
+                )}
               </div>
-              <p className={cn("text-sm mt-0.5", styles.textMutedLighter)}>Expires {paymentDetails.expiryDate}</p>
+              {paymentDetails.expiryDate && (
+                <p className={cn("text-sm mt-0.5", styles.textMutedLighter)}>Expires {paymentDetails.expiryDate}</p>
+              )}
               <div className="flex items-center gap-1 mt-1.5 text-xs font-medium text-green-500">
                 <Check size={13} /> Payment successful
               </div>

@@ -56,6 +56,16 @@ interface ReturnDialogProps {
   isDelivered: boolean;
 }
 
+const getItemImage = (item: TOrderItem) => {
+  if (!item.image) return "/placeholder.svg?height=48&width=48";
+  try {
+    const parsed = JSON.parse(item.image);
+    return parsed?.image || item.image;
+  } catch {
+    return item.image;
+  }
+};
+
 export default function ReturnDialog({
   orderId,
   orderNumber,
@@ -200,9 +210,7 @@ export default function ReturnDialog({
                       )}
                     >
                       <Image
-                        src={
-                          item.image || "/placeholder.svg?height=48&width=48"
-                        }
+                        src={getItemImage(item)}
                         alt={item.name}
                         fill
                         className="object-cover"
@@ -542,9 +550,7 @@ export default function ReturnDialog({
                           )}
                         >
                           <Image
-                            src={
-                              item.image || "/placeholder.svg?height=32&width=32"
-                            }
+                            src={getItemImage(item)}
                             alt={item.name}
                             fill
                             className="object-cover"

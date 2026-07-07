@@ -490,7 +490,7 @@ export default function HeroCinematicSection() {
             </Link>
 
             <Link
-              href="/collections/limited"
+              href="/product-filter?category=best+sellers"
               className={`group px-8 py-3 rounded-full border backdrop-blur-sm transition-all duration-300 text-center relative overflow-hidden ${
                 isDark
                   ? "border-white/30 text-white hover:bg-white/10"
@@ -499,9 +499,9 @@ export default function HeroCinematicSection() {
             >
               <span className="relative z-10 flex items-center justify-center gap-2" data-translate>
                 Limited Edition
-                <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
+                {/* <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
                   5 left
-                </span>
+                </span> */}
               </span>
               <motion.div
                 className={`absolute inset-0 transition-colors duration-300 ${

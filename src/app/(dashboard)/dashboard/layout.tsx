@@ -21,6 +21,7 @@ import {
   ClipboardList,
   HelpCircle
 } from "lucide-react";
+import NotificationBell from "@/components/pages/dashboard/NotificationBell";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -97,6 +98,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
       {/* Main Content Area */}
       <main className="flex-grow p-6 md:p-10 overflow-y-auto">
+        <div className="flex items-center justify-end mb-4">
+          <NotificationBell />
+        </div>
         {children}
       </main>
 

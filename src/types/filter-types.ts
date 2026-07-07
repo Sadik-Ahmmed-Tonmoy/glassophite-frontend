@@ -1,4 +1,4 @@
-export type SortOption = "featured" | "price-low" | "price-high" | "rating" | "newest"
+export type SortOption = "featured" | "price-low" | "price-high" | "rating" | "newest" | "popularity"
 
 export type FilterState = {
   priceRange: [number, number]

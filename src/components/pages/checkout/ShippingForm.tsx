@@ -34,16 +34,16 @@ const savedAddressValidationSchema = z.object({
 const shippingOptions = [
   {
     value: "standard",
-    label: "Standard Shipping",
+    label: "Inside Dhaka",
     price: "৳60.00",
-    delivery: "5–7 business days",
+    delivery: "1–3 business days",
     icon: Calendar
   },
   {
     value: "express",
-    label: "Express Shipping",
+    label: "Outside Dhaka",
     price: "৳120.00",
-    delivery: "2–3 business days",
+    delivery: "4–7 business days",
     icon: Clock
   },
 ];

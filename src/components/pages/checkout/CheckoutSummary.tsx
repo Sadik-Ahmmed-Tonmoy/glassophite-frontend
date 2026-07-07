@@ -263,7 +263,7 @@ export default function CheckoutSummary({
           Policy. Your payment information is processed securely.
         </p>
         <div className="text-center text-xs font-semibold text-[#007C74] dark:text-[#3C55A5]">
-          Secured by SSL Commerz Payment Gateway
+          Cash on Delivery
         </div>
       </div>
     </motion.div>

@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Download } from "lucide-react";
 
@@ -17,31 +18,33 @@ import PaymentInformation from "./order/PaymentInformation";
 import OrderStatusBadge from "./order/OrderStatusBadge";
 import type { TOrder } from "@/types/types";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 interface OrderDetailsProps {
   order: TOrder;
 }
 
 export default function OrderDetails({ order }: OrderDetailsProps) {
+  const router = useRouter();
   const { isDark } = useProfileTheme();
 
   const handleDownloadInvoice = () => {
-    toast.info("Invoice download will be available once integrated with the backend.");
+    router.push(`/my-profile/order-history/${order.id}/invoice`);
   };
+
+  const statusLower = order.status.toLowerCase() as "processing" | "shipped" | "delivered" | "cancelled";
 
   return (
     <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={staggerItems}>
-        <OrderStatusBadge status={order.status as any} deliveryDate={order.deliveryDate} estimatedDelivery={order.estimatedDelivery} />
+        <OrderStatusBadge status={statusLower} deliveryDate={order.deliveryDate} estimatedDelivery={order.estimatedDelivery} />
       </motion.div>
 
       <motion.div variants={staggerItems}>
-        <OrderTimeline status={order.status as any} orderDate={order.orderDate ?? order.createdAt ?? ""} processingDate={order.processingDate} shippingDate={order.shippingDate} deliveryDate={order.deliveryDate} estimatedDelivery={order.estimatedDelivery} />
+        <OrderTimeline status={statusLower} orderDate={order.orderDate ?? order.createdAt ?? ""} processingDate={order.processingDate} shippingDate={order.shippingDate} deliveryDate={order.deliveryDate} estimatedDelivery={order.estimatedDelivery} />
       </motion.div>
 
       <motion.div variants={staggerItems}>
-        <OrderItemsList items={order.items} subtotal={order.subtotal} shipping={order.shipping} discount={order.discount} total={order.total} status={order.status as any} />
+        <OrderItemsList items={order.items} subtotal={order.subtotal} shipping={order.shipping} discount={order.discount} total={order.total} status={statusLower} />
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

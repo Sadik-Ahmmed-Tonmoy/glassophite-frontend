@@ -97,13 +97,13 @@ export default function OrderReview({
   const getShippingMethodLabel = () => {
     switch (shippingMethod) {
       case "express":
-        return "Express Shipping (৳15.00)"
+        return "Outside Dhaka (৳120.00)"
       case "standard":
-        return "Standard Shipping (৳5.00)"
+        return "Inside Dhaka (৳60.00)"
       case "free":
         return "Free Shipping"
       default:
-        return "Standard Shipping"
+        return "Inside Dhaka"
     }
   }
 

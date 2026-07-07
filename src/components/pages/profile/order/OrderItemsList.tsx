@@ -18,6 +18,16 @@ interface OrderItemsListProps {
   status: "processing" | "shipped" | "delivered" | "cancelled";
 }
 
+const getItemImage = (item: TOrderItem) => {
+  if (!item.image) return "/placeholder.svg?height=80&width=80";
+  try {
+    const parsed = JSON.parse(item.image);
+    return parsed?.image || item.image;
+  } catch {
+    return item.image;
+  }
+};
+
 export default function OrderItemsList({ items, subtotal, shipping, discount, total, status }: OrderItemsListProps) {
   const { isDark, theme: styles } = useProfileTheme();
   const [expanded, setExpanded] = useState(true);
@@ -56,7 +66,7 @@ export default function OrderItemsList({ items, subtotal, shipping, discount, to
               {items.map((item) => (
                 <div key={item.id} className="p-4 sm:p-5 flex flex-col sm:flex-row gap-4">
                   <div className="shrink-0 w-full sm:w-20 h-20 relative rounded-xl overflow-hidden border dark:border-white/[0.06] bg-gray-100 dark:bg-white/[0.04]">
-                    <Image src={item.image || "/placeholder.svg?height=80&width=80"} alt={item.name} fill className="object-cover" unoptimized />
+                    <Image src={getItemImage(item)} alt={item.name} fill className="object-cover" unoptimized />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col sm:flex-row sm:justify-between gap-2">

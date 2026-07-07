@@ -1,3 +1,4 @@
+import NotificationList from "@/components/pages/profile/NotificationList";
 import NotificationPreferences from "@/components/pages/profile/NotificationPreferences";
 import ProfileHeader from "@/components/pages/profile/ProfileHeader";
 import type { Metadata } from "next";
@@ -10,10 +11,14 @@ export const metadata: Metadata = {
 
 export default function NotificationsPage() {
   return (
-    <div className="">
-      <ProfileHeader title="Notification Preferences" description="Manage how you receive updates and alerts" />
+    <div className="space-y-8">
+      <ProfileHeader title="Notifications" description="Stay updated on your orders and account activity" />
 
-      <div className="mt-8">
+      <div>
+        <NotificationList />
+      </div>
+
+      <div>
         <NotificationPreferences />
       </div>
     </div>

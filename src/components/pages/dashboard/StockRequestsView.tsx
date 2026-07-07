@@ -18,6 +18,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useState } from "react";
 
 type TStockRequest = {
   id: string;
@@ -60,16 +61,18 @@ type TStockRequest = {
 export default function StockRequestsView() {
   const { data, isLoading, isFetching, refetch } =
     useGetAllStockRequestsQuery(undefined);
-  const [updateStatus, { isLoading: isUpdating }] =
+  const [updateStatus] =
     useUpdateStockRequestStatusMutation();
 
   const requests: TStockRequest[] = data?.data || [];
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  const handleResolve = async (id: string, email: string) => {
+  const handleStatusChange = async (id: string, email: string, newStatus: string) => {
+    setUpdatingId(id);
     try {
-      await updateStatus({ id, status: "NOTIFIED" }).unwrap();
-      toast.success("Notification marked as sent", {
-        description: `Request for user ${email} is marked as resolved/notified.`,
+      await updateStatus({ id, status: newStatus }).unwrap();
+      toast.success("Status Updated Successfully", {
+        description: `Request status for ${email} set to ${newStatus}.`,
       });
     } catch (err: any) {
       toast.error("Failed to update status", {
@@ -307,30 +310,32 @@ export default function StockRequestsView() {
                     {/* Action buttons */}
                     <td className="p-4 text-center">
                       <div className="flex justify-center items-center gap-2">
-                        {req.status === "PENDING" ? (
-                          <button
-                            onClick={() =>
-                              handleResolve(req.id, req.user?.email)
-                            }
-                            disabled={isUpdating}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer ${
-                              isReadyToNotify
-                                ? "bg-[#007C74] hover:bg-[#006059] text-white shadow-sm"
-                                : "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-500"
-                            }`}
-                          >
-                            <Bell className="w-3 h-3" />
-                            <span>
-                              {isReadyToNotify
-                                ? "Notify Customer"
-                                : "Mark Notified"}
-                            </span>
-                          </button>
+                        {updatingId === req.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-[#007C74] mx-auto" />
                         ) : (
-                          <span className="text-green-500 flex items-center gap-1 font-bold text-[10px]">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Resolved</span>
-                          </span>
+                          <div className="flex items-center gap-2 justify-center">
+                            <select
+                              value={req.status}
+                              onChange={(e) =>
+                                handleStatusChange(req.id, req.user?.email, e.target.value)
+                              }
+                              className="px-2.5 py-1.5 text-[11px] font-bold rounded-lg border border-border bg-background text-foreground focus:outline-none cursor-pointer focus:ring-1 focus:ring-primary/50"
+                            >
+                              <option value="PENDING">Pending</option>
+                              <option value="NOTIFIED">Resolved / Notified</option>
+                            </select>
+                            {req.status === "PENDING" && isReadyToNotify && (
+                              <button
+                                onClick={() =>
+                                  handleStatusChange(req.id, req.user?.email, "NOTIFIED")
+                                }
+                                title="Quick Notify Client"
+                                className="p-1.5 bg-[#007C74]/10 hover:bg-[#007C74] text-[#007C74] hover:text-white rounded-lg border border-[#007C74]/20 transition-all cursor-pointer flex items-center justify-center"
+                              >
+                                <Bell className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     </td>

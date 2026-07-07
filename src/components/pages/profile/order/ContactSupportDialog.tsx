@@ -31,6 +31,17 @@ import { cn } from "@/lib/utils";
 import { useProfileTheme } from "@/hooks/useProfileTheme";
 import { useCreateSupportTicketMutation } from "@/redux/features/supportTicket/supportTicketApi";
 
+interface SupportTicket {
+  orderId: string;
+  orderNumber: string;
+  subject: string;
+  message: string;
+  status: string;
+  priority: "low" | "medium" | "high";
+  createdAt: string;
+  ticketId: string;
+}
+
 interface ContactSupportDialogProps {
   orderId: string;
   orderNumber: string;

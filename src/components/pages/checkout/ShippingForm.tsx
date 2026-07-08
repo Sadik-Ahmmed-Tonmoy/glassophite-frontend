@@ -2,7 +2,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, Clock, MapPin, Plus } from "lucide-react";
+import { Calendar, Clock, MapPin, Plus, Edit2, Trash2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useWatch, useFormContext } from "react-hook-form";
 
@@ -13,9 +13,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import MyFormShippingMethod from "@/components/ui/MyForm/MyFormShippingMethod/MyFormShippingMethod";
 import { cn } from "@/lib/utils";
-import { useGetAddressesQuery, useCreateAddressMutation } from "@/redux/features/address/addressApi";
+import { useGetAddressesQuery, useCreateAddressMutation, useUpdateAddressMutation, useDeleteAddressMutation } from "@/redux/features/address/addressApi";
 import { toast } from "sonner";
 import { useAppSelector } from "@/redux/hooks";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const validationSchema = z.object({
   firstName: z.string({ required_error: "First name is required" }).min(1, { message: "First name is required" }),
@@ -29,6 +40,16 @@ const validationSchema = z.object({
 
 const savedAddressValidationSchema = z.object({
   shippingMethod: z.string({ required_error: "Shipping method is required" }).min(1, { message: "Shipping method is required" }),
+});
+
+const editAddressValidationSchema = z.object({
+  label: z.string({ required_error: "Label is required" }).min(1, { message: "Label is required" }),
+  name: z.string({ required_error: "Full name is required" }).min(1, { message: "Full name is required" }),
+  phone: z.string({ required_error: "Phone number is required" }).min(1, { message: "Phone number is required" }),
+  street: z.string({ required_error: "Street address is required" }).min(1, { message: "Street address is required" }),
+  city: z.string({ required_error: "City is required" }).min(1, { message: "City is required" }),
+  state: z.string({ required_error: "State is required" }).min(1, { message: "State is required" }),
+  zipCode: z.string({ required_error: "ZIP code is required" }).min(1, { message: "ZIP code is required" }),
 });
 
 const shippingOptions = [
@@ -104,8 +125,12 @@ export default function ShippingForm({
   const [saveAddress, setSaveAddress] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [addressMode, setAddressMode] = useState<"saved" | "new">("new");
+  const [editingAddress, setEditingAddress] = useState<any | null>(null);
+  const [addressToDeleteId, setAddressToDeleteId] = useState<string | null>(null);
 
   const [createAddress, { isLoading: isSavingAddress }] = useCreateAddressMutation();
+  const [updateAddress, { isLoading: isUpdatingAddress }] = useUpdateAddressMutation();
+  const [deleteAddress] = useDeleteAddressMutation();
 
   const token = useAppSelector((state) => state.auth.access_token);
 
@@ -133,6 +158,41 @@ export default function ShippingForm({
       setAddressMode("saved");
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to save address. Please try again.");
+    }
+  };
+
+  const handleDeleteAddress = async () => {
+    if (!addressToDeleteId) return;
+    try {
+      await deleteAddress(addressToDeleteId).unwrap();
+      toast.success("Address deleted successfully!");
+      if (selectedAddressId === addressToDeleteId) {
+        setSelectedAddressId(null);
+      }
+      setAddressToDeleteId(null);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to delete address.");
+    }
+  };
+
+  const handleEditAddressSubmit = async (data: any) => {
+    if (!editingAddress) return;
+    try {
+      await updateAddress({
+        id: editingAddress.id,
+        label: data.label,
+        name: data.name,
+        street: data.street,
+        city: data.city,
+        state: data.state,
+        zipCode: data.zipCode,
+        phone: data.phone,
+        country: "Bangladesh",
+      }).unwrap();
+      toast.success("Address updated successfully!");
+      setEditingAddress(null);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to update address. Please try again.");
     }
   };
 
@@ -204,7 +264,7 @@ export default function ShippingForm({
 
       {/* Segmented Mode Switcher */}
       {!addressesLoading && (
-        <div className="flex gap-2 p-1 bg-neutral-100 dark:bg-neutral-800/80 border dark:border-white/5 rounded-xl mb-6 max-w-md">
+        <div className="flex gap-2 p-1 bg-neutral-100 dark:bg-neutral-800/80 border dark:border-white/5 rounded-xl mb-6">
           <button
             type="button"
             onClick={() => { setAddressMode("saved"); hasUserInteracted.current = true; }}
@@ -246,9 +306,8 @@ export default function ShippingForm({
           {savedAddresses.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {savedAddresses.map((addr: any) => (
-                <button
+                <div
                   key={addr.id}
-                  type="button"
                   onClick={() => setSelectedAddressId(addr.id)}
                   className={cn(
                     "w-full text-left p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer h-full flex flex-col justify-between",
@@ -261,14 +320,40 @@ export default function ShippingForm({
                     <MapPin size={20} className={cn("mt-0.5 shrink-0", selectedAddressId === addr.id ? "text-[#007C74]" : "text-gray-400")} />
                     <div className="min-w-0 flex-1">
                       <div className="flex justify-between items-center gap-2">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                          {addr.label}
-                        </p>
-                        {addr.isDefault && (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 bg-[#007C74]/10 text-[#007C74] rounded-full shrink-0">
-                            Default
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                            {addr.label}
+                          </p>
+                          {addr.isDefault && (
+                            <span className="text-[10px] font-semibold px-2 py-0.5 bg-[#007C74]/10 text-[#007C74] rounded-full shrink-0">
+                              Default
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingAddress(addr);
+                            }}
+                            className="p-1 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded transition-colors text-gray-500 hover:text-[#007C74] cursor-pointer"
+                            title="Edit Address"
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                           <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAddressToDeleteId(addr.id);
+                            }}
+                            className="p-1 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded transition-colors text-gray-500 hover:text-red-500 cursor-pointer"
+                            title="Delete Address"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
                       <p className="text-sm text-gray-800 dark:text-neutral-300 mt-1 truncate">
                         {addr.name}
@@ -279,7 +364,7 @@ export default function ShippingForm({
                     </div>
                   </div>
                   {addr.phone && <p className="text-xs text-gray-500 dark:text-neutral-400 mt-3">{addr.phone}</p>}
-                </button>
+                </div>
               ))}
 
               <button
@@ -385,6 +470,90 @@ export default function ShippingForm({
           </motion.div>
         </MyFormWrapper>
       )}
+      {/* Edit Address Dialog */}
+      <Dialog open={!!editingAddress} onOpenChange={(open) => !open && setEditingAddress(null)}>
+        <DialogContent className="sm:max-w-[500px] bg-white dark:bg-[#0c0c0c] border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-xl text-neutral-900 dark:text-white">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-black dark:text-white">Edit Saved Address</DialogTitle>
+            <DialogDescription className="sr-only">Update your saved shipping address details.</DialogDescription>
+          </DialogHeader>
+          
+          {editingAddress && (
+            <MyFormWrapper
+              key={`edit-addr-${editingAddress.id}`}
+              onSubmit={handleEditAddressSubmit}
+              resolver={zodResolver(editAddressValidationSchema)}
+              defaultValues={{
+                label: editingAddress.label || "",
+                name: editingAddress.name || "",
+                phone: editingAddress.phone || "",
+                street: editingAddress.street || "",
+                city: editingAddress.city || "",
+                state: editingAddress.state || "",
+                zipCode: editingAddress.zipCode || "",
+              }}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-1 gap-4 mt-2">
+                <MyFormInputAceternity name="label" label="Address Label" placeholder="e.g. Home, Work, Shipping" />
+                <MyFormInputAceternity name="name" label="Full Name" placeholder="Enter recipient's full name" />
+                <MyFormInputAceternity name="phone" label="Phone Number" placeholder="Enter phone number" />
+                <MyFormInputAceternity name="street" label="Street Address" placeholder="Enter street address" />
+                <div className="grid grid-cols-2 gap-4">
+                  <MyFormInputAceternity name="city" label="City" placeholder="City" />
+                  <MyFormInputAceternity name="state" label="State" placeholder="State" />
+                </div>
+                <MyFormInputAceternity name="zipCode" label="ZIP/Postal Code" placeholder="ZIP code" />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-gray-150 dark:border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingAddress(null)}
+                  className="px-4 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingAddress}
+                  className="px-4 py-2 bg-[#007C74] hover:bg-[#007C74]/90 text-white rounded-lg text-sm font-medium disabled:opacity-50 cursor-pointer"
+                >
+                  {isUpdatingAddress ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </MyFormWrapper>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Address Confirmation Dialog */}
+      <AlertDialog open={!!addressToDeleteId} onOpenChange={(open) => !open && setAddressToDeleteId(null)}>
+        <AlertDialogContent className="sm:max-w-[440px] bg-white dark:bg-[#0c0c0c] border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-xl text-neutral-900 dark:text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-bold text-red-600 dark:text-red-500 flex items-center gap-2">
+              Confirm Address Deletion
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-500 dark:text-neutral-400 text-sm mt-2">
+              Are you sure you want to delete this saved address? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-6 flex justify-end gap-2">
+            <AlertDialogCancel
+              onClick={() => setAddressToDeleteId(null)}
+              className="px-4 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 cursor-pointer text-gray-750 dark:text-neutral-300 bg-transparent"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAddress}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium cursor-pointer"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }

@@ -1,11 +1,12 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Bell, Mail, Smartphone, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useGetMeQuery, useUpdateNotificationPreferencesMutation } from "@/redux/features/user/userApi";
 import { useProfileTheme } from "@/hooks/useProfileTheme";
 import { staggerContainer, staggerItems } from "@/lib/profileAnimations";
 
@@ -53,6 +54,12 @@ function ToggleItem({ title, desc, checked, onChange }: ToggleItem) {
 
 export default function NotificationPreferences() {
   const { isDark, theme: styles } = useProfileTheme();
+  const { data: meData } = useGetMeQuery(undefined);
+  const [updatePreferences, { isLoading }] = useUpdateNotificationPreferencesMutation();
+
+  const user = meData?.data || meData;
+  const prefs = (user?.notificationPreferences as Record<string, boolean>) || {};
+
   const [emailPreferences, setEmailPreferences] = useState({
     orderUpdates: true,
     promotions: false,
@@ -66,9 +73,38 @@ export default function NotificationPreferences() {
     accountAlerts: true,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (prefs) {
+      setEmailPreferences({
+        orderUpdates: prefs.emailOrderUpdates ?? true,
+        promotions: prefs.emailPromotions ?? false,
+        newsletter: prefs.emailNewsletter ?? true,
+        accountAlerts: prefs.emailAccountAlerts ?? true,
+      });
+      setPushPreferences({
+        orderUpdates: prefs.pushOrderUpdates ?? true,
+        promotions: prefs.pushPromotions ?? false,
+        accountAlerts: prefs.pushAccountAlerts ?? true,
+      });
+    }
+  }, [prefs]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Notification preferences updated");
+    try {
+      await updatePreferences({
+        emailOrderUpdates: emailPreferences.orderUpdates,
+        emailPromotions: emailPreferences.promotions,
+        emailNewsletter: emailPreferences.newsletter,
+        emailAccountAlerts: emailPreferences.accountAlerts,
+        pushOrderUpdates: pushPreferences.orderUpdates,
+        pushPromotions: pushPreferences.promotions,
+        pushAccountAlerts: pushPreferences.accountAlerts,
+      }).unwrap();
+      toast.success("Notification preferences updated");
+    } catch {
+      toast.error("Failed to update notification preferences");
+    }
   };
 
   return (
@@ -123,10 +159,18 @@ export default function NotificationPreferences() {
         <motion.div variants={staggerItems} className="flex justify-end">
           <button
             type="submit"
-            className={cn("inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all", styles.buttonPrimary)}
+            disabled={isLoading}
+            className={cn(
+              "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all",
+              styles.buttonPrimary,
+              isLoading && "opacity-50 cursor-not-allowed"
+            )}
           >
-            <Save size={16} />
-            Save Preferences
+            {isLoading ? (
+              <><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1" /> Saving...</>
+            ) : (
+              <><Save size={16} /> Save Preferences</>
+            )}
           </button>
         </motion.div>
       </motion.div>

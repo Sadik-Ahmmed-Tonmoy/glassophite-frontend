@@ -3,17 +3,14 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { UserCircle, Settings, ShoppingBag, Bell, ChevronRight, Menu, X, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { useGetMeQuery } from "@/redux/features/user/userApi"
-import { useLogoutMutation } from "@/redux/features/auth/authApi"
-import { useAppDispatch } from "@/redux/hooks"
-import { logout } from "@/redux/features/auth/authSlice"
-import { toast } from "sonner"
 import { useProfileTheme, type ProfileTheme } from "@/hooks/useProfileTheme"
 import { fadeInUp } from "@/lib/profileAnimations"
+import LogoutDialog from "@/components/shared/LogoutDialog"
 
 const sidebarItems = [
   {
@@ -128,21 +125,11 @@ function SidebarContent({
   onLinkClick: () => void
 }) {
   const { data: meData } = useGetMeQuery(undefined)
-  const [logoutApi] = useLogoutMutation()
-  const dispatch = useAppDispatch()
-  const router = useRouter()
 
   const user = meData?.data || meData
   const fullName = user?.fullName || "User"
   const email = user?.email || ""
   const profileImage = user?.profileImage || "/placeholder.svg?height=48&width=48"
-
-  const handleLogout = async () => {
-    try { await logoutApi(undefined).unwrap() } catch { /* proceed */ }
-    dispatch(logout())
-    toast.success("Logged out successfully")
-    router.push("/auth/login")
-  }
 
   return (
     <div className="flex flex-col h-full">
@@ -197,18 +184,17 @@ function SidebarContent({
       </nav>
 
       <div className={cn("p-3 border-t", isDark ? "border-white/[0.06]" : "border-gray-200")}>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleLogout}
-          className={cn(
-            "flex items-center w-full px-3.5 py-2.5 rounded-xl transition-all duration-300 text-sm font-medium",
-            isDark ? "text-red-400/70 hover:text-red-400 hover:bg-red-500/10" : "text-red-500/70 hover:text-red-600 hover:bg-red-50"
-          )}
-        >
-          <LogOut size={18} className="mr-3" />
-          <span>Logout</span>
-        </motion.button>
+        <LogoutDialog>
+          <button
+            className={cn(
+              "flex items-center w-full px-3.5 py-2.5 rounded-xl transition-all duration-300 text-sm font-medium",
+              isDark ? "text-red-400/70 hover:text-red-400 hover:bg-red-500/10" : "text-red-500/70 hover:text-red-600 hover:bg-red-50"
+            )}
+          >
+            <LogOut size={18} className="mr-3" />
+            <span>Logout</span>
+          </button>
+        </LogoutDialog>
       </div>
     </div>
   )

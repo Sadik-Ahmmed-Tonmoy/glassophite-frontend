@@ -3,7 +3,8 @@
 
 import { useCart } from "@/hooks/use-cart"
 import { useToast } from "@/hooks/use-toast"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useValidateCouponMutation } from "@/redux/features/coupon/couponApi"
 import { useCreateOrderMutation } from "@/redux/features/order/orderApi"
 import { useAppSelector, useAppDispatch } from "@/redux/hooks"
@@ -13,7 +14,6 @@ import CheckoutStepper from "@/components/pages/checkout/CheckoutStepper"
 import CheckoutSummary from "@/components/pages/checkout/CheckoutSummary"
 import OrderConfirmation from "@/components/pages/checkout/OrderConfirmation"
 import OrderReview from "@/components/pages/checkout/OrderReview"
-import PaymentMethod from "@/components/pages/checkout/PaymentMethod"
 import ShippingForm from "@/components/pages/checkout/ShippingForm"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ShoppingCart } from "lucide-react"
@@ -26,10 +26,27 @@ export default function CheckoutPageClient() {
   const [createOrder] = useCreateOrderMutation()
   const dispatch = useAppDispatch()
   const reduxCoupon = useAppSelector((state) => state.checkout.coupon)
-  const [currentStep, setCurrentStep] = useState(1)
+
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+
+  const stepParam = searchParams.get("step")
+  const initialStep = stepParam ? parseInt(stepParam, 10) : 1
+  const [currentStep, setCurrentStep] = useState(initialStep)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderComplete, setOrderComplete] = useState(false)
   const [orderData, setOrderData] = useState<any>(null)
+
+  const updateStepInUrl = (step: number, replace: boolean = false) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("step", step.toString())
+    if (replace) {
+      router.replace(`${pathname}?${params.toString()}`)
+    } else {
+      router.push(`${pathname}?${params.toString()}`)
+    }
+  }
 
   const getCartContext = () => {
     if (typeof window === "undefined") return null
@@ -76,18 +93,43 @@ export default function CheckoutPageClient() {
   const displayTotal = subtotal + shippingCost - discount - rewardDiscount
 
   const nextStep = () => {
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1)
+    if (currentStep < 2) {
+      const next = currentStep + 1
+      setCurrentStep(next)
+      updateStepInUrl(next)
       window.scrollTo(0, 0)
     }
   }
 
   const prevStep = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
+      const prev = currentStep - 1
+      setCurrentStep(prev)
+      updateStepInUrl(prev)
       window.scrollTo(0, 0)
     }
   }
+
+  // Synchronize state when query parameters change (e.g., browser back button)
+  useEffect(() => {
+    const step = stepParam ? parseInt(stepParam, 10) : 1
+    if (step !== currentStep) {
+      setCurrentStep(step)
+    }
+  }, [stepParam, currentStep])
+
+  useEffect(() => {
+    if (!searchParams.get("step")) {
+      updateStepInUrl(1, true) // Replace history so we don't pollute stack with step-less url
+    }
+  }, [searchParams])
+
+  useEffect(() => {
+    if (currentStep === 2 && !shippingDetails.address) {
+      setCurrentStep(1)
+      updateStepInUrl(1, true)
+    }
+  }, [currentStep, shippingDetails.address])
 
   const handleShippingSubmit = (data: any) => {
     setShippingDetails((prev) => ({
@@ -232,15 +274,6 @@ export default function CheckoutPageClient() {
               )}
 
               {currentStep === 2 && (
-                <PaymentMethod
-                  onSubmit={handlePaymentSubmit}
-                  initialMethod={paymentMethod}
-                  initialDetails={paymentDetails}
-                  onBack={prevStep}
-                />
-              )}
-
-              {currentStep === 3 && (
                 <OrderReview
                   items={items}
                   shippingDetails={shippingDetails}

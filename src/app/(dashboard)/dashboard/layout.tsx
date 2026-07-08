@@ -22,8 +22,20 @@ import {
   HelpCircle
 } from "lucide-react";
 import NotificationBell from "@/components/pages/dashboard/NotificationBell";
+import AuthGuard from "@/components/shared/AuthGuard";
+import RoleGuard from "@/components/shared/RoleGuard";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
+  return (
+    <AuthGuard>
+      <RoleGuard roles={["SUPER_ADMIN", "ADMIN"]} fallback="/">
+        <DashboardContent>{children}</DashboardContent>
+      </RoleGuard>
+    </AuthGuard>
+  );
+}
+
+function DashboardContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   const navItems = [

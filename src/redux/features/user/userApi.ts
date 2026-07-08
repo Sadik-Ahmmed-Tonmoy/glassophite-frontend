@@ -33,6 +33,14 @@ const userApi = baseApi.injectEndpoints({
     changePassword: builder.mutation({
       query: (body) => ({ url: "auth/change-password", method: "PUT", body }),
     }),
+    updateSecuritySettings: builder.mutation({
+      query: (body) => ({ url: "users/security-settings", method: "PATCH", body }),
+      invalidatesTags: ["user"],
+    }),
+    updateNotificationPreferences: builder.mutation({
+      query: (body) => ({ url: "users/notification-preferences", method: "PATCH", body }),
+      invalidatesTags: ["user"],
+    }),
   }),
   overrideExisting: true,
 });
@@ -45,4 +53,6 @@ export const {
   useUpdateUserStatusMutation,
   useDeleteAccountMutation,
   useChangePasswordMutation,
+  useUpdateSecuritySettingsMutation,
+  useUpdateNotificationPreferencesMutation,
 } = userApi;

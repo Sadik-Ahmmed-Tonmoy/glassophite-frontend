@@ -47,7 +47,7 @@ export default function DeliveryInfo() {
           <div className="flex items-start">
             <Calendar size={14} className="text-blue-600 mr-2 mt-0.5" />
             <div>
-              <p className="text-blue-800 font-medium">Standard Delivery</p>
+              <p className="text-blue-800 font-medium">Inside Dhaka</p>
               <p className="text-blue-600 text-xs">Estimated by {formatDate(standardDelivery)}</p>
             </div>
           </div>
@@ -55,7 +55,7 @@ export default function DeliveryInfo() {
           <div className="flex items-start">
             <Calendar size={14} className="text-blue-600 mr-2 mt-0.5" />
             <div>
-              <p className="text-blue-800 font-medium">Express Delivery</p>
+              <p className="text-blue-800 font-medium">Outside Dhaka</p>
               <p className="text-blue-600 text-xs">Estimated by {formatDate(expressDelivery)}</p>
             </div>
           </div>

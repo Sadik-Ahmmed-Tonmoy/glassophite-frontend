@@ -291,7 +291,7 @@ export default function OrderReview({
           disabled={isSubmitting}
         >
           <ArrowLeft size={16} className="mr-2" />
-          <span data-translate="review.back">Back to Payment</span>
+          <span data-translate="review.back">Back to Shipping</span>
         </Button>
 
         <Button

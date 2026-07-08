@@ -89,7 +89,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       rewardDiscount,
     }
     sessionStorage.setItem("cart_checkout_context", JSON.stringify(cartContext))
-    router.push("/checkout")
+    router.push("/checkout?step=1")
   }
 
   return (

@@ -15,8 +15,7 @@ export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
 
   const steps = [
     { id: 1, title: "Shipping", icon: Truck, translateKey: "checkout.step.shipping" },
-    { id: 2, title: "Payment", icon: CreditCard, translateKey: "checkout.step.payment" },
-    { id: 3, title: "Review", icon: CheckCircle, translateKey: "checkout.step.review" },
+    { id: 2, title: "Review & Pay", icon: CheckCircle, translateKey: "checkout.step.review" },
   ]
 
   // Theme styles

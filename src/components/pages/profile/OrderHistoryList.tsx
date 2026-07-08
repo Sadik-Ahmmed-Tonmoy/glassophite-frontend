@@ -86,7 +86,6 @@ export default function OrderHistoryList() {
     | { page: number; limit: number; total: number }
     | undefined;
   const totalPages = meta ? Math.ceil(meta.total / meta.limit) : 1;
-  console.log(ordersData, orders);
   const getItemImage = (item: TOrderItem) => {
     if (!item.image) return "/placeholder.svg?height=64&width=64";
     try {

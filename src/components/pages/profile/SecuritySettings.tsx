@@ -1,29 +1,54 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Shield, Save, Clock, KeyRound, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useGetMeQuery, useUpdateSecuritySettingsMutation } from "@/redux/features/user/userApi";
 import { useProfileTheme } from "@/hooks/useProfileTheme";
 import { fadeInUp, staggerContainer, staggerItems } from "@/lib/profileAnimations";
 
 export default function SecuritySettings() {
   const { isDark, theme: styles } = useProfileTheme();
+  const { data: meData } = useGetMeQuery(undefined);
+  const [updateSecuritySettings, { isLoading }] = useUpdateSecuritySettingsMutation();
+
+  const user = meData?.data || meData;
+
   const [settings, setSettings] = useState({
     twoFactorAuth: false,
     loginNotifications: true,
     sessionTimeout: "30",
   });
 
+  useEffect(() => {
+    if (user) {
+      setSettings({
+        twoFactorAuth: user.twoFactorAuth ?? false,
+        loginNotifications: user.loginNotifications ?? true,
+        sessionTimeout: user.sessionTimeout ?? "30",
+      });
+    }
+  }, [user]);
+
   const handleToggle = (name: string) => {
     setSettings(prev => ({ ...prev, [name]: !prev[name as keyof typeof prev] }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Security settings updated");
+    try {
+      await updateSecuritySettings({
+        twoFactorAuth: settings.twoFactorAuth,
+        loginNotifications: settings.loginNotifications,
+        sessionTimeout: settings.sessionTimeout,
+      }).unwrap();
+      toast.success("Security settings updated");
+    } catch {
+      toast.error("Failed to update security settings");
+    }
   };
 
   const Toggle = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
@@ -121,12 +146,20 @@ export default function SecuritySettings() {
         <div className="mt-6 flex justify-end">
           <motion.button
             type="submit"
-            className={cn("inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all", styles.buttonPrimary)}
+            disabled={isLoading}
+            className={cn(
+              "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all",
+              styles.buttonPrimary,
+              isLoading && "opacity-50 cursor-not-allowed"
+            )}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <Save size={16} />
-            Save Settings
+            {isLoading ? (
+              <><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1" /> Saving...</>
+            ) : (
+              <><Save size={16} /> Save Settings</>
+            )}
           </motion.button>
         </div>
       </form>

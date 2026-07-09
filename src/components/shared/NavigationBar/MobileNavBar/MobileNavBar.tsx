@@ -65,6 +65,8 @@ export default function MobileNavBar() {
     ...(isAdmin ? [{ label: "Admin Dashboard", href: "/dashboard" }] : []),
   ];
 
+  const [searchValue, setSearchValue] = useState("");
+
   const placeholders = [
     "polarized sunglasses",
     "UV protection glasses",
@@ -79,12 +81,14 @@ export default function MobileNavBar() {
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
+    setSearchValue(e.target.value);
   };
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("submitted search");
+    if (searchValue.trim()) {
+      router.push(`/product-filter?search=${encodeURIComponent(searchValue.trim())}`);
+    }
   };
 
   return (

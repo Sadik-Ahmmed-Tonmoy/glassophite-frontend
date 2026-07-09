@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import ProductDetails from "@/components/pages/productDetails/productDetails";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Script from "next/script";
 
 const API_BASE = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5016/api/v1";
 
 async function getProduct(productId: string) {
-  console.log(API_BASE, productId);
   try {
     const res = await fetch(`${API_BASE}/products/${productId}`, {
-      next: { revalidate: 60 },
+      // next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (!res.ok) return null;
     const json = await res.json();
@@ -25,16 +25,20 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
   const product: any = await getProduct(productId);
 
   if (!product) {
-    return { title: "Product Not Found | Glassophite" };
+    return { title: "Product Not Found" };
   }
 
-  const title = `${product.title} | Glassophite Luxury Sunglasses`;
-  const desc = product.shortDescription || product.longDescription || "Discover luxury sunglasses by Glassophite.";
-  const imgUrl = product.variants?.[0]?.imgList?.[0]?.image || "https://www.glassophite.com/images/og-image.jpg";
+  const variant = product.variants?.[0];
+  const title = `${product.title} | Glassophite`;
+  const desc = product.shortDescription || product.longDescription || `Shop ${product.title} at Glassophite. Premium quality eyewear.`;
+  const imgUrl = variant?.imgList?.[0]?.image || "https://www.glassophite.com/images/og-image.jpg";
 
   return {
     title,
     description: desc,
+    keywords: [product.brand, ...(product.categories || []), ...(product.types || []), "luxury sunglasses", "premium eyewear"].filter(Boolean),
+    robots: { index: true, follow: true },
+    alternates: { canonical: `https://www.glassophite.com/product/${product.id}` },
     openGraph: {
       title,
       description: desc,
@@ -55,7 +59,7 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
 export default async function ProductPage({ params }: any) {
   const { productId } = await params;
   const product: any = await getProduct(productId);
-console.log("productId", productId);
+
   if (!product) {
     return (
       <main className="container mx-auto px-4 py-16 text-center">
@@ -65,32 +69,63 @@ console.log("productId", productId);
     );
   }
 
-  const productJsonLd = {
+  const variant = product.variants?.[0];
+  const allImages = product.variants?.flatMap((v: any) => v.imgList?.map((img: any) => img.image) || []) || [];
+  const uniqueImages = [...new Set(allImages)];
+
+  const offers = product.variants?.map((v: any) => ({
+    "@type": "Offer",
+    url: `https://www.glassophite.com/product/${product.id}`,
+    priceCurrency: "BDT",
+    price: v.priceAfterDiscount || 0,
+    priceValidUntil: "2027-12-31",
+    itemCondition: "https://schema.org/NewCondition",
+    availability: v.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    seller: { "@type": "Organization", "name": "Glassophite" },
+  })) || [];
+
+  const productJsonLd: Record<string, any> = {
     "@context": "https://schema.org",
     "@type": "Product",
-    "name": product.title,
-    "image": product.variants?.[0]?.imgList?.[0]?.image || "https://www.glassophite.com/images/og-image.jpg",
-    "description": product.shortDescription || product.longDescription || "Premium eyewear handcrafted for perfection.",
-    "sku": product.variants?.[0]?.productCode || `GP-${product.id}`,
-    "mpn": product.id,
-    "brand": {
-      "@type": "Brand",
-      "name": product.brand || "Glassophite",
-    },
-    "offers": {
-      "@type": "Offer",
-      "url": `https://www.glassophite.com/product/${product.id}`,
-      "priceCurrency": "BDT",
-      "price": product.variants?.[0]?.priceAfterDiscount || 0,
-      "priceValidUntil": "2027-12-31",
-      "itemCondition": "https://schema.org/NewCondition",
-      "availability": product.variants?.[0]?.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      "seller": {
-        "@type": "Organization",
-        "name": "Glassophite",
-      },
-    },
+    name: product.title,
+    image: uniqueImages.length > 0 ? uniqueImages : "https://www.glassophite.com/images/og-image.jpg",
+    description: product.shortDescription || product.longDescription || "Premium eyewear handcrafted for perfection.",
+    sku: variant?.productCode || `GP-${product.id}`,
+    mpn: product.id,
+    brand: { "@type": "Brand", name: product.brand || "Glassophite" },
+    category: product.categories?.[0] || "Eyewear",
+    offers: offers.length === 1 ? offers[0] : offers,
   };
+
+  if (product.material) productJsonLd.material = product.material;
+  if (product.color) productJsonLd.color = product.color;
+
+  if (product.averageRating && product.totalReviews) {
+    productJsonLd.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: product.averageRating,
+      reviewCount: product.totalReviews,
+      bestRating: 5,
+      worstRating: 1,
+    };
+  }
+
+  if (product.reviews?.length) {
+    productJsonLd.review = product.reviews.map((r: any) => ({
+      "@type": "Review",
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: r.rating,
+        bestRating: 5,
+      },
+      author: {
+        "@type": "Person",
+        name: r.name || r.user?.fullName || "Verified Customer",
+      },
+      datePublished: r.date || r.createdAt,
+      reviewBody: r.comment,
+    }));
+  }
 
   return (
     <main className="container mx-auto px-4 py-8">

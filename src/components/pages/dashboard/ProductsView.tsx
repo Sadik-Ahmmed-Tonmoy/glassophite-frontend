@@ -304,7 +304,7 @@ export default function ProductsView() {
     setEditingVariantIndex(null);
     setEditingVariantId(null);
     setVarTitle("");
-    setVarColor("#232323");
+    setVarColor("");
     setVarMainPrice("");
     setVarDiscountPercent("0");
     setVarQuantity("");

@@ -50,6 +50,7 @@ export default function ProductFilterPage() {
     colors: searchParams.get("colors")?.split(",").filter(Boolean) || [],
     ratings: searchParams.get("ratings")?.split(",").map(Number).filter(Boolean) || [],
     inStock: searchParams.get("inStock") === "true" ? true : null,
+    search: searchParams.get("search") || searchParams.get("q") || "",
   }
 
   const [filters, setFilters] = useState<FilterState>(initialFilters)
@@ -87,6 +88,7 @@ export default function ProductFilterPage() {
     isBestSeller: isBestSellerSelected ? true : undefined,
     isFeatured: isFeaturedSelected ? true : undefined,
     isTrending: isTrendingSelected ? true : undefined,
+    search: filters.search || undefined,
   })
 
   const { data: filterOptionsData } = useGetFilterOptionsQuery(undefined)
@@ -218,6 +220,7 @@ export default function ProductFilterPage() {
     const colors = searchParams.get("colors")?.split(",").filter(Boolean) || []
     const ratings = searchParams.get("ratings")?.split(",").map(Number).filter(Boolean) || []
     const inStock = searchParams.get("inStock") === "true" ? true : searchParams.get("inStock") === "false" ? false : null
+    const search = searchParams.get("search") || searchParams.get("q") || ""
 
     setFilters((prev) => {
       if (prev.priceRange[0] === minP && prev.priceRange[1] === maxP &&
@@ -228,9 +231,9 @@ export default function ProductFilterPage() {
         prev.frameTypes.length === frameTypes.length && prev.frameTypes.every((v, i) => v === frameTypes[i]) &&
         prev.lensTypes.length === lensTypes.length && prev.lensTypes.every((v, i) => v === lensTypes[i]) &&
         prev.colors.length === colors.length && prev.colors.every((v, i) => v === colors[i]) &&
-        prev.ratings.length === ratings.length && prev.ratings.every((v, i) => v === ratings[i]) && prev.inStock === inStock
+        prev.ratings.length === ratings.length && prev.ratings.every((v, i) => v === ratings[i]) && prev.inStock === inStock && prev.search === search
       ) return prev
-      return { priceRange: [minP, maxP], categories, subCategories, types, saleOnly, brands, frameTypes, lensTypes, colors, ratings, inStock }
+      return { priceRange: [minP, maxP], categories, subCategories, types, saleOnly, brands, frameTypes, lensTypes, colors, ratings, inStock, search }
     })
 
     const sort = (searchParams.get("sort") as SortOption) || "featured"
@@ -243,13 +246,6 @@ export default function ProductFilterPage() {
 
   useEffect(() => {
     const params = new URLSearchParams()
-
-    // ── Preserve pass-through params the filter state doesn't manage ──
-    const passThrough = ["search", "q"]
-    passThrough.forEach((key) => {
-      const val = searchParams.get(key)
-      if (val) params.set(key, val)
-    })
 
     const updateParam = (key: string, value: string | null) => {
       if (value) params.set(key, value)
@@ -267,6 +263,7 @@ export default function ProductFilterPage() {
     updateParam("colors", filters.colors.length > 0 ? filters.colors.join(",") : null)
     updateParam("ratings", filters.ratings.length > 0 ? filters.ratings.join(",") : null)
     updateParam("inStock", filters.inStock !== null ? filters.inStock.toString() : null)
+    updateParam("search", filters.search || null)
     updateParam("sort", sortOption !== "featured" ? sortOption : null)
     updateParam("page", currentPage > 1 ? currentPage.toString() : null)
     updateParam("limit", productsPerPage !== 12 ? productsPerPage.toString() : null)
@@ -303,11 +300,11 @@ export default function ProductFilterPage() {
   }
 
   const clearAllFilters = () => {
-    setFilters({ priceRange: [0, 5000], categories: [], subCategories: [], types: [], saleOnly: false, brands: [], frameTypes: [], lensTypes: [], colors: [], ratings: [], inStock: null })
+    setFilters({ priceRange: [0, 5000], categories: [], subCategories: [], types: [], saleOnly: false, brands: [], frameTypes: [], lensTypes: [], colors: [], ratings: [], inStock: null, search: "" })
     setSortOption("featured")
     setCurrentPage(1)
     const params = new URLSearchParams(searchParams.toString())
-    const managedKeys = ["minPrice", "maxPrice", "category", "subCategory", "type", "sale", "brand", "brands", "frameTypes", "lensTypes", "colors", "ratings", "inStock", "sort", "page", "limit"]
+    const managedKeys = ["minPrice", "maxPrice", "category", "subCategory", "type", "sale", "brand", "brands", "frameTypes", "lensTypes", "colors", "ratings", "inStock", "search", "sort", "page", "limit"]
     managedKeys.forEach((key) => params.delete(key))
     const newSearch = params.toString()
     router.push(newSearch ? `${pathname}?${newSearch}` : pathname, { scroll: false })
@@ -319,6 +316,7 @@ export default function ProductFilterPage() {
       if (filterType === "priceRange") n.priceRange = [0, 5000]
       else if (filterType === "inStock") n.inStock = null
       else if (filterType === "saleOnly") n.saleOnly = false
+      else if (filterType === "search") n.search = ""
       else if (Array.isArray(n[filterType])) {
         const mappedValue = filterType === "categories" ? normalizeCategoryForDB(value) : value
         n[filterType] = (n[filterType] as any[]).filter((i) => i !== mappedValue) as any
@@ -336,7 +334,7 @@ export default function ProductFilterPage() {
 
   const hasActiveFilters = () => filters.brands.length > 0 || filters.categories.length > 0 || filters.subCategories.length > 0 || filters.types.length > 0 || filters.saleOnly ||
     filters.frameTypes.length > 0 || filters.lensTypes.length > 0 || filters.colors.length > 0 ||
-    filters.ratings.length > 0 || filters.inStock !== null || filters.priceRange[0] > 0 || filters.priceRange[1] < 5000
+    filters.ratings.length > 0 || filters.inStock !== null || filters.priceRange[0] > 0 || filters.priceRange[1] < 5000 || !!filters.search
 
   const getActiveFilterCount = () => {
     let c = 0
@@ -344,6 +342,7 @@ export default function ProductFilterPage() {
     if (filters.saleOnly) c++
     if (filters.inStock !== null) c++
     if (filters.priceRange[0] > 0 || filters.priceRange[1] < 5000) c++
+    if (filters.search) c++
     return c
   }
 
@@ -443,6 +442,7 @@ export default function ProductFilterPage() {
           {hasActiveFilters() && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }} className="flex lg:hidden flex-wrap items-center gap-2 py-4">
               <span className={`text-sm ${s.textMutedLighter}`} data-translate="filter.active">Active filters:</span>
+              {filters.search && <ActiveFilterBtn onClick={() => removeFilter("search", null)} s={s}>"{filters.search}"</ActiveFilterBtn>}
               {filters.brands.map((b) => <ActiveFilterBtn key={b} onClick={() => removeFilter("brands", b)} s={s}>{b}</ActiveFilterBtn>)}
               {filters.categories.map((c) => <ActiveFilterBtn key={c} onClick={() => removeFilter("categories", c)} s={s}>{normalizeCategoryForUI(c)}</ActiveFilterBtn>)}
               {filters.subCategories.map((sc) => <ActiveFilterBtn key={sc} onClick={() => removeFilter("subCategories", sc)} s={s}>{sc}</ActiveFilterBtn>)}

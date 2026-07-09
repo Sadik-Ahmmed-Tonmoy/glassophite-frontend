@@ -12,6 +12,7 @@ export type FilterState = {
   colors: string[]
   ratings: number[]
   inStock: boolean | null
+  search: string
 }
 
 export type FilterOptionCounts = {

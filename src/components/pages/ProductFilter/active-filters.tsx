@@ -86,6 +86,7 @@ export default function ActiveFilters({
       </h3>
       <div className="flex flex-wrap gap-2">
         <AnimatePresence>
+          
           {/* Price Range */}
           {(filters.priceRange[0] > minPrice || filters.priceRange[1] < maxPrice) && (
             <motion.div
@@ -105,6 +106,30 @@ export default function ActiveFilters({
                 className={`ml-1 inline-flex h-6 w-6 flex-shrink-0 rounded-full p-1 ${styles.removeButton} transition-colors`}
                 onClick={() => removeFilter("priceRange", null)}
                 aria-label="Remove price filter"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </motion.div>
+          )}
+
+          {/* Search */}
+          {filters.search && (
+            <motion.div
+              className={`inline-flex items-center rounded-full border ${styles.chipBorder} ${styles.chipBg} py-1.5 pl-3 pr-2 text-sm font-medium ${styles.chipText}`}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+              layout
+            >
+              <span>
+                <span className="sr-only">Search:</span> &ldquo;{filters.search}&rdquo;
+              </span>
+              <button
+                type="button"
+                className={`ml-1 inline-flex h-6 w-6 flex-shrink-0 rounded-full p-1 ${styles.removeButton} transition-colors`}
+                onClick={() => removeFilter("search", null)}
+                aria-label="Remove search filter"
               >
                 <X className="h-4 w-4" />
               </button>

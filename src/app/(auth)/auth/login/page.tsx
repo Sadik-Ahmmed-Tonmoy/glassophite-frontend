@@ -2,6 +2,7 @@ import { BackgroundBeams } from "@/components/ui/background-beams";
 import { LoginWithEmail } from "../../../../components/pages/auth/LoginWithEmail";
 import { HeroHighlight } from "@/components/ui/hero-highlight";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Login",
@@ -12,7 +13,9 @@ const LoginPage = () => {
   return (
     <div className="h-full w-full">
       <HeroHighlight>
-        <LoginWithEmail />
+        <Suspense fallback={<div className="text-white">Loading login form...</div>}>
+          <LoginWithEmail />
+        </Suspense>
         <BackgroundBeams />
       </HeroHighlight>
     </div>

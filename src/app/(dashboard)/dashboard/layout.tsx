@@ -19,7 +19,8 @@ import {
   Store,
   Menu,
   ClipboardList,
-  HelpCircle
+  HelpCircle,
+  Glasses
 } from "lucide-react";
 import NotificationBell from "@/components/pages/dashboard/NotificationBell";
 import AuthGuard from "@/components/shared/AuthGuard";
@@ -51,6 +52,7 @@ function DashboardContent({ children }: { children: ReactNode }) {
     { label: "Reviews Moderation", href: "/dashboard/reviews", icon: Star },
     { label: "FAQ Moderation", href: "/dashboard/faqs", icon: HelpCircle },
     { label: "Support Tickets", href: "/dashboard/support", icon: MessageSquare },
+    { label: "Prescription Lenses", href: "/dashboard/prescription-lenses", icon: Glasses },
     { label: "Staff Directory", href: "/dashboard/staff", icon: Shield },
     { label: "Navbar Menus", href: "/dashboard/navigation", icon: Menu },
     { label: "Store Settings", href: "/dashboard/settings", icon: Settings },

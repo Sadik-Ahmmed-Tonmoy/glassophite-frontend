@@ -23,6 +23,7 @@ import { useGetDeliverySettingsQuery } from "@/redux/features/order/orderApi";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { setCoupon } from "@/redux/features/checkout/checkoutSlice";
 import { toast } from "sonner";
+import { useCurrentToken } from "@/redux/features/auth/authSlice";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ interface CartDrawerProps {
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, totalPrice, totalItems, updateItemQuantity } = useCart()
   const router = useRouter()
+  const token = useAppSelector(useCurrentToken)
 
   const isApiPending = useAppSelector((state) => {
     const queries = state.baseApi.queries;
@@ -77,6 +79,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       toast.warning("Cart quantity adjusted", {
         description: "Some items in your cart exceeded the available stock and have been adjusted to the maximum available quantity.",
       })
+      return
+    }
+
+    if (!token) {
+      onClose()
+      toast.info("Please login to proceed to checkout")
+      router.push(`/auth/login?redirect=${encodeURIComponent("/checkout?step=1")}`)
       return
     }
 

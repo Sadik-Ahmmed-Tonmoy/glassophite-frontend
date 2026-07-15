@@ -10,6 +10,7 @@ import {
   useRemoveFromCartMutation,
   useClearCartMutation,
 } from "@/redux/features/cart/cartApi";
+import { useGetPrescriptionLensesQuery } from "@/redux/features/lens/lensApi"
 import { toast } from "sonner";
 
 export interface CartItem {
@@ -28,6 +29,9 @@ export interface CartItem {
   productId?: string
   variantId?: string
   selectedColor?: string
+  lensPowerDetails?: { lensType: string; leftEye: string; rightEye: string } | null
+  lensId?: string | null
+  lens?: any
 }
 
 interface CartContextType {
@@ -37,6 +41,7 @@ interface CartContextType {
   addItem: (item: CartItem) => void
   removeItem: (id: string) => void
   updateItemQuantity: (id: string | number, quantity: number) => void
+  updateItemPrescription: (id: string, lensPowerDetails: { lensType: string; leftEye: string; rightEye: string } | null, lensId?: string | null) => void
   clearCart: () => void
   recentlyViewed: CartItem[]
   addToRecentlyViewed: (item: CartItem) => void
@@ -61,6 +66,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false)
   const [recentlyViewed, setRecentlyViewed] = useState<CartItem[]>([])
   const [savedItems, setSavedItems] = useState<CartItem[]>([])
+
+  const { data: lensesData } = useGetPrescriptionLensesQuery(undefined, { skip: !mounted })
+  const lenses = lensesData?.data || []
 
   // Initialize cart from localStorage (only runs for guests or initial mount)
   useEffect(() => {
@@ -89,6 +97,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           qty = maxQty;
           adjustments.push({ itemId: backendItem.id, quantity: maxQty });
         }
+        const lensPrice = backendItem.lens?.price || 0;
         return {
           id: backendItem.id,
           productId: backendItem.productId,
@@ -96,13 +105,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
           name: backendItem.product?.title || "Unnamed Frame",
           brand: backendItem.product?.brand || "Glassophite",
           size: backendItem.product?.dimensions || "Standard",
-          price: variant?.priceAfterDiscount || variant?.mainPrice || 0,
-          discountPrice: variant?.priceAfterDiscount,
+          price: (variant?.priceAfterDiscount || variant?.mainPrice || 0) + lensPrice,
+          discountPrice: variant?.priceAfterDiscount ? (variant.priceAfterDiscount + lensPrice) : undefined,
           image: variant?.imgList?.[0]?.image || backendItem.product?.variants?.[0]?.imgList?.[0]?.image || "/placeholder.svg",
           quantity: qty,
           maxQuantity: maxQty,
           color: backendItem.color || variant?.color,
           colorName: backendItem.colorName || variant?.title,
+          lensPowerDetails: backendItem.lensPowerDetails || null,
+          lensId: backendItem.lensId || null,
+          lens: backendItem.lens || null,
         };
       });
       setItems(mappedItems);
@@ -148,6 +160,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
                   quantity: item.quantity,
                   color: item.color,
                   colorName: item.colorName,
+                  lensPowerDetails: item.lensPowerDetails,
+                  lensId: item.lensId || undefined,
                 }).unwrap();
               }
               // Clear guest cart once synced
@@ -225,6 +239,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
           quantity: newItem.quantity,
           color: newItem.color,
           colorName: newItem.colorName,
+          lensPowerDetails: newItem.lensPowerDetails,
+          lensId: newItem.lensId || undefined,
         }).unwrap();
       } catch (error) {
         const err = error as { data?: { message?: string } };
@@ -236,7 +252,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } else {
       setItems((prevItems) => {
         const existingItemIndex = prevItems.findIndex(
-          (item) => item.productId === newItem.productId && item.variantId === newItem.variantId
+          (item) =>
+            item.productId === newItem.productId &&
+            item.variantId === newItem.variantId &&
+            item.lensId === newItem.lensId &&
+            JSON.stringify(item.lensPowerDetails) === JSON.stringify(newItem.lensPowerDetails)
         );
 
         if (existingItemIndex >= 0) {
@@ -304,6 +324,46 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const updateItemPrescription = async (
+    id: string,
+    lensPowerDetails: { lensType: string; leftEye: string; rightEye: string } | null,
+    lensId: string | null = null
+  ) => {
+    if (token) {
+      const previousItems = [...items];
+      setItems((prevItems) =>
+        prevItems.map((item) => (item.id === id ? { ...item, lensPowerDetails, lensId } : item))
+      );
+      try {
+        await apiUpdateCartItem({ itemId: id, lensPowerDetails, lensId }).unwrap();
+      } catch (error) {
+        const err = error as { data?: { message?: string } };
+        setItems(previousItems);
+        toast.error("Failed to update prescription", {
+          description: err?.data?.message || "Something went wrong.",
+        });
+      }
+    } else {
+      setItems((prevItems) =>
+        prevItems.map((item) => {
+          if (item.id === id) {
+            const oldLensPrice = lenses.find((l: any) => l.id === item.lensId)?.price || 0;
+            const newLensPrice = lenses.find((l: any) => l.id === lensId)?.price || 0;
+            const priceDiff = newLensPrice - oldLensPrice;
+            return {
+              ...item,
+              lensPowerDetails,
+              lensId,
+              price: item.price + priceDiff,
+              discountPrice: item.discountPrice ? item.discountPrice + priceDiff : undefined,
+            };
+          }
+          return item;
+        })
+      );
+    }
+  }
+
   const clearCart = async () => {
     if (token) {
       try {
@@ -344,6 +404,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         addItem,
         removeItem,
         updateItemQuantity,
+        updateItemPrescription,
         clearCart,
         recentlyViewed,
         addToRecentlyViewed,

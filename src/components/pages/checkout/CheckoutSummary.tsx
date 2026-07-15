@@ -187,11 +187,15 @@ export default function CheckoutSummary({
                         {item.quantity}
                       </p>
                     </div>
-                    <div className={`text-sm font-medium ${styles.text}`}>
-                      $
-                      {(
-                        (item.discountPrice || item.price) * item.quantity
-                      ).toFixed(2)}
+                    <div className="text-right">
+                      <div className={`text-sm font-medium ${styles.text}`}>
+                        ৳{((item.discountPrice || item.price) * item.quantity).toFixed(2)}
+                      </div>
+                      {item.lensId && (item.lens?.price || 0) > 0 && (
+                        <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                          (Frame: ৳{((item.discountPrice || item.price) - (item.lens?.price || 0)).toFixed(2)} + Lens: ৳{(item.lens?.price || 0).toFixed(2)})
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 ))}

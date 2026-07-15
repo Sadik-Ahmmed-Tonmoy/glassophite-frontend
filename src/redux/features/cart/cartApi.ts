@@ -7,7 +7,7 @@ const cartApi = baseApi.injectEndpoints({
       providesTags: ["cart"],
     }),
     addToCart: builder.mutation({
-      query: (body: { productId: string; variantId?: string; quantity: number; color?: string; colorName?: string }) => ({
+      query: (body: { productId: string; variantId?: string; quantity: number; color?: string; colorName?: string; lensPowerDetails?: any; lensId?: string }) => ({
         url: "cart/add",
         method: "POST",
         body,
@@ -15,10 +15,10 @@ const cartApi = baseApi.injectEndpoints({
       invalidatesTags: ["cart"],
     }),
     updateCartItem: builder.mutation({
-      query: ({ itemId, quantity }: { itemId: string; quantity: number }) => ({
+      query: ({ itemId, quantity, lensPowerDetails, lensId }: { itemId: string; quantity?: number; lensPowerDetails?: any; lensId?: string | null }) => ({
         url: `cart/${itemId}`,
         method: "PATCH",
-        body: { quantity },
+        body: { quantity, lensPowerDetails, lensId },
       }),
       invalidatesTags: ["cart"],
     }),

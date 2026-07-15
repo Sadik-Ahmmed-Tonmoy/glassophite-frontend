@@ -19,7 +19,7 @@ import { useLoginMutation } from "@/redux/features/auth/authApi";
 import { useAppDispatch } from "@/redux/hooks";
 import { setUser } from "@/redux/features/auth/authSlice";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const validationSchema = z.object({
   email: z
@@ -40,6 +40,8 @@ export function LoginWithEmail() {
   const [login, { isLoading }] = useLoginMutation();
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/";
 
   const handleSubmit = async (data: FieldValues) => {
     try {
@@ -61,10 +63,10 @@ export function LoginWithEmail() {
           refresh_token: res.data.refreshToken,
         }));
         toast.success("Welcome back!");
-        router.push("/");
+        router.push(redirect);
       } else {
         toast.info("Please verify your email first");
-        router.push(`/auth/verify-otp?email=${data.email}&purpose=EMAIL_VERIFICATION`);
+        router.push(`/auth/verify-otp?email=${data.email}&purpose=EMAIL_VERIFICATION&redirect=${encodeURIComponent(redirect)}`);
       }
     } catch (err: any) {
       toast.error(err?.data?.message || err?.message || "Something went wrong");
@@ -79,6 +81,11 @@ export function LoginWithEmail() {
       <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200 text-center">
         Welcome to Glassophite
       </h2>
+      {redirect && redirect.includes("checkout") && (
+        <div className="mt-3 p-3 bg-[#007C74]/10 dark:bg-[#007C74]/20 border border-[#007C74]/30 rounded-lg text-[#007C74] text-center text-xs font-semibold">
+          Please login to complete your order checkout
+        </div>
+      )}
       <div className=" flex justify-center items-center px-4">
         <div className="text-neutral-600 text-sm mt-2 dark:text-neutral-300 text-center">
           Are you{" "}

@@ -84,6 +84,7 @@ export const baseApi = createApi({
     "stockRequest",
     "addresses",
     "faqs", "faq",
+    "lenses", "lens",
     "notifications",
     "supportTickets",
     "supportTicket",

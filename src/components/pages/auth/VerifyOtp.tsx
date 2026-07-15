@@ -31,6 +31,7 @@ export function VerifyOtp() {
 
   const email = searchParams.get("email") || "";
   const purpose = (searchParams.get("purpose") as "EMAIL_VERIFICATION" | "PASSWORD_RESET") || "EMAIL_VERIFICATION";
+  const redirect = searchParams.get("redirect") || "/";
 
   const handleSubmit = async (data: FieldValues) => {
     if (!email) {
@@ -58,7 +59,7 @@ export function VerifyOtp() {
           refresh_token: res.data.refreshToken,
         }));
         toast.success("Email verified! Welcome to Glassophite.");
-        router.push("/");
+        router.push(redirect);
       } else {
         toast.success("Code verified! Please set a new password.");
         router.push(`/auth/reset-password?email=${email}&token=${res.data.resetPasswordToken}`);
@@ -104,6 +105,11 @@ export function VerifyOtp() {
       <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200 text-center">
         Verify Your Email
       </h2>
+      {redirect && redirect.includes("checkout") && (
+        <div className="mt-3 p-3 bg-[#007C74]/10 dark:bg-[#007C74]/20 border border-[#007C74]/30 rounded-lg text-[#007C74] text-center text-xs font-semibold">
+          Please verify your email to complete checkout
+        </div>
+      )}
       <p className="text-neutral-600 text-sm mt-2 dark:text-neutral-400 text-center max-w-sm mx-auto">
         We sent a 6-digit code to <strong className="text-[#00a76b]">{email}</strong>
       </p>

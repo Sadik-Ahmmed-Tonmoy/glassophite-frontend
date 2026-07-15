@@ -23,9 +23,11 @@ interface AddToCartButtonProps {
   productId?: string
   cartQuantity?: number
   className?: string
+  lensPowerDetails?: { lensType: string; leftEye: string; rightEye: string } | null
+  lensId?: string | null
 }
 
-const AddToCartButton = ({ product, productId, cartQuantity, className }: AddToCartButtonProps) => {
+const AddToCartButton = ({ product, productId, cartQuantity, className, lensPowerDetails, lensId }: AddToCartButtonProps) => {
   const { addItem, items } = useCart()
   const [isAdded, setIsAdded] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
@@ -39,7 +41,11 @@ const AddToCartButton = ({ product, productId, cartQuantity, className }: AddToC
     }
 
     const currentCartItem = items.find(
-      (item) => item.productId === productId && item.variantId === product.id
+      (item) =>
+        item.productId === productId &&
+        item.variantId === product.id &&
+        item.lensId === lensId &&
+        JSON.stringify(item.lensPowerDetails) === JSON.stringify(lensPowerDetails)
     )
     const currentQtyInCart = currentCartItem ? currentCartItem.quantity : 0
     const qtyToAdd = cartQuantity || 1
@@ -54,7 +60,7 @@ const AddToCartButton = ({ product, productId, cartQuantity, className }: AddToC
     setIsAdding(true)
 
     const cartItem = {
-      id: product.id || `product-${Date.now()}`, // Fallback ID if none provided
+      id: `${product.id}-${lensId || "none"}-${lensPowerDetails ? JSON.stringify(lensPowerDetails) : "none"}`,
       productId: productId || "",
       variantId: product.id,
       name: product.title || "Unnamed Product",
@@ -67,6 +73,8 @@ const AddToCartButton = ({ product, productId, cartQuantity, className }: AddToC
       maxQuantity: product.quantity || 0,
       color: product.color,
       colorName: product.colorName || "Default",
+      lensPowerDetails,
+      lensId,
     }
 
     try {

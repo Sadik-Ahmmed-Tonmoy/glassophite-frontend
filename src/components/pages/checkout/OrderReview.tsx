@@ -170,6 +170,11 @@ export default function OrderReview({
                   {item.size && <span> • <span data-translate="review.size">Size:</span> {item.size}</span>}
                   {` • <span data-translate="review.qty">Qty:</span> ${item.quantity}`}
                 </p>
+                {item.lensPowerDetails && (
+                  <p className="text-[11px] text-[#007C74] mt-1 font-medium flex items-center">
+                    <span className="mr-1">👓</span> Lens: {item.lensPowerDetails.lensType} (Left: {item.lensPowerDetails.leftEye} | Right: {item.lensPowerDetails.rightEye})
+                  </p>
+                )}
               </div>
               <div className="text-right">
                 <p className={`text-sm font-medium ${styles.text}`}>
@@ -179,6 +184,12 @@ export default function OrderReview({
                   <p className={`text-xs ${styles.textMutedLighter} line-through`}>
                     ৳{(item.price * item.quantity).toFixed(2)}
                   </p>
+                )}
+                {item.lensId && (item.lens?.price || 0) > 0 && (
+                  <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+                    <div>Frame: ৳{((item.discountPrice || item.price) - (item.lens?.price || 0)).toFixed(2)}</div>
+                    <div>Lens: ৳{(item.lens?.price || 0).toFixed(2)}</div>
+                  </div>
                 )}
               </div>
             </motion.div>

@@ -171,6 +171,8 @@ export default function ProductsView() {
   const [countryOfOrigin, setCountryOfOrigin] = useState("France");
   const [targetAudience, setTargetAudience] = useState("Unisex, Luxury Seekers");
   const [careInstructions, setCareInstructions] = useState("Clean lenses with a microfiber cloth.");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [showPrescriptionLenses, setShowPrescriptionLenses] = useState(true);
   const [isFeatured, setIsFeatured] = useState(false);
   const [isNewArrival, setIsNewArrival] = useState(false);
   const [isBestSeller, setIsBestSeller] = useState(false);
@@ -249,6 +251,8 @@ export default function ProductsView() {
     setCountryOfOrigin("France");
     setTargetAudience("Unisex, Luxury Seekers");
     setCareInstructions("Store in a protective case. Clean lenses with a microfiber cloth.");
+    setVideoUrl("");
+    setShowPrescriptionLenses(true);
     setIsFeatured(false);
     setIsNewArrival(false);
     setIsBestSeller(false);
@@ -286,6 +290,8 @@ export default function ProductsView() {
     setCountryOfOrigin(p.countryOfOrigin || "France");
     setTargetAudience(p.targetAudience || "Unisex");
     setCareInstructions(p.careInstructions || "Clean lenses with a microfiber cloth.");
+    setVideoUrl(p.videoUrl || "");
+    setShowPrescriptionLenses(p.showPrescriptionLenses !== false);
     setIsFeatured(!!p.isFeatured);
     setIsNewArrival(!!p.isNewArrival);
     setIsBestSeller(!!p.isBestSeller);
@@ -532,7 +538,7 @@ export default function ProductsView() {
         types: types.length > 0 ? types : undefined, shortDescription, longDescription,
         material, dimensions, weight, shippingInfo, frameType,
         lensType, warranty, countryOfOrigin, targetAudience,
-        careInstructions, isFeatured, isNewArrival, isBestSeller, isTrending,
+        careInstructions, videoUrl: videoUrl || null, showPrescriptionLenses, isFeatured, isNewArrival, isBestSeller, isTrending,
         salePercentage: Number(salePercentage) || 0,
       };
 
@@ -1010,7 +1016,7 @@ export default function ProductsView() {
                           Best Seller
                         </label>
                       </div>
-                      <div className="flex items-center h-9 gap-2">
+                       <div className="flex items-center h-9 gap-2">
                         <input
                           id="prod_trending"
                           type="checkbox"
@@ -1020,6 +1026,18 @@ export default function ProductsView() {
                         />
                         <label htmlFor="prod_trending" className="font-bold text-foreground cursor-pointer">
                           Trending
+                        </label>
+                      </div>
+                      <div className="flex items-center h-9 gap-2">
+                        <input
+                          id="prod_show_prescription"
+                          type="checkbox"
+                          checked={showPrescriptionLenses}
+                          onChange={(e) => setShowPrescriptionLenses(e.target.checked)}
+                          className="w-4 h-4 rounded border border-border accent-primary cursor-pointer"
+                        />
+                        <label htmlFor="prod_show_prescription" className="font-bold text-foreground cursor-pointer">
+                          Enable Custom Prescription Lenses
                         </label>
                       </div>
                     </div>
@@ -1103,6 +1121,17 @@ export default function ProductsView() {
                   <div className="space-y-1">
                     <label className="font-bold text-muted-foreground">Care Instructions</label>
                     <input value={careInstructions} onChange={(e) => setCareInstructions(e.target.value)} className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-muted-foreground">YouTube Video URL (Optional)</label>
+                    <input
+                      type="text"
+                      value={videoUrl}
+                      onChange={(e) => setVideoUrl(e.target.value)}
+                      placeholder="e.g. https://www.youtube.com/watch?v=..."
+                      className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
                   </div>
                 </form>
               </div>

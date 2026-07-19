@@ -79,6 +79,8 @@ export type TProduct = {
   averageRating?: number;
   totalReviews?: number;
   status?: "ACTIVE" | "INACTIVE" | "ARCHIVED";
+  videoUrl?: string;
+  showPrescriptionLenses?: boolean;
   variants: TVariant[];
   reviews?: TReview[];
   createdAt?: string;

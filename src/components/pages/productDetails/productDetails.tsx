@@ -21,6 +21,16 @@ import ProductReview from "./ProductReview";
 import SimilarProducts from "./SimilarProducts/SimilarProducts";
 import VariantSelector from "./VariantSelector";
 
+const getYoutubeEmbedUrl = (url?: string) => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  if (match && match[2].length === 11) {
+    return `https://www.youtube.com/embed/${match[2]}`;
+  }
+  return null;
+};
+
 interface ProductDetailsProps {
   product: TProduct;
 }
@@ -261,124 +271,126 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           />
 
           {/* Glowing Power Glass Flow Configuration Section */}
-          <div className={`p-5 rounded-xl border backdrop-blur-md transition-all duration-300 ${
-            addPowerGlass 
-              ? "border-[#007C74] bg-[#007C74]/5 shadow-[0_0_20px_rgba(0,124,116,0.15)] dark:shadow-[0_0_25px_rgba(0,124,116,0.25)]" 
-              : `${styles.border} bg-transparent hover:border-neutral-300 dark:hover:border-neutral-700`
-          }`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <span className="text-xl">👓</span>
-                <div>
-                  <h3 className={`font-semibold text-base ${styles.text}`}>Custom Prescription Lenses</h3>
-                  <p className={`text-xs ${styles.textMutedLighter}`}>Configure custom power glass for your optical frames</p>
-                </div>
-              </div>
-              
-              {/* Glowing Toggle switch button */}
-              <button
-                type="button"
-                onClick={() => setAddPowerGlass(!addPowerGlass)}
-                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none ${
-                  addPowerGlass 
-                    ? "bg-[#007C74] shadow-[0_0_10px_#007C74]" 
-                    : "bg-neutral-300 dark:bg-neutral-700"
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-300 ease-in-out ${
-                    addPowerGlass ? "translate-x-5" : "translate-x-0"
-                  }`}
-                />
-              </button>
-            </div>
-
-            {addPowerGlass && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                transition={{ duration: 0.3 }}
-                className="mt-5 pt-5 border-t border-neutral-200 dark:border-neutral-800 space-y-5"
-              >
-                {/* Lens Protection Type selection */}
-                <div>
-                  <label className={`block text-xs font-semibold uppercase tracking-wider ${styles.textMutedLighter} mb-3`}>
-                    1. Select Lens Protection Type
-                  </label>
-                  {isLensesLoading ? (
-                    <div className="text-xs text-[#007C74] animate-pulse">Loading prescription lens options...</div>
-                  ) : lenses.length === 0 ? (
-                    <div className="text-xs text-red-500">No prescription lenses available at the moment.</div>
-                  ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                      {lenses.map((opt) => {
-                        const isSelected = selectedLensId === opt.id;
-                        return (
-                          <button
-                            key={opt.id}
-                            type="button"
-                            onClick={() => setSelectedLensId(opt.id)}
-                            className={`flex flex-col items-start p-3 rounded-lg border text-left transition-all duration-200 cursor-pointer ${
-                              isSelected
-                                ? "border-[#007C74] bg-[#007C74]/10 dark:bg-[#007C74]/20 ring-1 ring-[#007C74]"
-                                : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/50"
-                            }`}
-                          >
-                            <span className="text-lg mb-1">🔍</span>
-                            <span className={`text-xs font-bold ${styles.text}`}>{opt.name}</span>
-                            {opt.description && (
-                              <span className={`text-[10px] ${styles.textMutedLighter} line-clamp-1 mt-0.5`}>{opt.description}</span>
-                            )}
-                            <span className="text-xs font-semibold text-[#007C74] mt-1.5">+ ৳{opt.price.toFixed(2)}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* Left/Right SPH Power dropdowns */}
-                <div>
-                  <label className={`block text-xs font-semibold uppercase tracking-wider ${styles.textMutedLighter} mb-3`}>
-                    2. Input Lens Power (SPH)
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Left Eye */}
-                    <div className="space-y-1.5">
-                      <span className={`text-xs font-medium ${styles.textMuted} flex items-center`}>
-                        <span className="w-2 h-2 rounded-full bg-blue-500 mr-1.5" /> Left Eye (OS / Left Power)
-                      </span>
-                      <select
-                        value={leftEyePower}
-                        onChange={(e) => setLeftEyePower(e.target.value)}
-                        className={`w-full p-2.5 rounded-lg border text-sm bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 ${styles.border} focus:ring-1 focus:ring-[#007C74] outline-none cursor-pointer`}
-                      >
-                        {powerOptions.map((opt) => (
-                          <option key={`left-${opt}`} value={opt}>{opt}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Right Eye */}
-                    <div className="space-y-1.5">
-                      <span className={`text-xs font-medium ${styles.textMuted} flex items-center`}>
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5" /> Right Eye (OD / Right Power)
-                      </span>
-                      <select
-                        value={rightEyePower}
-                        onChange={(e) => setRightEyePower(e.target.value)}
-                        className={`w-full p-2.5 rounded-lg border text-sm bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 ${styles.border} focus:ring-1 focus:ring-[#007C74] outline-none cursor-pointer`}
-                      >
-                        {powerOptions.map((opt) => (
-                          <option key={`right-${opt}`} value={opt}>{opt}</option>
-                        ))}
-                      </select>
-                    </div>
+          {product.showPrescriptionLenses !== false && (
+            <div className={`p-5 rounded-xl border backdrop-blur-md transition-all duration-300 ${
+              addPowerGlass 
+                ? "border-[#007C74] bg-[#007C74]/5 shadow-[0_0_20px_rgba(0,124,116,0.15)] dark:shadow-[0_0_25px_rgba(0,124,116,0.25)]" 
+                : `${styles.border} bg-transparent hover:border-neutral-300 dark:hover:border-neutral-700`
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-xl">👓</span>
+                  <div>
+                    <h3 className={`font-semibold text-base ${styles.text}`}>Custom Prescription Lenses</h3>
+                    <p className={`text-xs ${styles.textMutedLighter}`}>Configure custom power glass for your optical frames</p>
                   </div>
                 </div>
-              </motion.div>
-            )}
-          </div>
+                
+                {/* Glowing Toggle switch button */}
+                <button
+                  type="button"
+                  onClick={() => setAddPowerGlass(!addPowerGlass)}
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none ${
+                    addPowerGlass 
+                      ? "bg-[#007C74] shadow-[0_0_10px_#007C74]" 
+                      : "bg-neutral-300 dark:bg-neutral-700"
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-300 ease-in-out ${
+                      addPowerGlass ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {addPowerGlass && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  transition={{ duration: 0.3 }}
+                  className="mt-5 pt-5 border-t border-neutral-200 dark:border-neutral-800 space-y-5"
+                >
+                  {/* Lens Protection Type selection */}
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider ${styles.textMutedLighter} mb-3`}>
+                      1. Select Lens Protection Type
+                    </label>
+                    {isLensesLoading ? (
+                      <div className="text-xs text-[#007C74] animate-pulse">Loading prescription lens options...</div>
+                    ) : lenses.length === 0 ? (
+                      <div className="text-xs text-red-500">No prescription lenses available at the moment.</div>
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                        {lenses.map((opt) => {
+                          const isSelected = selectedLensId === opt.id;
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => setSelectedLensId(opt.id)}
+                              className={`flex flex-col items-start p-3 rounded-lg border text-left transition-all duration-200 cursor-pointer ${
+                                isSelected
+                                  ? "border-[#007C74] bg-[#007C74]/10 dark:bg-[#007C74]/20 ring-1 ring-[#007C74]"
+                                  : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/50"
+                              }`}
+                            >
+                              <span className="text-lg mb-1">🔍</span>
+                              <span className={`text-xs font-bold ${styles.text}`}>{opt.name}</span>
+                              {opt.description && (
+                                <span className={`text-[10px] ${styles.textMutedLighter} line-clamp-1 mt-0.5`}>{opt.description}</span>
+                              )}
+                              <span className="text-xs font-semibold text-[#007C74] mt-1.5">+ ৳{opt.price.toFixed(2)}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Left/Right SPH Power dropdowns */}
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider ${styles.textMutedLighter} mb-3`}>
+                      2. Input Lens Power (SPH)
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Left Eye */}
+                      <div className="space-y-1.5">
+                        <span className={`text-xs font-medium ${styles.textMuted} flex items-center`}>
+                          <span className="w-2 h-2 rounded-full bg-blue-500 mr-1.5" /> Left Eye (OS / Left Power)
+                        </span>
+                        <select
+                          value={leftEyePower}
+                          onChange={(e) => setLeftEyePower(e.target.value)}
+                          className={`w-full p-2.5 rounded-lg border text-sm bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 ${styles.border} focus:ring-1 focus:ring-[#007C74] outline-none cursor-pointer`}
+                        >
+                          {powerOptions.map((opt) => (
+                            <option key={`left-${opt}`} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Right Eye */}
+                      <div className="space-y-1.5">
+                        <span className={`text-xs font-medium ${styles.textMuted} flex items-center`}>
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5" /> Right Eye (OD / Right Power)
+                        </span>
+                        <select
+                          value={rightEyePower}
+                          onChange={(e) => setRightEyePower(e.target.value)}
+                          className={`w-full p-2.5 rounded-lg border text-sm bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 ${styles.border} focus:ring-1 focus:ring-[#007C74] outline-none cursor-pointer`}
+                        >
+                          {powerOptions.map((opt) => (
+                            <option key={`right-${opt}`} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          )}
 
           {/* Quantity and Add to Cart */}
           <div>
@@ -462,7 +474,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
           {/* Tabs */}
           <Tabs defaultValue="specifications">
-            <TabsList className={`grid grid-cols-2 ${styles.border}`}>
+            <TabsList className={`grid ${product.videoUrl ? 'grid-cols-3' : 'grid-cols-2'} ${styles.border}`}>
               <TabsTrigger
                 value="specifications"
                 className={cn(styles.tabInactive, styles.tabActive)}
@@ -477,6 +489,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               >
                 Description
               </TabsTrigger>
+              {product.videoUrl && (
+                <TabsTrigger
+                  value="video"
+                  className={cn(styles.tabInactive, styles.tabActive)}
+                >
+                  Product Video
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="description" className="mt-4">
@@ -535,6 +555,28 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 <span className={styles.textMuted}>{product.careInstructions}</span>
               </div>
             </TabsContent>
+
+            {product.videoUrl && (
+              <TabsContent value="video" className="mt-4">
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg border border-neutral-200 dark:border-neutral-800">
+                  {getYoutubeEmbedUrl(product.videoUrl) ? (
+                    <iframe
+                      src={getYoutubeEmbedUrl(product.videoUrl)!}
+                      title={`${product.title} YouTube Video`}
+                      className="absolute inset-0 w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-8 bg-neutral-100 dark:bg-neutral-900/50 text-neutral-500 rounded-xl border border-neutral-200 dark:border-neutral-800">
+                      <span className="text-3xl mb-2">⚠️</span>
+                      <p className="text-sm font-semibold">Invalid Video URL</p>
+                      <p className="text-xs">The video URL provided is not a valid YouTube link.</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            )}
           </Tabs>
         </motion.div>
       </div>

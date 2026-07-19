@@ -8,36 +8,47 @@ import { Loader2 } from "lucide-react";
 
 interface AddToCartButtonProps {
   product: {
-    id: string
-    title: string
-    brand?: string
-    size?: string
-    color?: string
-    colorName?: string
-    price: number
-    priceAfterDiscount?: number
-    inStock: boolean
-    quantity: number
-    img?: string
-  }
-  productId?: string
-  cartQuantity?: number
-  className?: string
-  lensPowerDetails?: { lensType: string; leftEye: string; rightEye: string } | null
-  lensId?: string | null
+    id: string;
+    title: string;
+    brand?: string;
+    size?: string;
+    color?: string;
+    colorName?: string;
+    price: number;
+    priceAfterDiscount?: number;
+    inStock: boolean;
+    quantity: number;
+    img?: string;
+  };
+  productId?: string;
+  cartQuantity?: number;
+  className?: string;
+  lensPowerDetails?: {
+    lensType: string;
+    leftEye: string;
+    rightEye: string;
+  } | null;
+  lensId?: string | null;
 }
 
-const AddToCartButton = ({ product, productId, cartQuantity, className, lensPowerDetails, lensId }: AddToCartButtonProps) => {
-  const { addItem, items } = useCart()
-  const [isAdded, setIsAdded] = useState(false)
-  const [isAdding, setIsAdding] = useState(false)
+const AddToCartButton = ({
+  product,
+  productId,
+  cartQuantity,
+  className,
+  lensPowerDetails,
+  lensId,
+}: AddToCartButtonProps) => {
+  const { addItem, items } = useCart();
+  const [isAdded, setIsAdded] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
 
   const handleAddToCart = async () => {
     if (!product.inStock || product.quantity < 1) {
       toast.error("Out of Stock", {
         description: "This product variant is currently out of stock.",
-      })
-      return
+      });
+      return;
     }
 
     const currentCartItem = items.find(
@@ -45,19 +56,20 @@ const AddToCartButton = ({ product, productId, cartQuantity, className, lensPowe
         item.productId === productId &&
         item.variantId === product.id &&
         item.lensId === lensId &&
-        JSON.stringify(item.lensPowerDetails) === JSON.stringify(lensPowerDetails)
-    )
-    const currentQtyInCart = currentCartItem ? currentCartItem.quantity : 0
-    const qtyToAdd = cartQuantity || 1
+        JSON.stringify(item.lensPowerDetails) ===
+          JSON.stringify(lensPowerDetails),
+    );
+    const currentQtyInCart = currentCartItem ? currentCartItem.quantity : 0;
+    const qtyToAdd = cartQuantity || 1;
 
     if (currentQtyInCart + qtyToAdd > product.quantity) {
       toast.error("Stock limit reached", {
         description: `Cannot add more items. You have ${currentQtyInCart} in your cart, and only ${product.quantity} are in stock.`,
-      })
-      return
+      });
+      return;
     }
 
-    setIsAdding(true)
+    setIsAdding(true);
 
     const cartItem = {
       id: `${product.id}-${lensId || "none"}-${lensPowerDetails ? JSON.stringify(lensPowerDetails) : "none"}`,
@@ -75,24 +87,24 @@ const AddToCartButton = ({ product, productId, cartQuantity, className, lensPowe
       colorName: product.colorName || "Default",
       lensPowerDetails,
       lensId,
-    }
+    };
 
     try {
-      await addItem(cartItem)
+      await addItem(cartItem);
 
       // Show toast notification
       toast.success("Added to cart", {
         description: `${product.title} has been added to your cart`,
-      })
+      });
 
-      setIsAdded(true)
-      setTimeout(() => setIsAdded(false), 2000)
+      setIsAdded(true);
+      setTimeout(() => setIsAdded(false), 2000);
     } catch (err) {
       // Error toast is handled globally in use-cart.tsx
     } finally {
-      setIsAdding(false)
+      setIsAdding(false);
     }
-  }
+  };
 
   const isOutOfStock = !product.inStock || product.quantity < 1;
 
@@ -120,7 +132,13 @@ const AddToCartButton = ({ product, productId, cartQuantity, className, lensPowe
         )}
       </span>
       <p className="text text-white">
-        {isAdding ? "Adding..." : isOutOfStock ? "Out of Stock" : isAdded ? "Added!" : "Add to Cart"}
+        {isAdding
+          ? "Adding..."
+          : isOutOfStock
+            ? "Out of Stock"
+            : isAdded
+              ? "Added!"
+              : "Add to Cart"}
       </p>
     </button>
   );

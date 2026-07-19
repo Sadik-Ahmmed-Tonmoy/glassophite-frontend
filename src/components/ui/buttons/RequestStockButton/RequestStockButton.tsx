@@ -1,6 +1,9 @@
-"use client"
-import "./RequestStockButton.css" // Import your CSS file here
-import { useCreateStockRequestMutation, useGetMyStockRequestsQuery } from "@/redux/features/stockRequest/stockRequestApi";
+"use client";
+import "./RequestStockButton.css"; // Import your CSS file here
+import {
+  useCreateStockRequestMutation,
+  useGetMyStockRequestsQuery,
+} from "@/redux/features/stockRequest/stockRequestApi";
 import { useAppSelector } from "@/redux/hooks";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -12,15 +15,23 @@ interface RequestStockButtonProps {
   variantId?: string;
 }
 
-const RequestStockButton = ({ productId, variantId }: RequestStockButtonProps) => {
+const RequestStockButton = ({
+  productId,
+  variantId,
+}: RequestStockButtonProps) => {
   const token = useAppSelector((state) => state.auth.access_token);
-  const { data: myRequestsData } = useGetMyStockRequestsQuery(undefined, { skip: !token });
+  const { data: myRequestsData } = useGetMyStockRequestsQuery(undefined, {
+    skip: !token,
+  });
   const [createStockRequest, { isLoading }] = useCreateStockRequestMutation();
 
   const isAlreadyRequested = useMemo(() => {
     if (!myRequestsData?.data || !productId || !variantId) return false;
     return myRequestsData.data.some(
-      (req: { productId: string; variantId: string; status: string }) => req.productId === productId && req.variantId === variantId && req.status === "PENDING"
+      (req: { productId: string; variantId: string; status: string }) =>
+        req.productId === productId &&
+        req.variantId === variantId &&
+        req.status === "PENDING",
     );
   }, [myRequestsData, productId, variantId]);
 
@@ -54,14 +65,14 @@ const RequestStockButton = ({ productId, variantId }: RequestStockButtonProps) =
   };
 
   return (
-    <button 
+    <button
       onClick={handleRequestClick}
       disabled={isLoading || isAlreadyRequested}
       className={cn(
         "RequestBtn w-full transition-colors flex justify-center items-center gap-1.5 py-3 rounded-md disabled:cursor-not-allowed",
         isAlreadyRequested
           ? "bg-emerald-600 dark:bg-emerald-700 text-white disabled:opacity-100"
-          : "bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800 hover:from-gray-700 hover:via-gray-800 hover:to-gray-900 text-white disabled:opacity-75"
+          : "bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800 hover:from-gray-700 hover:via-gray-800 hover:to-gray-900 text-white disabled:opacity-75",
       )}
     >
       <span className="IconContainer">
@@ -90,10 +101,14 @@ const RequestStockButton = ({ productId, variantId }: RequestStockButtonProps) =
         )}
       </span>
       <p className="text text-white">
-        {isLoading ? "Requesting..." : isAlreadyRequested ? "Already Requested" : "Request Stock"}
+        {isLoading
+          ? "Requesting..."
+          : isAlreadyRequested
+            ? "Already Requested"
+            : "Request Stock"}
       </p>
     </button>
-  )
-}
+  );
+};
 
-export default RequestStockButton
+export default RequestStockButton;

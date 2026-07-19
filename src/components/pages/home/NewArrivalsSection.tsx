@@ -4,26 +4,43 @@
 import { motion } from "framer-motion";
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, Sparkles, AlertCircle, ShieldCheck, Gem, Clock, Eye } from "lucide-react";
+import {
+  ArrowRight,
+  Sparkles,
+  AlertCircle,
+  ShieldCheck,
+  Gem,
+  Clock,
+  Eye,
+} from "lucide-react";
 import { useTheme } from "next-themes";
-import { useGetNewArrivalsQuery, useGetAllProductsQuery } from "@/redux/features/product/productApi";
+import {
+  useGetNewArrivalsQuery,
+  useGetAllProductsQuery,
+} from "@/redux/features/product/productApi";
 import ProductCard from "@/components/ui/ProductCard/ProductCard";
 
 const getThemeStyles = (isDark: boolean) => ({
-  background: isDark 
-    ? "from-black via-gray-900 to-black" 
+  background: isDark
+    ? "from-black via-gray-900 to-black"
     : "from-neutral-50 via-white to-neutral-50",
   text: isDark ? "text-white" : "text-neutral-900",
   textMuted: isDark ? "text-neutral-400" : "text-neutral-600",
   border: isDark ? "border-white/10" : "border-neutral-200",
-  glassBg: isDark ? "bg-white/5 backdrop-blur-md" : "bg-white/70 backdrop-blur-md",
-  cardBg: isDark ? "bg-neutral-900/40 border-white/5" : "bg-white/80 border-neutral-200/60",
+  glassBg: isDark
+    ? "bg-white/5 backdrop-blur-md"
+    : "bg-white/70 backdrop-blur-md",
+  cardBg: isDark
+    ? "bg-neutral-900/40 border-white/5"
+    : "bg-white/80 border-neutral-200/60",
   orbPrimary: isDark ? "bg-[#007C74]/20" : "bg-[#007C74]/10",
   orbSecondary: isDark ? "bg-[#3C55A5]/25" : "bg-[#3C55A5]/10",
-  editorialGradient: isDark 
+  editorialGradient: isDark
     ? "from-[#007C74]/20 via-black/40 to-[#3C55A5]/20"
     : "from-[#007C74]/5 via-white/50 to-[#3C55A5]/5",
-  statBg: isDark ? "bg-white/5 border-white/5" : "bg-neutral-100 border-neutral-200/50",
+  statBg: isDark
+    ? "bg-white/5 border-white/5"
+    : "bg-neutral-100 border-neutral-200/50",
 });
 
 function ProductSkeleton() {
@@ -45,26 +62,26 @@ function ProductSkeleton() {
 // ─── Animation variants ──────────────────────────────────────────────────────
 const sectionVariants = {
   hidden: { opacity: 0 },
-  visible: { 
-    opacity: 1, 
-    transition: { duration: 0.8 } 
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.8 },
   },
 };
 
 const gridVariants = {
   hidden: {},
   visible: {
-    transition: { staggerChildren: 0.08 }
-  }
+    transition: { staggerChildren: 0.08 },
+  },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { type: "spring", stiffness: 100, damping: 15 } 
-  }
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 100, damping: 15 },
+  },
 } as const;
 
 export default function NewArrivalsSection() {
@@ -79,7 +96,7 @@ export default function NewArrivalsSection() {
     isFetching: isFetchingNewArrivals,
     error: errorNewArrivals,
   } = useGetNewArrivalsQuery(6);
- 
+
   const {
     data: allProductsData,
     isLoading: isLoadingAll,
@@ -88,22 +105,31 @@ export default function NewArrivalsSection() {
   } = useGetAllProductsQuery({ limit: 6, sortBy: "newest" });
 
   // ✅ Correct loading: if any query is still loading
-  const isLoading = isLoadingNewArrivals || isFetchingNewArrivals || isLoadingAll || isFetchingAll;
+  const isLoading =
+    isLoadingNewArrivals ||
+    isFetchingNewArrivals ||
+    isLoadingAll ||
+    isFetchingAll;
   // ✅ Correct error: if any query fails
   const hasError = !!errorNewArrivals || !!errorAll;
 
   const primaryProducts = (newArrivalsData as any)?.data || [];
   const fallbackProducts = (allProductsData as any)?.data || [];
-  const products = primaryProducts.length > 0 ? primaryProducts : fallbackProducts;
+  const products =
+    primaryProducts.length > 0 ? primaryProducts : fallbackProducts;
 
   // ─── Loading State ──────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <section className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.background} py-16 sm:py-20 px-4 sm:px-6`}>
+      <section
+        className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.background} py-16 sm:py-20 px-4 sm:px-6`}
+      >
         <div className="relative z-10 max-w-7xl mx-auto">
           <div className="h-8 w-40 bg-neutral-300 dark:bg-neutral-800 rounded animate-pulse mb-6" />
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 4 }).map((_, i) => <ProductSkeleton key={i} />)}
+            {Array.from({ length: 4 }).map((_, i) => (
+              <ProductSkeleton key={i} />
+            ))}
           </div>
         </div>
       </section>
@@ -113,15 +139,21 @@ export default function NewArrivalsSection() {
   // ─── Error State ──────────────────────────────────────────────────────
   if (hasError) {
     return (
-      <section className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.background} py-16 sm:py-20 px-4 sm:px-6`}>
+      <section
+        className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.background} py-16 sm:py-20 px-4 sm:px-6`}
+      >
         <div className="relative z-10 max-w-7xl mx-auto text-center">
           <div className="inline-flex p-3 rounded-full bg-red-500/10 text-red-500 mb-4">
             <AlertCircle className="w-6 h-6" />
           </div>
-          <h2 className={`text-xl font-bold ${styles.text}`}>Failed to load new arrivals</h2>
-          <p className={`${styles.textMuted} mt-2`}>Please check your connection and try again.</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <h2 className={`text-xl font-bold ${styles.text}`}>
+            Failed to load new arrivals
+          </h2>
+          <p className={`${styles.textMuted} mt-2`}>
+            Please check your connection and try again.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-[#007C74] text-white rounded-lg text-sm"
           >
             Retry
@@ -134,13 +166,19 @@ export default function NewArrivalsSection() {
   // ─── Empty State ──────────────────────────────────────────────────────
   if (products.length === 0) {
     return (
-      <section className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.background} py-16 sm:py-20 px-4 sm:px-6`}>
+      <section
+        className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.background} py-16 sm:py-20 px-4 sm:px-6`}
+      >
         <div className="relative z-10 max-w-7xl mx-auto text-center">
           <div className="inline-flex p-3 rounded-full bg-neutral-200/50 dark:bg-neutral-800/50 mb-4">
             <Gem className="w-6 h-6 text-neutral-400" />
           </div>
-          <h2 className={`text-xl font-bold ${styles.text}`}>No new arrivals yet</h2>
-          <p className={`${styles.textMuted} mt-2`}>Check back soon for our latest collections.</p>
+          <h2 className={`text-xl font-bold ${styles.text}`}>
+            No new arrivals yet
+          </h2>
+          <p className={`${styles.textMuted} mt-2`}>
+            Check back soon for our latest collections.
+          </p>
         </div>
       </section>
     );
@@ -166,8 +204,12 @@ export default function NewArrivalsSection() {
       aria-labelledby="new-arrivals-title"
     >
       {/* Background decorations (unchanged) */}
-      <div className={`absolute top-1/4 right-[-10%] w-[500px] h-[500px] rounded-full blur-[150px] pointer-events-none transition-opacity duration-1000 ${styles.orbPrimary}`} />
-      <div className={`absolute bottom-1/4 left-[-10%] w-[600px] h-[600px] rounded-full blur-[170px] pointer-events-none transition-opacity duration-1000 ${styles.orbSecondary}`} />
+      <div
+        className={`absolute top-1/4 right-[-10%] w-[500px] h-[500px] rounded-full blur-[150px] pointer-events-none transition-opacity duration-1000 ${styles.orbPrimary}`}
+      />
+      <div
+        className={`absolute bottom-1/4 left-[-10%] w-[600px] h-[600px] rounded-full blur-[170px] pointer-events-none transition-opacity duration-1000 ${styles.orbSecondary}`}
+      />
       <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
         <div
           className="absolute inset-0"
@@ -184,11 +226,21 @@ export default function NewArrivalsSection() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Sparkles className="w-5 h-5 text-[#007C74]" />
-              <span className="text-xs font-semibold tracking-[0.2em] text-[#007C74] uppercase">Just Landed</span>
+              <span className="text-xs font-semibold tracking-[0.2em] text-[#007C74] uppercase">
+                Just Landed
+              </span>
             </div>
-            <h2 id="new-arrivals-title" className={`text-2xl sm:text-3xl font-bold ${styles.text}`}>New Arrivals</h2>
+            <h2
+              id="new-arrivals-title"
+              className={`text-2xl sm:text-3xl font-bold ${styles.text}`}
+            >
+              New Arrivals
+            </h2>
           </div>
-          <Link href="/new-arrivals" className="group flex items-center gap-1.5 text-sm font-medium text-[#007C74] hover:text-[#00A693] transition-colors">
+          <Link
+            href="/new-arrivals"
+            className="group flex items-center gap-1.5 text-sm font-medium text-[#007C74] hover:text-[#00A693] transition-colors"
+          >
             View All
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
@@ -197,7 +249,6 @@ export default function NewArrivalsSection() {
 
       <div className="relative z-10 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-
           {/* LEFT: Editorial */}
           <div className="lg:col-span-4">
             <motion.div
@@ -209,13 +260,23 @@ export default function NewArrivalsSection() {
             >
               <div className="hidden lg:flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-[#007C74]" />
-                <span className="text-xs font-semibold tracking-[0.2em] text-[#007C74] uppercase">Just Landed</span>
+                <span className="text-xs font-semibold tracking-[0.2em] text-[#007C74] uppercase">
+                  Just Landed
+                </span>
               </div>
-              <h2 className={`hidden lg:block text-3xl xl:text-4xl font-bold ${styles.text}`}>New Arrivals</h2>
+              <h2
+                className={`hidden lg:block text-3xl xl:text-4xl font-bold ${styles.text}`}
+              >
+                New Arrivals
+              </h2>
               <p className={`${styles.textMuted} text-sm leading-relaxed`}>
-                Discover the latest additions to our curated luxury eyewear collection. Each frame is handcrafted by master artisans using premium materials from around the world.
+                Discover the latest additions to our curated luxury eyewear
+                collection. Each frame is handcrafted by master artisans using
+                premium materials from around the world.
               </p>
-              <div className={`h-px w-16 bg-gradient-to-r ${styles.editorialGradient}`} />
+              <div
+                className={`h-px w-16 bg-gradient-to-r ${styles.editorialGradient}`}
+              />
               <div className="grid grid-cols-2 gap-3">
                 {stats.map((stat, idx) => (
                   <motion.div
@@ -227,8 +288,12 @@ export default function NewArrivalsSection() {
                     className={`${styles.statBg} rounded-lg p-3 border ${styles.border}`}
                   >
                     <stat.icon className="w-4 h-4 text-[#007C74] mb-1" />
-                    <p className={`text-xs font-semibold ${styles.text}`}>{stat.value}</p>
-                    <p className={`text-[10px] ${styles.textMuted}`}>{stat.label}</p>
+                    <p className={`text-xs font-semibold ${styles.text}`}>
+                      {stat.value}
+                    </p>
+                    <p className={`text-[10px] ${styles.textMuted}`}>
+                      {stat.label}
+                    </p>
                   </motion.div>
                 ))}
               </div>
@@ -244,7 +309,7 @@ export default function NewArrivalsSection() {
 
           {/* RIGHT: Product Grid */}
           <div className="lg:col-span-8">
-            <motion.div 
+            <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8"
               initial="hidden"
               whileInView="visible"
@@ -272,7 +337,6 @@ export default function NewArrivalsSection() {
               </Link>
             </div>
           </div>
-
         </div>
       </div>
     </motion.section>

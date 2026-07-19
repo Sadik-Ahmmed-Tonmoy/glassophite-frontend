@@ -221,7 +221,7 @@ const PCNavBar = () => {
             </div>
           </div>
           <TranslateInitializer />
-          <LanguageSwitcher />
+          {/* <LanguageSwitcher /> */}
           {/* floating button end*/}
 
           <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />

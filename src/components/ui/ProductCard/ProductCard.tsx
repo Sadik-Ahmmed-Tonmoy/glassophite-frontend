@@ -18,7 +18,13 @@ import {
 } from "@/redux/features/wishlist/wishlistApi";
 import { toast } from "sonner";
 import { useMemo } from "react";
-import { Heart, XCircle, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Heart,
+  XCircle,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 // Swiper imports
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -58,17 +64,22 @@ function ProductCard({ product }: ProductCardProps) {
   const styles = getThemeStyles(isDark);
 
   const [selectedVariant, setSelectedVariant] = useState<TVariant>(
-    product?.variants[0]
+    product?.variants[0],
   );
   const token = useAppSelector((state) => state.auth.access_token);
-  const { data: wishlistData } = useGetWishlistQuery(undefined, { skip: !token });
+  const { data: wishlistData } = useGetWishlistQuery(undefined, {
+    skip: !token,
+  });
   const [addToWishlist, { isLoading: isAdding }] = useAddToWishlistMutation();
-  const [removeFromWishlist, { isLoading: isRemoving }] = useRemoveFromWishlistMutation();
+  const [removeFromWishlist, { isLoading: isRemoving }] =
+    useRemoveFromWishlistMutation();
   const isLoading = isAdding || isRemoving;
 
   const isWishlisted = useMemo(() => {
     if (!wishlistData?.data?.items) return false;
-    return wishlistData.data.items.some((item: { productId: string }) => item.productId === product.id);
+    return wishlistData.data.items.some(
+      (item: { productId: string }) => item.productId === product.id,
+    );
   }, [wishlistData, product.id]);
 
   const [isHovered, setIsHovered] = useState(false);
@@ -135,7 +146,7 @@ function ProductCard({ product }: ProductCardProps) {
     animate: { clipPath: "polygon(0 0, 100% 0, 100% 100%, 0% 100%)" },
     // exit: { clipPath: "polygon(0 100%, 100% 100%, 100% 100%, 0% 100%)" }
   };
- // Prepare images for the selected variant
+  // Prepare images for the selected variant
   const images =
     selectedVariant.imgList && selectedVariant.imgList.length > 0
       ? selectedVariant.imgList
@@ -151,8 +162,10 @@ function ProductCard({ product }: ProductCardProps) {
       onHoverEnd={() => setIsHovered(false)}
       className="w-full max-w-[350px] mx-auto"
     >
-      <div className={`${styles.cardBg} rounded-xl overflow-hidden shadow-xl transition-colors duration-500 border`}>
-           {/* Image Container */}
+      <div
+        className={`${styles.cardBg} rounded-xl overflow-hidden shadow-xl transition-colors duration-500 border`}
+      >
+        {/* Image Container */}
         <div className="w-full h-52 relative overflow-hidden group">
           {/* Wishlist Button */}
           <motion.button
@@ -160,13 +173,17 @@ function ProductCard({ product }: ProductCardProps) {
             whileTap={{ scale: 0.9 }}
             className={cn(
               `absolute top-3 right-3 z-30 p-2 rounded-full backdrop-blur-sm transition-colors duration-300 ${
-                isDark ? "bg-black/50 hover:bg-black/70" : "bg-white/50 hover:bg-white/70"
+                isDark
+                  ? "bg-black/50 hover:bg-black/70"
+                  : "bg-white/50 hover:bg-white/70"
               }`,
               // isHovered && "top-6"
             )}
             onClick={handleWishlistClick}
             disabled={isLoading}
-            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            aria-label={
+              isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+            }
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin text-[#007C74]" />
@@ -176,8 +193,8 @@ function ProductCard({ product }: ProductCardProps) {
                   isWishlisted
                     ? "fill-red-500 text-red-500"
                     : isDark
-                    ? "text-white"
-                    : "text-gray-700"
+                      ? "text-white"
+                      : "text-gray-700"
                 }`}
               />
             )}
@@ -225,10 +242,17 @@ function ProductCard({ product }: ProductCardProps) {
                 className="h-full w-full"
               >
                 {images.map((img, idx) => (
-                  <SwiperSlide key={`${selectedVariant.id}-${idx}`} className="relative h-full w-full">
+                  <SwiperSlide
+                    key={`${selectedVariant.id}-${idx}`}
+                    className="relative h-full w-full"
+                  >
                     <Image
                       src={img.image || "/placeholder.svg"}
-                      alt={selectedVariant?.title || product?.title || "Product image"}
+                      alt={
+                        selectedVariant?.title ||
+                        product?.title ||
+                        "Product image"
+                      }
                       fill
                       priority={idx === 0}
                       quality={90}
@@ -296,7 +320,9 @@ function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Content */}
-        <article className={`${styles.text} p-4 transition-colors duration-500`}>
+        <article
+          className={`${styles.text} p-4 transition-colors duration-500`}
+        >
           {/* Title and Stock Status */}
           <div className="flex justify-between items-start gap-2">
             <motion.h3
@@ -307,19 +333,22 @@ function ProductCard({ product }: ProductCardProps) {
             </motion.h3>
 
             <motion.span
-              className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${!selectedVariant.inStock
-                ? styles.stockOut
-                : selectedVariant.quantity <= 5
-                  ? 'bg-yellow-500/10 text-yellow-500'
-                  : styles.stockIn
-                }`}
+              className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${
+                !selectedVariant.inStock
+                  ? styles.stockOut
+                  : selectedVariant.quantity <= 5
+                    ? "bg-yellow-500/10 text-yellow-500"
+                    : styles.stockIn
+              }`}
               animate={!selectedVariant.inStock ? { opacity: [1, 0.7, 1] } : {}}
               transition={{ duration: 1.5, repeat: Infinity }}
             >
               {!selectedVariant.inStock ? (
                 <span data-translate="product.stock.out">Out of Stock</span>
               ) : selectedVariant.quantity <= 5 ? (
-                <span data-translate="product.stock.low">Only {selectedVariant.quantity} left!</span>
+                <span data-translate="product.stock.low">
+                  Only {selectedVariant.quantity} left!
+                </span>
               ) : (
                 <span data-translate="product.stock.in">In Stock</span>
               )}
@@ -337,7 +366,10 @@ function ProductCard({ product }: ProductCardProps) {
               <span className={`font-bold text-2xl ${styles.pricePrimary}`}>
                 ৳{selectedVariant.priceAfterDiscount}
               </span>
-              <span className={`text-xs ${styles.textMutedLighter}`} data-translate="currency.bdt">
+              <span
+                className={`text-xs ${styles.textMutedLighter}`}
+                data-translate="currency.bdt"
+              >
                 BDT
               </span>
             </div>
@@ -350,7 +382,8 @@ function ProductCard({ product }: ProductCardProps) {
                 whileHover={{ scale: 1.1 }}
                 className={`text-sm font-semibold ${styles.discount}`}
               >
-                {selectedVariant.discountPercent}% <span data-translate="product.off">off</span>
+                {selectedVariant.discountPercent}%{" "}
+                <span data-translate="product.off">off</span>
               </motion.span>
             </div>
           </div>
@@ -359,7 +392,10 @@ function ProductCard({ product }: ProductCardProps) {
           {/* Variant Selector */}
           <div className="flex justify-between items-center py-2">
             <div className="flex gap-2 items-center">
-              <span className={`text-xs ${styles.textMutedLighter}`} data-translate="product.color">
+              <span
+                className={`text-xs ${styles.textMutedLighter}`}
+                data-translate="product.color"
+              >
                 Color:
               </span>
               {product.variants.slice(0, 4).map((variant, index) => (
@@ -368,11 +404,16 @@ function ProductCard({ product }: ProductCardProps) {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleColorButtonClick(variant)}
-                  className={`relative w-8 h-8 rounded-full border-2 transition-all ${selectedVariant.color === variant.color
-                    ? styles.colorButton.active
-                    : styles.colorButton.inactive
-                    } ${!variant.inStock ? "opacity-50" : ""}`}
-                  title={variant.inStock ? `Available: ${variant.quantity}` : "Out of Stock"}
+                  className={`relative w-8 h-8 rounded-full border-2 transition-all ${
+                    selectedVariant.color === variant.color
+                      ? styles.colorButton.active
+                      : styles.colorButton.inactive
+                  } ${!variant.inStock ? "opacity-50" : ""}`}
+                  title={
+                    variant.inStock
+                      ? `Available: ${variant.quantity}`
+                      : "Out of Stock"
+                  }
                   aria-label={`Select ${variant.color} color variant`}
                 >
                   <span

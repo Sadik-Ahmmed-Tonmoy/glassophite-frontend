@@ -1,30 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  HelpCircle, 
-  Loader2, 
-  Trash2, 
-  Edit, 
-  Plus, 
-  Search, 
-  Check, 
-  X
-} from "lucide-react";
-import { toast } from "sonner";
-import { 
-  useGetFAQsQuery, 
-  useCreateFAQMutation, 
-  useUpdateFAQMutation, 
-  useDeleteFAQMutation 
-} from "@/redux/features/faq/faqApi";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -34,17 +16,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import {
+  useCreateFAQMutation,
+  useDeleteFAQMutation,
+  useGetFAQsQuery,
+  useUpdateFAQMutation,
+} from "@/redux/features/faq/faqApi";
+import { motion } from "framer-motion";
+import { Check, Edit, Loader2, Plus, Search, Trash2, X } from "lucide-react";
+import React, { useState } from "react";
+import { toast } from "sonner";
 
 export default function FAQsView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  
+
   // Dialog / Modal State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingFAQ, setEditingFAQ] = useState<any>(null);
   const [faqToDeleteId, setFaqToDeleteId] = useState<string | null>(null);
-  
+
   // Form State
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -65,9 +57,16 @@ export default function FAQsView() {
   const [deleteFAQ] = useDeleteFAQMutation();
 
   const faqs = data?.data || [];
-  
+
   // Extract unique categories for filter
-  const uniqueCategories: string[] = ["all", ...Array.from(new Set<string>(faqs.map((f: any) => (f.category || "General") as string)))];
+  const uniqueCategories: string[] = [
+    "all",
+    ...Array.from(
+      new Set<string>(
+        faqs.map((f: any) => (f.category || "General") as string),
+      ),
+    ),
+  ];
 
   const resetForm = () => {
     setQuestion("");
@@ -167,7 +166,10 @@ export default function FAQsView() {
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-neutral-950 to-neutral-700 dark:from-white dark:to-neutral-400 bg-clip-text text-transparent">
             FAQ Moderation
           </h1>
-          <p className="text-xs text-neutral-500">Manage, create, and organize frequently asked questions for customers.</p>
+          <p className="text-xs text-neutral-500">
+            Manage, create, and organize frequently asked questions for
+            customers.
+          </p>
         </div>
 
         <button
@@ -197,14 +199,20 @@ export default function FAQsView() {
 
         {/* Category Filter */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Category:</span>
+          <span className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider whitespace-nowrap">
+            Category:
+          </span>
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-full text-xs h-9 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white rounded-lg">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs">
               {uniqueCategories.map((cat: string) => (
-                <SelectItem key={cat} value={cat} className="hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer capitalize">
+                <SelectItem
+                  key={cat}
+                  value={cat}
+                  className="hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer capitalize"
+                >
                   {cat === "all" ? "All Categories" : cat}
                 </SelectItem>
               ))}
@@ -214,15 +222,32 @@ export default function FAQsView() {
 
         {/* Status Filter */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status:</span>
+          <span className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider whitespace-nowrap">
+            Status:
+          </span>
           <Select value={selectedStatus} onValueChange={setSelectedStatus}>
             <SelectTrigger className="w-full text-xs h-9 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white rounded-lg">
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs">
-              <SelectItem value="all" className="hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">All Statuses</SelectItem>
-              <SelectItem value="Active" className="hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">Active</SelectItem>
-              <SelectItem value="Inactive" className="hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">Inactive</SelectItem>
+              <SelectItem
+                value="all"
+                className="hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                All Statuses
+              </SelectItem>
+              <SelectItem
+                value="Active"
+                className="hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                Active
+              </SelectItem>
+              <SelectItem
+                value="Inactive"
+                className="hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                Inactive
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -244,7 +269,7 @@ export default function FAQsView() {
           <tbody
             className={cn(
               "divide-y divide-neutral-200 dark:divide-neutral-800 transition-opacity duration-200",
-              isFetching ? "opacity-60 pointer-events-none" : ""
+              isFetching ? "opacity-60 pointer-events-none" : "",
             )}
           >
             {isLoading || (isFetching && faqs.length === 0) ? (
@@ -255,12 +280,19 @@ export default function FAQsView() {
               </tr>
             ) : faqs.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-neutral-400">No FAQs found.</td>
+                <td colSpan={6} className="p-8 text-center text-neutral-400">
+                  No FAQs found.
+                </td>
               </tr>
             ) : (
               faqs.map((faq: any) => (
-                <tr key={faq.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors">
-                  <td className="p-4 text-center font-bold text-neutral-500">{faq.order}</td>
+                <tr
+                  key={faq.id}
+                  className="hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors"
+                >
+                  <td className="p-4 text-center font-bold text-neutral-500">
+                    {faq.order}
+                  </td>
                   <td className="p-4 font-semibold text-neutral-800 dark:text-neutral-200 max-w-xs truncate">
                     {faq.question}
                   </td>
@@ -276,15 +308,25 @@ export default function FAQsView() {
                         "px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1 cursor-pointer transition-all",
                         faq.status === "Active"
                           ? "bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
-                          : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700"
+                          : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700",
                       )}
                     >
-                      {faq.status === "Active" ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                      {faq.status === "Active" ? (
+                        <Check className="w-3 h-3" />
+                      ) : (
+                        <X className="w-3 h-3" />
+                      )}
                       <span>{faq.status || "Active"}</span>
                     </button>
                   </td>
                   <td className="p-4 text-neutral-500">
-                    {faq.createdAt ? new Date(faq.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "N/A"}
+                    {faq.createdAt
+                      ? new Date(faq.createdAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })
+                      : "N/A"}
                   </td>
                   <td className="p-4">
                     <div className="flex items-center justify-center gap-2">
@@ -324,7 +366,9 @@ export default function FAQsView() {
             {/* Category & Order in row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider">Category</label>
+                <label className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider">
+                  Category
+                </label>
                 <input
                   type="text"
                   placeholder="e.g. Shipping"
@@ -336,7 +380,9 @@ export default function FAQsView() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider">Display Order</label>
+                <label className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider">
+                  Display Order
+                </label>
                 <input
                   type="number"
                   placeholder="0"
@@ -350,7 +396,9 @@ export default function FAQsView() {
 
             {/* Question */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider">Question</label>
+              <label className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider">
+                Question
+              </label>
               <input
                 type="text"
                 placeholder="Enter FAQ question..."
@@ -363,7 +411,9 @@ export default function FAQsView() {
 
             {/* Answer */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider">Answer</label>
+              <label className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider">
+                Answer
+              </label>
               <textarea
                 placeholder="Enter FAQ answer..."
                 value={answer}
@@ -376,14 +426,26 @@ export default function FAQsView() {
 
             {/* Status Option */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider">Status</label>
+              <label className="text-[10px] font-extrabold text-neutral-400 uppercase tracking-wider">
+                Status
+              </label>
               <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger className="w-full text-xs h-9 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white rounded-lg">
                   <SelectValue placeholder="Select Status" />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs">
-                  <SelectItem value="Active" className="hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">Active (Visible to public)</SelectItem>
-                  <SelectItem value="Inactive" className="hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">Inactive (Hidden from public)</SelectItem>
+                  <SelectItem
+                    value="Active"
+                    className="hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  >
+                    Active (Visible to public)
+                  </SelectItem>
+                  <SelectItem
+                    value="Inactive"
+                    className="hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  >
+                    Inactive (Hidden from public)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -402,7 +464,9 @@ export default function FAQsView() {
                 disabled={isSubmitting}
                 className="px-4 py-2 bg-[#007C74] hover:bg-[#006059] text-white font-bold rounded-lg text-xs shadow-md transition-all disabled:opacity-55 cursor-pointer flex items-center gap-1.5"
               >
-                {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                {isSubmitting && (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                )}
                 <span>{editingFAQ ? "Save Changes" : "Create FAQ"}</span>
               </button>
             </DialogFooter>
@@ -411,7 +475,10 @@ export default function FAQsView() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!faqToDeleteId} onOpenChange={(open) => !open && setFaqToDeleteId(null)}>
+      <Dialog
+        open={!!faqToDeleteId}
+        onOpenChange={(open) => !open && setFaqToDeleteId(null)}
+      >
         <DialogContent className="sm:max-w-[400px] bg-white dark:bg-[#0c0c0c] border border-neutral-250 dark:border-neutral-850 p-6 rounded-2xl shadow-xl text-neutral-900 dark:text-white">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-red-650 dark:text-red-500 flex items-center gap-2">
@@ -419,7 +486,8 @@ export default function FAQsView() {
             </DialogTitle>
           </DialogHeader>
           <div className="py-4 text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-            Are you sure you want to permanently delete this FAQ? This action is irreversible.
+            Are you sure you want to permanently delete this FAQ? This action is
+            irreversible.
           </div>
           <DialogFooter className="flex justify-end gap-2">
             <button

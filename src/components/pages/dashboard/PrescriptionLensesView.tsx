@@ -1,47 +1,54 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Glasses, 
-  Loader2, 
-  Trash2, 
-  Edit, 
-  Plus, 
-  Search, 
-  Check, 
-  X,
-  FileText
-} from "lucide-react";
-import { toast } from "sonner";
-import { 
-  useGetPrescriptionLensesQuery, 
-  useCreatePrescriptionLensMutation, 
-  useUpdatePrescriptionLensMutation, 
-  useDeletePrescriptionLensMutation,
-  PrescriptionLens
-} from "@/redux/features/lens/lensApi";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  PrescriptionLens,
+  useCreatePrescriptionLensMutation,
+  useDeletePrescriptionLensMutation,
+  useGetPrescriptionLensesQuery,
+  useUpdatePrescriptionLensMutation,
+} from "@/redux/features/lens/lensApi";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Check,
+  Edit,
+  Glasses,
+  Loader2,
+  Plus,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
+import React, { useState } from "react";
+import { toast } from "sonner";
 
 export default function PrescriptionLensesView() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: lensesData, isLoading, refetch } = useGetPrescriptionLensesQuery();
+  const {
+    data: lensesData,
+    isLoading,
+    refetch,
+  } = useGetPrescriptionLensesQuery();
   const lenses = lensesData?.data || [];
 
-  const [createLens, { isLoading: isCreating }] = useCreatePrescriptionLensMutation();
-  const [updateLens, { isLoading: isUpdating }] = useUpdatePrescriptionLensMutation();
-  const [deleteLens, { isLoading: isDeleting }] = useDeletePrescriptionLensMutation();
+  const [createLens, { isLoading: isCreating }] =
+    useCreatePrescriptionLensMutation();
+  const [updateLens, { isLoading: isUpdating }] =
+    useUpdatePrescriptionLensMutation();
+  const [deleteLens, { isLoading: isDeleting }] =
+    useDeletePrescriptionLensMutation();
 
   // Modal Dialog States
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLens, setEditingLens] = useState<PrescriptionLens | null>(null);
-  
+
   // Form States
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -117,9 +124,11 @@ export default function PrescriptionLensesView() {
     }
   };
 
-  const filteredLenses = lenses.filter(lens => 
-    lens.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (lens.description && lens.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredLenses = lenses.filter(
+    (lens) =>
+      lens.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (lens.description &&
+        lens.description.toLowerCase().includes(searchQuery.toLowerCase())),
   );
 
   return (
@@ -131,7 +140,8 @@ export default function PrescriptionLensesView() {
             Custom Prescription Lenses
           </h1>
           <p className="text-xs text-neutral-500 mt-1">
-            Manage premium protective lens packages and additional pricing details
+            Manage premium protective lens packages and additional pricing
+            details
           </p>
         </div>
 
@@ -161,13 +171,19 @@ export default function PrescriptionLensesView() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Loader2 className="w-8 h-8 text-[#007C74] animate-spin" />
-            <span className="text-xs text-neutral-500">Retrieving lens details...</span>
+            <span className="text-xs text-neutral-500">
+              Retrieving lens details...
+            </span>
           </div>
         ) : filteredLenses.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Glasses className="w-12 h-12 text-neutral-300 dark:text-neutral-700" />
-            <span className="text-sm font-semibold text-neutral-600 dark:text-neutral-400">No Lens Packages Found</span>
-            <span className="text-xs text-neutral-400">Add a new package using the button above.</span>
+            <span className="text-sm font-semibold text-neutral-600 dark:text-neutral-400">
+              No Lens Packages Found
+            </span>
+            <span className="text-xs text-neutral-400">
+              Add a new package using the button above.
+            </span>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -193,7 +209,11 @@ export default function PrescriptionLensesView() {
                     >
                       <td className="py-4 px-6 font-semibold">{lens.name}</td>
                       <td className="py-4 px-6 text-neutral-500 dark:text-neutral-400 text-xs max-w-xs truncate">
-                        {lens.description || <span className="italic text-neutral-300 dark:text-neutral-700">None</span>}
+                        {lens.description || (
+                          <span className="italic text-neutral-300 dark:text-neutral-700">
+                            None
+                          </span>
+                        )}
                       </td>
                       <td className="py-4 px-6 font-medium text-[#007C74]">
                         ৳{lens.price.toFixed(2)}
@@ -248,7 +268,9 @@ export default function PrescriptionLensesView() {
 
           <form onSubmit={handleFormSubmit} className="space-y-4 py-4">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-500">Package Name</label>
+              <label className="text-xs font-semibold text-neutral-500">
+                Package Name
+              </label>
               <input
                 type="text"
                 placeholder="e.g. Blue Cut Lenses"
@@ -259,7 +281,9 @@ export default function PrescriptionLensesView() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-500">Description</label>
+              <label className="text-xs font-semibold text-neutral-500">
+                Description
+              </label>
               <textarea
                 placeholder="e.g. Protects eyes from digital screen blue light"
                 value={description}
@@ -270,7 +294,9 @@ export default function PrescriptionLensesView() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-500">Additional Price (৳)</label>
+              <label className="text-xs font-semibold text-neutral-500">
+                Additional Price (৳)
+              </label>
               <input
                 type="number"
                 step="0.01"
@@ -283,14 +309,20 @@ export default function PrescriptionLensesView() {
 
             <div className="flex items-center justify-between p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800">
               <div className="flex flex-col">
-                <span className="text-xs font-semibold">Available for Order</span>
-                <span className="text-[10px] text-neutral-400">Toggle whether users can select this package</span>
+                <span className="text-xs font-semibold">
+                  Available for Order
+                </span>
+                <span className="text-[10px] text-neutral-400">
+                  Toggle whether users can select this package
+                </span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsAvailable(!isAvailable)}
                 className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none ${
-                  isAvailable ? "bg-[#007C74]" : "bg-neutral-300 dark:bg-neutral-700"
+                  isAvailable
+                    ? "bg-[#007C74]"
+                    : "bg-neutral-300 dark:bg-neutral-700"
                 }`}
               >
                 <span
@@ -314,7 +346,9 @@ export default function PrescriptionLensesView() {
                 disabled={isCreating || isUpdating}
                 className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#007C74] hover:bg-[#007C74]/90 text-white text-xs font-bold rounded-xl transition-all disabled:opacity-50 cursor-pointer"
               >
-                {(isCreating || isUpdating) && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                {(isCreating || isUpdating) && (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                )}
                 <span>Save Package</span>
               </button>
             </DialogFooter>
@@ -331,7 +365,8 @@ export default function PrescriptionLensesView() {
             </DialogTitle>
           </DialogHeader>
           <div className="py-4 text-sm text-neutral-500 dark:text-neutral-400">
-            Are you sure you want to delete this prescription lens package? This action is permanent and cannot be undone.
+            Are you sure you want to delete this prescription lens package? This
+            action is permanent and cannot be undone.
           </div>
           <DialogFooter className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
             <button

@@ -1,22 +1,32 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { useTheme } from "next-themes"
-import { Truck, CreditCard, CheckCircle } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { CheckCircle, Truck } from "lucide-react";
+import { useTheme } from "next-themes";
 
 interface CheckoutStepperProps {
-  currentStep: number
+  currentStep: number;
 }
 
 export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
-  const { theme } = useTheme()
-  const isDark = theme === "dark"
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const steps = [
-    { id: 1, title: "Shipping", icon: Truck, translateKey: "checkout.step.shipping" },
-    { id: 2, title: "Review & Pay", icon: CheckCircle, translateKey: "checkout.step.review" },
-  ]
+    {
+      id: 1,
+      title: "Shipping",
+      icon: Truck,
+      translateKey: "checkout.step.shipping",
+    },
+    {
+      id: 2,
+      title: "Review & Pay",
+      icon: CheckCircle,
+      translateKey: "checkout.step.review",
+    },
+  ];
 
   // Theme styles
   const themeStyles = {
@@ -42,9 +52,9 @@ export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
       mobileTextActive: "text-[#007C74]",
       mobileTextInactive: "text-gray-400",
     },
-  }
+  };
 
-  const styles = isDark ? themeStyles.dark : themeStyles.light
+  const styles = isDark ? themeStyles.dark : themeStyles.light;
 
   // Animation variants for the progress bar
   const progressBarVariants = {
@@ -53,15 +63,15 @@ export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
       width: `${((currentStep - 1) / (steps.length - 1)) * 100}%`,
       transition: { duration: 0.5, ease: "easeInOut" as const },
     },
-  }
+  };
 
   const mobileProgressVariants = {
     initial: { width: 0 },
     animate: {
       width: `${(currentStep / steps.length) * 100}%`,
-      transition: { duration: 0.5, ease: "easeInOut" as const},
+      transition: { duration: 0.5, ease: "easeInOut" as const },
     },
-  }
+  };
 
   return (
     <div className="w-full">
@@ -69,7 +79,9 @@ export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
       <div className="hidden sm:block">
         <div className="relative flex items-center justify-between">
           {/* Background progress bar */}
-          <div className={`absolute left-0 top-1/2 h-0.5 w-full -translate-y-1/2 ${styles.progressBg}`} />
+          <div
+            className={`absolute left-0 top-1/2 h-0.5 w-full -translate-y-1/2 ${styles.progressBg}`}
+          />
 
           {/* Animated progress bar */}
           <motion.div
@@ -81,8 +93,8 @@ export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
 
           {/* Steps */}
           {steps.map((step) => {
-            const isActive = step.id === currentStep
-            const isCompleted = step.id < currentStep
+            const isActive = step.id === currentStep;
+            const isCompleted = step.id < currentStep;
 
             return (
               <motion.div
@@ -95,7 +107,9 @@ export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
                 <div
                   className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors",
-                    isCompleted || isActive ? styles.stepActive : styles.stepInactive
+                    isCompleted || isActive
+                      ? styles.stepActive
+                      : styles.stepInactive,
                   )}
                 >
                   <step.icon size={18} />
@@ -103,14 +117,16 @@ export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
                 <span
                   className={cn(
                     "mt-2 text-sm font-medium",
-                    isCompleted || isActive ? styles.textActive : styles.textInactive
+                    isCompleted || isActive
+                      ? styles.textActive
+                      : styles.textInactive,
                   )}
                   data-translate={step.translateKey}
                 >
                   {step.title}
                 </span>
               </motion.div>
-            )
+            );
           })}
         </div>
       </div>
@@ -119,27 +135,34 @@ export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
       <div className="sm:hidden">
         <div className="flex items-center justify-between px-2">
           {steps.map((step) => {
-            const isActive = step.id === currentStep
+            const isActive = step.id === currentStep;
             return (
               <motion.div
                 key={step.id}
                 className={cn(
                   "flex flex-col items-center",
-                  isActive ? styles.mobileTextActive : styles.mobileTextInactive
+                  isActive
+                    ? styles.mobileTextActive
+                    : styles.mobileTextInactive,
                 )}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: step.id * 0.1 }}
               >
                 <step.icon size={20} />
-                <span className="mt-1 text-xs font-medium" data-translate={step.translateKey}>
+                <span
+                  className="mt-1 text-xs font-medium"
+                  data-translate={step.translateKey}
+                >
                   {step.title}
                 </span>
               </motion.div>
-            )
+            );
           })}
         </div>
-        <div className={`mt-2 h-1 w-full ${styles.progressBg} rounded-full overflow-hidden`}>
+        <div
+          className={`mt-2 h-1 w-full ${styles.progressBg} rounded-full overflow-hidden`}
+        >
           <motion.div
             className={`h-full ${styles.progressFill}`}
             variants={mobileProgressVariants}
@@ -149,5 +172,5 @@ export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

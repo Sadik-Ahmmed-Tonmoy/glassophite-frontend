@@ -1,14 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  MessageCircle,
-  CheckCircle,
-  AlertCircle,
-  Send,
-  Loader2,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -25,11 +17,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { useProfileTheme } from "@/hooks/useProfileTheme";
-import { useCreateSupportTicketMutation } from "@/redux/features/supportTicket/supportTicketApi";
+import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertCircle,
+  CheckCircle,
+  Loader2,
+  MessageCircle,
+  Send,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface SupportTicket {
   orderId: string;
@@ -56,7 +55,9 @@ export default function ContactSupportDialog({
   const [contactSubject, setContactSubject] = useState("order-issue");
   const [contactMessage, setContactMessage] = useState("");
   const [contactPriority, setContactPriority] = useState("medium");
-  const [supportTicket, setSupportTicket] = useState<SupportTicket | null>(null);
+  const [supportTicket, setSupportTicket] = useState<SupportTicket | null>(
+    null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -77,10 +78,18 @@ export default function ContactSupportDialog({
     setIsSubmitting(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      const ticketId = `TKT-${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`;
+      const ticketId = `TKT-${Math.floor(Math.random() * 10000)
+        .toString()
+        .padStart(4, "0")}`;
       const newSupportTicket: SupportTicket = {
-        orderId, orderNumber, subject: contactSubject, message: contactMessage,
-        status: "open", priority: contactPriority as "low" | "medium" | "high", createdAt: new Date().toISOString(), ticketId,
+        orderId,
+        orderNumber,
+        subject: contactSubject,
+        message: contactMessage,
+        status: "open",
+        priority: contactPriority as "low" | "medium" | "high",
+        createdAt: new Date().toISOString(),
+        ticketId,
       };
       setSupportTicket(newSupportTicket);
       setContactSubject("order-issue");
@@ -118,7 +127,7 @@ export default function ContactSupportDialog({
       <DialogContent
         className={cn(
           "sm:max-w-[600px] max-h-[90vh] overflow-y-auto transition-colors duration-500",
-          styles.card
+          styles.card,
         )}
       >
         <DialogHeader>
@@ -150,7 +159,10 @@ export default function ContactSupportDialog({
                 >
                   What can we help you with?
                 </label>
-                <Select value={contactSubject} onValueChange={setContactSubject}>
+                <Select
+                  value={contactSubject}
+                  onValueChange={setContactSubject}
+                >
                   <SelectTrigger
                     id="contact-subject"
                     className={cn("w-full", styles.select)}
@@ -182,7 +194,10 @@ export default function ContactSupportDialog({
                     >
                       Return question
                     </SelectItem>
-                    <SelectItem value="other" data-translate="support.subject.other">
+                    <SelectItem
+                      value="other"
+                      data-translate="support.subject.other"
+                    >
                       Other
                     </SelectItem>
                   </SelectContent>
@@ -197,7 +212,10 @@ export default function ContactSupportDialog({
                 >
                   Priority
                 </label>
-                <Select value={contactPriority} onValueChange={setContactPriority}>
+                <Select
+                  value={contactPriority}
+                  onValueChange={setContactPriority}
+                >
                   <SelectTrigger
                     id="contact-priority"
                     className={cn("w-full", styles.select)}
@@ -205,13 +223,22 @@ export default function ContactSupportDialog({
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low" data-translate="support.priority.low">
+                    <SelectItem
+                      value="low"
+                      data-translate="support.priority.low"
+                    >
                       Low
                     </SelectItem>
-                    <SelectItem value="medium" data-translate="support.priority.medium">
+                    <SelectItem
+                      value="medium"
+                      data-translate="support.priority.medium"
+                    >
                       Medium
                     </SelectItem>
-                    <SelectItem value="high" data-translate="support.priority.high">
+                    <SelectItem
+                      value="high"
+                      data-translate="support.priority.high"
+                    >
                       High
                     </SelectItem>
                   </SelectContent>
@@ -237,7 +264,14 @@ export default function ContactSupportDialog({
               </div>
 
               {error && (
-                <div className={cn("p-3 rounded-xl border flex items-start gap-2 text-sm", isDark ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-red-50 border-red-200 text-red-700")}>
+                <div
+                  className={cn(
+                    "p-3 rounded-xl border flex items-start gap-2 text-sm",
+                    isDark
+                      ? "bg-red-500/10 border-red-500/20 text-red-400"
+                      : "bg-red-50 border-red-200 text-red-700",
+                  )}
+                >
                   <AlertCircle size={16} className="mt-0.5 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -272,7 +306,10 @@ export default function ContactSupportDialog({
             >
               <div className={cn("p-4 rounded-lg border", styles.bgSuccess)}>
                 <div className="flex items-center">
-                  <CheckCircle size={24} className={cn("mr-3 flex-shrink-0", styles.text)} />
+                  <CheckCircle
+                    size={24}
+                    className={cn("mr-3 flex-shrink-0", styles.text)}
+                  />
                   <div>
                     <h4
                       className={cn("font-medium", styles.text)}
@@ -282,7 +319,8 @@ export default function ContactSupportDialog({
                     </h4>
                     <p className={cn("text-sm mt-1", styles.textMuted)}>
                       <span data-translate="support.ticketCreatedDesc">
-                        Your support request has been submitted successfully. We&#39;ll get back to you soon.
+                        Your support request has been submitted successfully.
+                        We&#39;ll get back to you soon.
                       </span>
                     </p>
                   </div>
@@ -299,7 +337,10 @@ export default function ContactSupportDialog({
 
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <span className={styles.textMutedLighter} data-translate="support.ticketId">
+                    <span
+                      className={styles.textMutedLighter}
+                      data-translate="support.ticketId"
+                    >
                       Ticket ID:
                     </span>
                     <span className={cn("font-medium", styles.text)}>
@@ -307,7 +348,10 @@ export default function ContactSupportDialog({
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className={styles.textMutedLighter} data-translate="support.created">
+                    <span
+                      className={styles.textMutedLighter}
+                      data-translate="support.created"
+                    >
                       Created:
                     </span>
                     <span className={cn("font-medium", styles.text)}>
@@ -315,20 +359,26 @@ export default function ContactSupportDialog({
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className={styles.textMutedLighter} data-translate="support.status">
+                    <span
+                      className={styles.textMutedLighter}
+                      data-translate="support.status"
+                    >
                       Status:
                     </span>
                     <span
                       className={cn(
                         "font-medium px-2 py-0.5 rounded-full text-xs",
-                        styles.badge
+                        styles.badge,
                       )}
                     >
                       Open
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className={styles.textMutedLighter} data-translate="support.priority">
+                    <span
+                      className={styles.textMutedLighter}
+                      data-translate="support.priority"
+                    >
                       Priority:
                     </span>
                     <span className={cn("font-medium", styles.text)}>
@@ -337,31 +387,42 @@ export default function ContactSupportDialog({
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className={styles.textMutedLighter} data-translate="support.subject">
+                    <span
+                      className={styles.textMutedLighter}
+                      data-translate="support.subject"
+                    >
                       Subject:
                     </span>
                     <span className={cn("font-medium", styles.text)}>
                       {supportTicket.subject === "order-issue"
                         ? "Issue with my order"
                         : supportTicket.subject === "delivery"
-                        ? "Delivery question"
-                        : supportTicket.subject === "product"
-                        ? "Product information"
-                        : supportTicket.subject === "return"
-                        ? "Return question"
-                        : "Other"}
+                          ? "Delivery question"
+                          : supportTicket.subject === "product"
+                            ? "Product information"
+                            : supportTicket.subject === "return"
+                              ? "Return question"
+                              : "Other"}
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t" style={{ borderColor: styles.border }}>
+                <div
+                  className="mt-4 pt-4 border-t"
+                  style={{ borderColor: styles.border }}
+                >
                   <h5
                     className={cn("font-medium mb-2", styles.text)}
                     data-translate="support.message"
                   >
                     Message
                   </h5>
-                  <p className={cn("text-sm whitespace-pre-wrap", styles.textMuted)}>
+                  <p
+                    className={cn(
+                      "text-sm whitespace-pre-wrap",
+                      styles.textMuted,
+                    )}
+                  >
                     {supportTicket.message}
                   </p>
                 </div>
@@ -382,8 +443,9 @@ export default function ContactSupportDialog({
                     </h4>
                     <p className={cn("text-sm mt-1", styles.textMuted)}>
                       <span data-translate="support.whatsNextDesc">
-                        Our support team will review your request and respond via email within 24 hours.
-                        You can also check the status of your ticket in your account.
+                        Our support team will review your request and respond
+                        via email within 24 hours. You can also check the status
+                        of your ticket in your account.
                       </span>
                     </p>
                   </div>

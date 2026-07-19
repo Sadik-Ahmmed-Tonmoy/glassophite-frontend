@@ -70,8 +70,8 @@ export default function CheckoutPageClient() {
     saveAddress: false,
   })
 
-  const [paymentMethod, setPaymentMethod] = useState("CASH_ON_DELIVERY")
-  const [paymentDetails, setPaymentDetails] = useState<any>({})
+  const [paymentMethod ] = useState("CASH_ON_DELIVERY")
+  const [paymentDetails] = useState<any>({})
 
   const [shippingMethod, setShippingMethod] = useState("standard")
   const shippingCost = shippingMethod === "express" ? 120 : 60
@@ -140,11 +140,11 @@ export default function CheckoutPageClient() {
     nextStep()
   }
 
-  const handlePaymentSubmit = (method: string, details: typeof paymentDetails) => {
-    setPaymentMethod(method)
-    setPaymentDetails(details)
-    nextStep()
-  }
+  // const handlePaymentSubmit = (method: string, details: typeof paymentDetails) => {
+  //   setPaymentMethod(method)
+  //   setPaymentDetails(details)
+  //   nextStep()
+  // }
 
   const orderPayload = {
     paymentMethod,

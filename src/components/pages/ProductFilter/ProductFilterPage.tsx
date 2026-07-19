@@ -442,7 +442,7 @@ export default function ProductFilterPage() {
           {hasActiveFilters() && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }} className="flex lg:hidden flex-wrap items-center gap-2 py-4">
               <span className={`text-sm ${s.textMutedLighter}`} data-translate="filter.active">Active filters:</span>
-              {filters.search && <ActiveFilterBtn onClick={() => removeFilter("search", null)} s={s}>"{filters.search}"</ActiveFilterBtn>}
+              {filters.search && <ActiveFilterBtn onClick={() => removeFilter("search", null)} s={s}>&quot;{filters.search}&quot;</ActiveFilterBtn>}
               {filters.brands.map((b) => <ActiveFilterBtn key={b} onClick={() => removeFilter("brands", b)} s={s}>{b}</ActiveFilterBtn>)}
               {filters.categories.map((c) => <ActiveFilterBtn key={c} onClick={() => removeFilter("categories", c)} s={s}>{normalizeCategoryForUI(c)}</ActiveFilterBtn>)}
               {filters.subCategories.map((sc) => <ActiveFilterBtn key={sc} onClick={() => removeFilter("subCategories", sc)} s={s}>{sc}</ActiveFilterBtn>)}

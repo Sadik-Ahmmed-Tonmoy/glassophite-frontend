@@ -9,7 +9,6 @@ const API_BASE = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5016/api/
 async function getProduct(productId: string) {
   try {
     const res = await fetch(`${API_BASE}/products/${productId}`, {
-      // next: { revalidate: 60 },
       cache: "no-store",
     });
     if (!res.ok) return null;
@@ -30,15 +29,28 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
 
   const variant = product.variants?.[0];
   const title = `${product.title} | Glassophite`;
-  const desc = product.shortDescription || product.longDescription || `Shop ${product.title} at Glassophite. Premium quality eyewear.`;
-  const imgUrl = variant?.imgList?.[0]?.image || "https://www.glassophite.com/images/og-image.jpg";
+  const desc =
+    product.shortDescription ||
+    product.longDescription ||
+    `Shop ${product.title} at Glassophite. Premium quality eyewear.`;
+  const imgUrl =
+    variant?.imgList?.[0]?.image ||
+    "https://www.glassophite.com/images/og-image.jpg";
 
   return {
     title,
     description: desc,
-    keywords: [product.brand, ...(product.categories || []), ...(product.types || []), "luxury sunglasses", "premium eyewear"].filter(Boolean),
+    keywords: [
+      product.brand,
+      ...(product.categories || []),
+      ...(product.types || []),
+      "luxury sunglasses",
+      "premium eyewear",
+    ].filter(Boolean),
     robots: { index: true, follow: true },
-    alternates: { canonical: `https://www.glassophite.com/product/${product.id}` },
+    alternates: {
+      canonical: `https://www.glassophite.com/product/${product.id}`,
+    },
     openGraph: {
       title,
       description: desc,
@@ -62,34 +74,50 @@ export default async function ProductPage({ params }: any) {
 
   if (!product) {
     return (
-      <main className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-3xl font-bold">Product Not Found</h1>
-        <p className="mt-4 text-neutral-500">The product you are looking for does not exist or has been removed.</p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 py-16 text-center min-h-[50vh] flex flex-col items-center justify-center">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white">
+          Product Not Found
+        </h1>
+        <p className="mt-3 text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+          The product you are looking for does not exist or has been removed.
+        </p>
       </main>
     );
   }
 
   const variant = product.variants?.[0];
-  const allImages = product.variants?.flatMap((v: any) => v.imgList?.map((img: any) => img.image) || []) || [];
+  const allImages =
+    product.variants?.flatMap(
+      (v: any) => v.imgList?.map((img: any) => img.image) || []
+    ) || [];
   const uniqueImages = [...new Set(allImages)];
 
-  const offers = product.variants?.map((v: any) => ({
-    "@type": "Offer",
-    url: `https://www.glassophite.com/product/${product.id}`,
-    priceCurrency: "BDT",
-    price: v.priceAfterDiscount || 0,
-    priceValidUntil: "2027-12-31",
-    itemCondition: "https://schema.org/NewCondition",
-    availability: v.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-    seller: { "@type": "Organization", "name": "Glassophite" },
-  })) || [];
+  const offers =
+    product.variants?.map((v: any) => ({
+      "@type": "Offer",
+      url: `https://www.glassophite.com/product/${product.id}`,
+      priceCurrency: "BDT",
+      price: v.priceAfterDiscount || 0,
+      priceValidUntil: "2027-12-31",
+      itemCondition: "https://schema.org/NewCondition",
+      availability: v.inStock
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      seller: { "@type": "Organization", name: "Glassophite" },
+    })) || [];
 
   const productJsonLd: Record<string, any> = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.title,
-    image: uniqueImages.length > 0 ? uniqueImages : "https://www.glassophite.com/images/og-image.jpg",
-    description: product.shortDescription || product.longDescription || "Premium eyewear handcrafted for perfection.",
+    image:
+      uniqueImages.length > 0
+        ? uniqueImages
+        : "https://www.glassophite.com/images/og-image.jpg",
+    description:
+      product.shortDescription ||
+      product.longDescription ||
+      "Premium eyewear handcrafted for perfection.",
     sku: variant?.productCode || `GP-${product.id}`,
     mpn: product.id,
     brand: { "@type": "Brand", name: product.brand || "Glassophite" },
@@ -128,7 +156,7 @@ export default async function ProductPage({ params }: any) {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 py-8 sm:py-12 lg:py-16">
       <Script
         id={`product-jsonld-${product.id}`}
         type="application/ld+json"

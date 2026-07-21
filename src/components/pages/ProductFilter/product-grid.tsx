@@ -53,7 +53,7 @@ export default function ProductGrid({ products, isLoading, clearAllFilters }: Pr
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
         {[...Array(6)].map((_, index) => (
           <div key={index} className="group relative animate-pulse">
             <div className={`aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg ${styles.skeletonBg} h-80`} />
@@ -111,7 +111,7 @@ export default function ProductGrid({ products, isLoading, clearAllFilters }: Pr
   return (
     <>
       <motion.div
-        className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8"
+        className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
         variants={containerVariants}
         initial="hidden"
         animate="show"

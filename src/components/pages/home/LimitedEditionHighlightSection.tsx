@@ -17,10 +17,10 @@ import {
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 
-// Demo images using Unsplash (free to use)
-const demoImages = {
+// Demo images
+const DEMO_IMAGES = {
   gold: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop",
   black:
     "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop",
@@ -32,10 +32,10 @@ const demoImages = {
     "https://images.unsplash.com/photo-1504006833117-8886a355efbf?w=800&auto=format&fit=crop",
   sport:
     "https://images.unsplash.com/photo-1620577439399-3cfbeb6eb3f7?w=800&auto=format&fit=crop",
-};
+} as const;
 
 // Demo limited edition products
-const limitedEditionProducts = [
+const LIMITED_EDITION_PRODUCTS = [
   {
     id: "le1",
     title: "Royal Gold Edition",
@@ -59,7 +59,7 @@ const limitedEditionProducts = [
     variant: {
       title: "Royal Gold Edition",
       color: "#d4af37",
-      image: demoImages.gold,
+      image: DEMO_IMAGES.gold,
     },
   },
   {
@@ -84,7 +84,7 @@ const limitedEditionProducts = [
     variant: {
       title: "Onyx Black Diamond",
       color: "#1a1a1a",
-      image: demoImages.black,
+      image: DEMO_IMAGES.black,
     },
   },
   {
@@ -109,7 +109,7 @@ const limitedEditionProducts = [
     variant: {
       title: "Tortoise Shell Legacy",
       color: "#8B4513",
-      image: demoImages.tortoise,
+      image: DEMO_IMAGES.tortoise,
     },
   },
   {
@@ -134,10 +134,18 @@ const limitedEditionProducts = [
     variant: {
       title: "Aviator Platinum",
       color: "#E5E4E2",
-      image: demoImages.aviator,
+      image: DEMO_IMAGES.aviator,
     },
   },
-];
+] as const;
+
+// Deterministic particles
+const PARTICLES = Array.from({ length: 16 }, (_, i) => ({
+  id: i,
+  top: `${((i * 47 + 11) % 90)}%`,
+  left: `${((i * 37 + 19) % 90)}%`,
+  duration: 18 + (i % 5) * 4,
+}));
 
 export default function LimitedEditionHighlightSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -152,7 +160,7 @@ export default function LimitedEditionHighlightSection() {
   const [activeProduct, setActiveProduct] = useState(0);
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
 
-  const isInView = useInView(containerRef, { once: true, amount: 0.2 });
+  const isInView = useInView(containerRef, { once: true, amount: 0.15 });
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -160,15 +168,15 @@ export default function LimitedEditionHighlightSection() {
   });
 
   // Parallax effects
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, -100]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [0, 100]);
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1, 0.8]);
+  const y1 = useTransform(scrollYProgress, [0, 1], [0, -60]);
+  const y2 = useTransform(scrollYProgress, [0, 1], [0, 60]);
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1, 0.9]);
   const rotate = useTransform(scrollYProgress, [0, 1], [0, 180]);
 
   // Auto-rotate featured product
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveProduct((prev) => (prev + 1) % limitedEditionProducts.length);
+      setActiveProduct((prev) => (prev + 1) % LIMITED_EDITION_PRODUCTS.length);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -199,113 +207,92 @@ export default function LimitedEditionHighlightSection() {
     return () => clearInterval(timer);
   }, []);
 
-  const themeStyles = {
-    dark: {
-      bg: "from-black via-gray-900 to-black",
-      card: "bg-white/5 border-white/10",
-      cardHover: "hover:bg-white/10",
-      text: "text-white",
-      textMuted: "text-neutral-300",
-      textMutedLighter: "text-neutral-400",
-      accent: "bg-[#007C74]",
-      accentGlow: "shadow-[0_0_30px_rgba(0,124,116,0.3)]",
-      gradient: "from-[#007C74] to-[#3C55A5]",
-      overlay: "from-black/90 via-black/70 to-transparent",
-      highlight: "bg-gradient-to-r from-[#007C74] to-[#3C55A5]",
-      border: "border-white/10",
-      borderGlow: "border-[#007C74]/30",
-    },
-    light: {
-      bg: "from-neutral-50 via-white to-neutral-50",
-      card: "bg-white/70 border-neutral-200",
-      cardHover: "hover:bg-white",
-      text: "text-neutral-900",
-      textMuted: "text-neutral-600",
-      textMutedLighter: "text-neutral-500",
-      accent: "bg-[#007C74]",
-      accentGlow: "shadow-[0_0_30px_rgba(0,124,116,0.15)]",
-      gradient: "from-[#007C74] to-[#3C55A5]",
-      overlay: "from-white/90 via-white/70 to-transparent",
-      highlight: "bg-gradient-to-r from-[#007C74] to-[#3C55A5]",
-      border: "border-neutral-200",
-      borderGlow: "border-[#007C74]/50",
-    },
-  };
+  const styles = useMemo(
+    () =>
+      isDark
+        ? {
+            bg: "from-black via-gray-900 to-black",
+            card: "bg-white/5 border-white/10",
+            cardHover: "hover:bg-white/10",
+            text: "text-white",
+            textMuted: "text-neutral-300",
+            textMutedLighter: "text-neutral-400",
+            border: "border-white/10",
+            borderGlow: "border-[#007C74]/30",
+          }
+        : {
+            bg: "from-neutral-50 via-white to-neutral-50",
+            card: "bg-white/80 border-neutral-200/80 shadow-xs",
+            cardHover: "hover:bg-white",
+            text: "text-neutral-900",
+            textMuted: "text-neutral-600",
+            textMutedLighter: "text-neutral-500",
+            border: "border-neutral-200",
+            borderGlow: "border-[#007C74]/40",
+          },
+    [isDark]
+  );
 
-  const styles = isDark ? themeStyles.dark : themeStyles.light;
+  const currentProduct = LIMITED_EDITION_PRODUCTS[activeProduct];
 
   return (
     <motion.section
       ref={containerRef}
-      className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.bg} transition-colors duration-500 py-16 sm:py-20 lg:py-24 px-4 sm:px-6`}
+      className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.bg} transition-colors duration-500 py-16 sm:py-20 lg:py-24 px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20`}
       aria-label="Glassophite Limited Edition Collection"
     >
-      {/* Premium Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none select-none">
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, ${isDark ? "#007C74" : "#007C74"} 1px, transparent 0)`,
+            backgroundImage: `radial-gradient(circle at 2px 2px, ${
+              isDark ? "#007C74" : "#007C74"
+            } 1px, transparent 0)`,
             backgroundSize: "40px 40px",
           }}
         />
       </div>
 
-      {/* Animated Gradient Orbs */}
+      {/* Responsive Glow Orbs */}
       <motion.div
         style={{ y: y1 }}
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.1, 0.2, 0.1],
-        }}
+        animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
         transition={{ duration: 8, repeat: Infinity }}
-        className="absolute top-20 left-20 w-64 h-64 md:w-96 md:h-96 bg-[#007C74]/10 rounded-full blur-[100px]"
+        className="absolute top-10 left-5 sm:top-20 sm:left-20 w-[clamp(180px,25vw,384px)] h-[clamp(180px,25vw,384px)] bg-[#007C74]/10 rounded-full blur-[80px] sm:blur-[100px] pointer-events-none"
       />
 
       <motion.div
         style={{ y: y2 }}
-        animate={{
-          scale: [1.3, 1, 1.3],
-          opacity: [0.1, 0.2, 0.1],
-        }}
+        animate={{ scale: [1.2, 1, 1.2], opacity: [0.1, 0.2, 0.1] }}
         transition={{ duration: 10, repeat: Infinity }}
-        className="absolute bottom-20 right-20 w-80 h-80 md:w-[500px] md:h-[500px] bg-[#3C55A5]/10 rounded-full blur-[120px]"
+        className="absolute bottom-10 right-5 sm:bottom-20 sm:right-20 w-[clamp(220px,30vw,500px)] h-[clamp(220px,30vw,500px)] bg-[#3C55A5]/10 rounded-full blur-[90px] sm:blur-[120px] pointer-events-none"
       />
 
       {/* Rotating Elements */}
       <motion.div
         style={{ rotate, scale }}
-        className="absolute top-40 right-40 opacity-10 hidden lg:block"
+        className="absolute top-40 right-40 opacity-10 hidden lg:block pointer-events-none"
       >
         <Gem className="w-24 h-24 text-[#007C74]" />
       </motion.div>
 
       <motion.div
         style={{ rotate: useTransform(rotate, (v) => -v) }}
-        className="absolute bottom-40 left-40 opacity-10 hidden lg:block"
+        className="absolute bottom-40 left-40 opacity-10 hidden lg:block pointer-events-none"
       >
         <Diamond className="w-32 h-32 text-[#3C55A5]" />
       </motion.div>
 
       {/* Floating Particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        {PARTICLES.map((p) => (
           <motion.div
-            key={i}
+            key={p.id}
             className={`absolute w-1 h-1 rounded-full ${isDark ? "bg-white/20" : "bg-[#007C74]/20"}`}
-            initial={{
-              x: Math.random() * 100 + "%",
-              y: Math.random() * 100 + "%",
-            }}
-            animate={{
-              y: ["0%", "100%"],
-              x: [`${Math.random() * 100}%`, `${Math.random() * 100}%`],
-            }}
-            transition={{
-              duration: Math.random() * 20 + 20,
-              repeat: Infinity,
-              ease: "linear",
-            }}
+            style={{ top: p.top, left: p.left }}
+            animate={{ y: [0, -20, 0] }}
+            transition={{ duration: p.duration, repeat: Infinity, ease: "easeInOut" }}
           />
         ))}
       </div>
@@ -316,27 +303,27 @@ export default function LimitedEditionHighlightSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 lg:mb-16"
+          className="text-center mb-10 sm:mb-14 lg:mb-16"
         >
-          {/* Exclusive Badge */}
+          {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={isInView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10 mb-6 mx-auto w-fit"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full backdrop-blur-sm border border-white/10 mb-4 sm:mb-6 mx-auto w-fit shadow-xs"
           >
-            <Sparkles className="w-4 h-4 text-[#007C74]" />
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#007C74]" />
             <span
-              className={`text-xs sm:text-sm ${styles.textMuted} tracking-wider uppercase`}
+              className={`text-xs sm:text-sm font-semibold ${styles.textMuted} tracking-wider uppercase`}
               data-translate="limited.badge"
             >
               Exclusive Release
             </span>
-            <Award className="w-4 h-4 text-[#3C55A5]" />
+            <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#3C55A5]" />
           </motion.div>
 
           {/* Title */}
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-3 sm:mb-4">
             <span className={styles.text}>Limited</span>{" "}
             <span className="bg-gradient-to-r from-[#007C74] via-[#3C55A5] to-[#00A693] bg-clip-text text-transparent">
               Edition
@@ -345,7 +332,7 @@ export default function LimitedEditionHighlightSection() {
 
           {/* Description */}
           <p
-            className={`text-sm sm:text-base md:text-lg ${styles.textMuted} max-w-2xl mx-auto px-4`}
+            className={`text-xs sm:text-sm md:text-base lg:text-lg ${styles.textMuted} max-w-2xl mx-auto px-2 leading-relaxed`}
             data-translate="limited.description"
           >
             Handcrafted masterpieces with exclusive designs. Only 100 pieces of
@@ -357,7 +344,7 @@ export default function LimitedEditionHighlightSection() {
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex items-center justify-center gap-3 mt-6"
+            className="flex items-center justify-center gap-3 mt-5 sm:mt-6 font-semibold"
           >
             <div className="flex items-center gap-2">
               <span className="relative flex h-2 w-2">
@@ -371,9 +358,9 @@ export default function LimitedEditionHighlightSection() {
                 247 people viewing
               </span>
             </div>
-            <div className="w-px h-3 bg-white/10" />
-            <div className="flex items-center gap-2">
-              <Users className="w-3 h-3 text-[#007C74]" />
+            <div className="w-px h-3 bg-neutral-300 dark:bg-white/10" />
+            <div className="flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-[#007C74]" />
               <span
                 className={`text-xs ${styles.textMutedLighter}`}
                 data-translate="limited.sold"
@@ -389,15 +376,15 @@ export default function LimitedEditionHighlightSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="max-w-3xl mx-auto mb-12"
+          className="max-w-3xl mx-auto mb-10 sm:mb-12"
         >
           <div
-            className={`p-4 sm:p-6 rounded-2xl backdrop-blur-md ${styles.card} border-2 ${styles.borderGlow}`}
+            className={`p-4 sm:p-6 rounded-3xl backdrop-blur-md ${styles.card} border-2 ${styles.borderGlow}`}
           >
-            <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
               <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-[#007C74]" />
               <span
-                className={`text-xs sm:text-sm font-medium ${styles.textMuted}`}
+                className={`text-xs sm:text-sm font-bold ${styles.textMuted}`}
                 data-translate="limited.endsIn"
               >
                 Exclusive Offer Ends In
@@ -411,58 +398,51 @@ export default function LimitedEditionHighlightSection() {
                 { value: timeLeft.minutes, label: "Minutes", key: "minutes" },
                 { value: timeLeft.seconds, label: "Seconds", key: "seconds" },
               ].map((unit, index) => (
-                <motion.div
-                  key={unit.key}
-                  initial={{ scale: 0 }}
-                  animate={isInView ? { scale: 1 } : {}}
-                  transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-[#007C74] to-[#3C55A5] bg-clip-text text-transparent">
+                <div key={unit.key} className="text-center">
+                  <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-[#007C74] to-[#3C55A5] bg-clip-text text-transparent">
                     {unit.value.toString().padStart(2, "0")}
                   </div>
                   <div
-                    className={`text-[8px] sm:text-[10px] md:text-xs uppercase tracking-wider ${styles.textMutedLighter}`}
+                    className={`text-[9px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wider ${styles.textMutedLighter}`}
                     data-translate={`limited.time.${unit.key}`}
                   >
                     {unit.label}
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
         </motion.div>
 
-        {/* Featured Product Carousel */}
+        {/* Featured Product */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="mb-16"
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="mb-12 lg:mb-16"
         >
-          <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-center">
-            {/* Product Image with Carousel */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center">
+            {/* Product Image Carousel */}
             <motion.div
               key={activeProduct}
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.5 }}
-              className="relative aspect-[4/3] lg:aspect-square rounded-2xl overflow-hidden group"
+              transition={{ duration: 0.4 }}
+              className="relative aspect-[4/3] sm:aspect-[16/10] lg:aspect-square rounded-3xl overflow-hidden group shadow-md"
             >
               <Image
-                src={limitedEditionProducts[activeProduct].variant.image}
-                alt={limitedEditionProducts[activeProduct].title}
+                src={currentProduct.variant.image}
+                alt={currentProduct.title}
                 fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 priority
               />
 
-              {/* Exclusive Overlay */}
+              {/* Exclusive Badge */}
               <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
-                <span className="px-2 sm:px-4 py-1 sm:py-2 bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white text-xs sm:text-sm font-bold rounded-full flex items-center gap-1 sm:gap-2">
-                  <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="px-3 py-1 bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white text-xs font-extrabold rounded-full flex items-center gap-1.5 shadow-sm">
+                  <Zap className="w-3.5 h-3.5" />
                   <span data-translate="limited.exclusive">
                     Exclusive Edition
                   </span>
@@ -472,7 +452,7 @@ export default function LimitedEditionHighlightSection() {
               {/* Limited Number Badge */}
               <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4">
                 <span
-                  className={`px-2 sm:px-4 py-1 sm:py-2 rounded-full backdrop-blur-md ${styles.card} text-xs sm:text-sm font-bold`}
+                  className={`px-3 py-1 rounded-full backdrop-blur-md ${styles.card} text-xs font-extrabold shadow-sm`}
                 >
                   #{activeProduct + 1}/100
                 </span>
@@ -480,14 +460,14 @@ export default function LimitedEditionHighlightSection() {
 
               {/* Carousel Indicators */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                {limitedEditionProducts.map((_, index) => (
+                {LIMITED_EDITION_PRODUCTS.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setActiveProduct(index)}
-                    className={`transition-all duration-300 ${
+                    className={`transition-all duration-300 cursor-pointer ${
                       activeProduct === index
-                        ? "w-6 sm:w-8 h-1.5 sm:h-2 bg-[#007C74] rounded-full"
-                        : "w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/50 rounded-full hover:bg-white/80"
+                        ? "w-6 h-1.5 bg-[#007C74] rounded-full"
+                        : "w-1.5 h-1.5 bg-white/50 rounded-full"
                     }`}
                     aria-label={`View product ${index + 1}`}
                   />
@@ -498,62 +478,54 @@ export default function LimitedEditionHighlightSection() {
             {/* Product Details */}
             <motion.div
               key={`details-${activeProduct}`}
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.4 }}
               className="space-y-4 sm:space-y-6"
             >
               <div>
                 <h3
-                  className={`text-xl sm:text-2xl lg:text-3xl font-bold ${styles.text} mb-2`}
+                  className={`text-xl sm:text-2xl lg:text-3xl font-extrabold ${styles.text} mb-2`}
                 >
-                  {limitedEditionProducts[activeProduct].title}
+                  {currentProduct.title}
                 </h3>
-                <p className={`text-sm sm:text-base ${styles.textMuted}`}>
-                  {limitedEditionProducts[activeProduct].longDescription}
+                <p className={`text-xs sm:text-sm md:text-base ${styles.textMuted} leading-relaxed`}>
+                  {currentProduct.longDescription}
                 </p>
               </div>
 
               {/* Premium Features */}
-              <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                {limitedEditionProducts[activeProduct].features.map(
-                  (feature, index) => (
-                    <motion.div
-                      key={index}
-                      whileHover={{ x: 5 }}
-                      className="flex items-center gap-1 sm:gap-2"
-                    >
-                      <div className="p-1 rounded-lg bg-[#007C74]/10">
-                        <Gift className="w-2 h-2 sm:w-3 sm:h-3 text-[#007C74]" />
-                      </div>
-                      <span
-                        className={`text-[10px] sm:text-xs ${styles.textMuted}`}
-                      >
-                        {feature}
-                      </span>
-                    </motion.div>
-                  ),
-                )}
+              <div className="grid grid-cols-2 gap-2.5">
+                {currentProduct.features.map((feature, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div className="p-1 rounded-lg bg-[#007C74]/10 text-[#007C74] shrink-0">
+                      <Gift className="w-3 h-3" />
+                    </div>
+                    <span className={`text-xs font-semibold ${styles.textMuted}`}>
+                      {feature}
+                    </span>
+                  </div>
+                ))}
               </div>
 
               {/* Stock Level */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs sm:text-sm">
+                <div className="flex items-center justify-between text-xs sm:text-sm font-semibold">
                   <span
                     className={styles.textMutedLighter}
                     data-translate="limited.remaining"
                   >
                     Remaining Pieces
                   </span>
-                  <span className={`font-bold ${styles.text}`}>
-                    {limitedEditionProducts[activeProduct].quantity}/100
+                  <span className={styles.text}>
+                    {currentProduct.quantity}/100
                   </span>
                 </div>
-                <div className="w-full h-1.5 sm:h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-neutral-200 dark:bg-white/10 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{
-                      width: `${(limitedEditionProducts[activeProduct].quantity / 100) * 100}%`,
+                      width: `${(currentProduct.quantity / 100) * 100}%`,
                     }}
                     transition={{ duration: 1 }}
                     className="h-full bg-gradient-to-r from-[#007C74] to-[#3C55A5]"
@@ -561,46 +533,39 @@ export default function LimitedEditionHighlightSection() {
                 </div>
               </div>
 
-              {/* Price and CTA */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-2 sm:pt-4">
+              {/* Price & CTA */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
                 <div>
                   <span
                     className={`text-xs sm:text-sm ${styles.textMutedLighter} line-through`}
                   >
-                    ৳{limitedEditionProducts[activeProduct].mainPrice}
+                    ৳{currentProduct.mainPrice}
                   </span>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`text-xl sm:text-2xl lg:text-3xl font-bold ${styles.text}`}
+                      className={`text-2xl sm:text-3xl font-extrabold ${styles.text}`}
                     >
-                      ৳
-                      {limitedEditionProducts[activeProduct].priceAfterDiscount}
+                      ৳{currentProduct.priceAfterDiscount}
                     </span>
-                    <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-red-500/20 text-red-500 text-xs font-bold rounded-full">
-                      -{limitedEditionProducts[activeProduct].discountPercent}%
+                    <span className="px-2 py-0.5 bg-red-500/20 text-red-500 text-xs font-bold rounded-full">
+                      -{currentProduct.discountPercent}%
                     </span>
                   </div>
                 </div>
 
-                <Link
-                  href={`/product/${limitedEditionProducts[activeProduct].id}`}
-                >
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white text-sm sm:text-base font-medium flex items-center justify-center gap-2"
-                  >
+                <Link href={`/product/${currentProduct.id}`}>
+                  <button className="w-full sm:w-auto px-6 py-3 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer">
                     <span data-translate="limited.claim">Secure Yours Now</span>
-                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                  </motion.button>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 </Link>
               </div>
 
               {/* Authenticity Badge */}
               <div
-                className={`flex items-center gap-2 pt-2 text-xs ${styles.textMutedLighter}`}
+                className={`flex items-center gap-2 text-xs font-semibold ${styles.textMutedLighter}`}
               >
-                <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-[#007C74]" />
+                <Shield className="w-4 h-4 text-[#007C74] shrink-0" />
                 <span data-translate="limited.authenticity">
                   Certificate of Authenticity included
                 </span>
@@ -610,96 +575,65 @@ export default function LimitedEditionHighlightSection() {
         </motion.div>
 
         {/* More Limited Editions Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-          {limitedEditionProducts.map((product, index) => (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {LIMITED_EDITION_PRODUCTS.map((product, index) => (
             <motion.div
               key={product.id}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
+              transition={{ duration: 0.4, delay: 0.6 + index * 0.08 }}
               onHoverStart={() => setHoveredProduct(product.id)}
               onHoverEnd={() => setHoveredProduct(null)}
-              className={`relative rounded-xl overflow-hidden backdrop-blur-sm border ${styles.card} group`}
+              className={`relative rounded-2xl overflow-hidden backdrop-blur-sm border ${styles.card} group flex flex-col justify-between shadow-xs`}
             >
               <div className="relative aspect-square">
                 <Image
                   src={product.variant.image}
                   alt={product.title}
                   fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 25vw"
                 />
 
                 {/* Limited Badge */}
-                <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
-                  <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white text-[8px] sm:text-xs font-bold rounded-full">
+                <div className="absolute top-2.5 left-2.5">
+                  <span className="px-2 py-0.5 bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white text-[10px] font-extrabold rounded-full">
                     Limited
                   </span>
                 </div>
 
-                {/* Quick View Overlay */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: hoveredProduct === product.id ? 1 : 0 }}
-                  className="absolute inset-0 bg-black/50 flex items-center justify-center"
-                >
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="p-1.5 sm:p-2 rounded-full bg-white text-black"
-                  >
-                    <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
-                  </motion.button>
-                </motion.div>
-
                 {/* Stock Level Indicator */}
-                <div className="absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3">
-                  <div className="flex items-center justify-between text-[8px] sm:text-xs text-white mb-1">
+                <div className="absolute bottom-2.5 left-2.5 right-2.5">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-white mb-1">
                     <span data-translate="limited.left">Left</span>
                     <span>{product.quantity}/100</span>
                   </div>
-                  <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={
-                        isInView
-                          ? { width: `${(product.quantity / 100) * 100}%` }
-                          : {}
-                      }
-                      transition={{ duration: 1, delay: 1 + index * 0.2 }}
+                  <div className="w-full h-1 bg-white/30 rounded-full overflow-hidden">
+                    <div
+                      style={{ width: `${(product.quantity / 100) * 100}%` }}
                       className="h-full bg-gradient-to-r from-[#007C74] to-[#3C55A5]"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="p-2 sm:p-3 md:p-4">
-                <h4
-                  className={`text-xs sm:text-sm font-semibold ${styles.text} mb-1 line-clamp-1`}
-                >
+              <div className="p-3 sm:p-4 space-y-2">
+                <h4 className={`text-xs sm:text-sm font-bold ${styles.text} line-clamp-1`}>
                   {product.title}
                 </h4>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span
-                      className={`text-[8px] sm:text-xs ${styles.textMutedLighter} line-through`}
-                    >
+                    <span className={`text-[10px] sm:text-xs ${styles.textMutedLighter} line-through`}>
                       ৳{product.mainPrice}
                     </span>
-                    <span
-                      className={`text-xs sm:text-sm font-bold ${styles.text} ml-1 sm:ml-2`}
-                    >
+                    <span className={`text-xs sm:text-sm font-extrabold ${styles.text} ml-1.5`}>
                       ৳{product.priceAfterDiscount}
                     </span>
                   </div>
                   <Link href={`/product/${product.id}`}>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="p-1 sm:p-1.5 rounded-full bg-[#007C74]/10 text-[#007C74] hover:bg-[#007C74]/20 transition-colors"
-                    >
-                      <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4" />
-                    </motion.button>
+                    <button className="p-1.5 rounded-full bg-[#007C74]/10 text-[#007C74] hover:bg-[#007C74]/20 transition-colors cursor-pointer">
+                      <Eye className="w-3.5 h-3.5" />
+                    </button>
                   </Link>
                 </div>
               </div>
@@ -711,19 +645,16 @@ export default function LimitedEditionHighlightSection() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.5, delay: 1.2 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
           className="text-center mt-10 sm:mt-12"
         >
           <Link href="/product-filter?category=best+sellers">
-            <motion.button
-              whileHover={{ x: 5 }}
-              className={`inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${styles.textMuted} hover:text-[#007C74] transition-colors`}
-            >
+            <button className={`inline-flex items-center gap-2 text-xs sm:text-sm font-bold ${styles.textMuted} hover:text-[#007C74] transition-colors cursor-pointer group`}>
               <span data-translate="limited.viewAll">
                 View All Limited Editions
               </span>
-              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
-            </motion.button>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </button>
           </Link>
         </motion.div>
       </div>

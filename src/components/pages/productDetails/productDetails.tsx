@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Star } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Badge } from "@nextui-org/react";
 
 import AddToCartButton from "@/components/ui/buttons/AddToCartButton/AddToCartButton";
@@ -31,6 +31,16 @@ const getYoutubeEmbedUrl = (url?: string) => {
   return null;
 };
 
+// Static prescription lens power options array
+const POWER_OPTIONS: string[] = (() => {
+  const options: string[] = [];
+  for (let i = -10.0; i <= 6.0; i += 0.25) {
+    const val = i > 0 ? `+${i.toFixed(2)}` : i.toFixed(2);
+    options.push(val);
+  }
+  return options;
+})();
+
 interface ProductDetailsProps {
   product: TProduct;
 }
@@ -46,8 +56,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   );
   const [quantity, setQuantity] = useState(1);
 
-  const { data: lensesData, isLoading: isLensesLoading } = useGetPrescriptionLensesQuery({ isAvailable: true });
-  const lenses = lensesData?.data || [];
+  const { data: lensesData, isLoading: isLensesLoading } =
+    useGetPrescriptionLensesQuery({ isAvailable: true });
+  const lenses = useMemo(() => lensesData?.data || [], [lensesData]);
 
   const [addPowerGlass, setAddPowerGlass] = useState(false);
   const [selectedLensId, setSelectedLensId] = useState<string>("");
@@ -60,55 +71,50 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     }
   }, [lenses, selectedLensId]);
 
-  const selectedLens = lenses.find(l => l.id === selectedLensId);
+  const selectedLens = lenses.find((l) => l.id === selectedLensId);
   const lensPrice = addPowerGlass && selectedLens ? selectedLens.price : 0;
 
-  const powerOptions: string[] = [];
-  // Populate power selections from -10.00 to +6.00 in 0.25 steps
-  for (let i = -10.00; i <= 6.00; i += 0.25) {
-    const val = i > 0 ? `+${i.toFixed(2)}` : i.toFixed(2);
-    powerOptions.push(val);
-  }
-
-  // Theme styles
-  const themeStyles = {
-    dark: {
-      text: "text-white",
-      textMuted: "text-neutral-300",
-      textMutedLighter: "text-neutral-400",
-      border: "border-white/10",
-      bg: "bg-black",
-      card: "bg-white/5 border-white/10",
-      cardHover: "hover:bg-white/10",
-      badgeSuccess: "border-green-500 text-green-500",
-      badgeWarning: "border-yellow-500 text-yellow-500",
-      badgeDanger: "border-red-500 text-red-500",
-      badgeDefault: "border-white/20 text-white",
-      tabActive: "data-[state=active]:bg-[#007C74] data-[state=active]:text-white",
-      tabInactive: "text-neutral-400 hover:text-white",
-      starFilled: "text-yellow-400 fill-yellow-400",
-      starEmpty: "text-gray-600",
-    },
-    light: {
-      text: "text-neutral-900",
-      textMuted: "text-neutral-600",
-      textMutedLighter: "text-neutral-500",
-      border: "border-neutral-200",
-      bg: "bg-white",
-      card: "bg-white border-neutral-200",
-      cardHover: "hover:bg-neutral-50",
-      badgeSuccess: "border-green-600 text-green-600",
-      badgeWarning: "border-yellow-600 text-yellow-600",
-      badgeDanger: "border-red-600 text-red-600",
-      badgeDefault: "border-neutral-300 text-neutral-700",
-      tabActive: "data-[state=active]:bg-[#007C74] data-[state=active]:text-white",
-      tabInactive: "text-neutral-500 hover:text-neutral-900",
-      starFilled: "text-yellow-500 fill-yellow-500",
-      starEmpty: "text-gray-300",
-    },
-  };
-
-  const styles = isDark ? themeStyles.dark : themeStyles.light;
+  const styles = useMemo(
+    () =>
+      isDark
+        ? {
+            text: "text-white",
+            textMuted: "text-neutral-300",
+            textMutedLighter: "text-neutral-400",
+            border: "border-white/10",
+            bg: "bg-black",
+            card: "bg-white/5 border-white/10",
+            cardHover: "hover:bg-white/10",
+            badgeSuccess: "border-green-500 text-green-500",
+            badgeWarning: "border-yellow-500 text-yellow-500",
+            badgeDanger: "border-red-500 text-red-500",
+            badgeDefault: "border-white/20 text-white",
+            tabActive:
+              "data-[state=active]:bg-[#007C74] data-[state=active]:text-white",
+            tabInactive: "text-neutral-400 hover:text-white",
+            starFilled: "text-yellow-400 fill-yellow-400",
+            starEmpty: "text-neutral-600",
+          }
+        : {
+            text: "text-neutral-900",
+            textMuted: "text-neutral-600",
+            textMutedLighter: "text-neutral-500",
+            border: "border-neutral-200",
+            bg: "bg-white",
+            card: "bg-white border-neutral-200",
+            cardHover: "hover:bg-neutral-50",
+            badgeSuccess: "border-green-600 text-green-600",
+            badgeWarning: "border-yellow-600 text-yellow-600",
+            badgeDanger: "border-red-600 text-red-600",
+            badgeDefault: "border-neutral-300 text-neutral-700",
+            tabActive:
+              "data-[state=active]:bg-[#007C74] data-[state=active]:text-white",
+            tabInactive: "text-neutral-500 hover:text-neutral-900",
+            starFilled: "text-yellow-500 fill-yellow-500",
+            starEmpty: "text-neutral-300",
+          },
+    [isDark]
+  );
 
   useEffect(() => {
     if (selectedItemFromCart) {
@@ -160,9 +166,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-12 mt-16"
+      className="space-y-10 sm:space-y-14 mt-4 sm:mt-8"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Image Slider */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -181,27 +187,26 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="space-y-6 lg:col-span-7"
+          className="space-y-5 sm:space-y-6 lg:col-span-7"
         >
           {/* Title and Stock Badge */}
           <div>
-            <div className="flex justify-between items-start">
-              <h1 className={`text-2xl sm:text-3xl font-bold ${styles.text}`}>
+            <div className="flex flex-wrap justify-between items-start gap-2">
+              <h1 className={`text-2xl sm:text-3xl font-extrabold ${styles.text}`}>
                 {selectedVariant.title}
               </h1>
               {!selectedVariant.inStock ? (
                 <Badge
-                  className="text-sm border border-red-500 bg-red-50 dark:bg-red-950/20 text-red-500 font-bold"
+                  className="text-xs sm:text-sm border border-red-500 bg-red-50 dark:bg-red-950/20 text-red-500 font-bold"
                   data-translate="product.outOfStock"
-                  
                 >
                   Out of Stock
                 </Badge>
               ) : (
                 <div
-                  className={`text-sm border ${
+                  className={`text-xs sm:text-sm px-2.5 py-0.5 rounded-full border ${
                     selectedVariant.quantity < 7
-                      ? " border-red-500 bg-red-50 dark:bg-red-950/20 text-red-500 font-bold"
+                      ? "border-red-500 bg-red-50 dark:bg-red-950/20 text-red-500 font-bold"
                       : styles.badgeSuccess
                   }`}
                 >
@@ -211,12 +216,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 </div>
               )}
             </div>
-            <p className={`${styles.textMuted} mt-2`}>
+            <p className={`text-xs sm:text-sm ${styles.textMuted} mt-2 leading-relaxed`}>
               {selectedVariant.shortDescription}
             </p>
 
             {/* Rating and SKU */}
-            <div className="flex items-center mt-4 space-x-2 flex-wrap gap-2">
+            <div className="flex items-center mt-3 space-x-2 flex-wrap gap-2">
               {product.averageRating && (
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
@@ -229,12 +234,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                       }`}
                     />
                   ))}
-                  <span className={`ml-2 text-sm ${styles.textMutedLighter}`}>
+                  <span className={`ml-2 text-xs sm:text-sm ${styles.textMutedLighter}`}>
                     ({product.averageRating} reviews)
                   </span>
                 </div>
               )}
-              <span className={`text-sm ${styles.textMutedLighter}`}>
+              <span className={`text-xs sm:text-sm ${styles.textMutedLighter}`}>
                 SKU: {selectedVariant.productCode}
               </span>
             </div>
@@ -244,20 +249,20 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           <div className="flex items-center space-x-4">
             {selectedVariant.priceAfterDiscount && selectedVariant.mainPrice ? (
               <>
-                <span className="text-2xl font-bold text-green-600 dark:text-green-500">
+                <span className="text-2xl sm:text-3xl font-extrabold text-[#007C74] dark:text-[#00A693]">
                   ৳{(selectedVariant.priceAfterDiscount + lensPrice).toFixed(2)}
                 </span>
-                <span className={`text-lg line-through ${styles.textMutedLighter}`}>
+                <span className={`text-base sm:text-lg line-through ${styles.textMutedLighter}`}>
                   ৳{(selectedVariant.mainPrice + lensPrice).toFixed(2)}
                 </span>
                 {selectedVariant.discountPercent && (
-                  <Badge className="bg-green-500 hover:bg-green-600">
+                  <Badge className="bg-[#007C74] text-white font-bold">
                     {selectedVariant.discountPercent}% OFF
                   </Badge>
                 )}
               </>
             ) : (
-              <span className={`text-2xl font-bold ${styles.text}`}>
+              <span className={`text-xl sm:text-2xl font-bold ${styles.text}`}>
                 Price not available
               </span>
             )}
@@ -272,27 +277,32 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
           {/* Glowing Power Glass Flow Configuration Section */}
           {product.showPrescriptionLenses !== false && (
-            <div className={`p-5 rounded-xl border backdrop-blur-md transition-all duration-300 ${
-              addPowerGlass 
-                ? "border-[#007C74] bg-[#007C74]/5 shadow-[0_0_20px_rgba(0,124,116,0.15)] dark:shadow-[0_0_25px_rgba(0,124,116,0.25)]" 
-                : `${styles.border} bg-transparent hover:border-neutral-300 dark:hover:border-neutral-700`
-            }`}>
+            <div
+              className={`p-4 sm:p-5 rounded-2xl border backdrop-blur-md transition-all duration-300 ${
+                addPowerGlass
+                  ? "border-[#007C74] bg-[#007C74]/5 shadow-[0_0_20px_rgba(0,124,116,0.15)] dark:shadow-[0_0_25px_rgba(0,124,116,0.25)]"
+                  : `${styles.border} bg-transparent hover:border-neutral-300 dark:hover:border-neutral-700`
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <span className="text-xl">👓</span>
                   <div>
-                    <h3 className={`font-semibold text-base ${styles.text}`}>Custom Prescription Lenses</h3>
-                    <p className={`text-xs ${styles.textMutedLighter}`}>Configure custom power glass for your optical frames</p>
+                    <h3 className={`font-bold text-sm sm:text-base ${styles.text}`}>
+                      Custom Prescription Lenses
+                    </h3>
+                    <p className={`text-xs ${styles.textMutedLighter}`}>
+                      Configure custom power glass for your optical frames
+                    </p>
                   </div>
                 </div>
-                
-                {/* Glowing Toggle switch button */}
+
                 <button
                   type="button"
                   onClick={() => setAddPowerGlass(!addPowerGlass)}
                   className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none ${
-                    addPowerGlass 
-                      ? "bg-[#007C74] shadow-[0_0_10px_#007C74]" 
+                    addPowerGlass
+                      ? "bg-[#007C74] shadow-[0_0_10px_#007C74]"
                       : "bg-neutral-300 dark:bg-neutral-700"
                   }`}
                 >
@@ -313,13 +323,19 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 >
                   {/* Lens Protection Type selection */}
                   <div>
-                    <label className={`block text-xs font-semibold uppercase tracking-wider ${styles.textMutedLighter} mb-3`}>
+                    <label
+                      className={`block text-xs font-bold uppercase tracking-wider ${styles.textMutedLighter} mb-3`}
+                    >
                       1. Select Lens Protection Type
                     </label>
                     {isLensesLoading ? (
-                      <div className="text-xs text-[#007C74] animate-pulse">Loading prescription lens options...</div>
+                      <div className="text-xs text-[#007C74] animate-pulse">
+                        Loading prescription lens options...
+                      </div>
                     ) : lenses.length === 0 ? (
-                      <div className="text-xs text-red-500">No prescription lenses available at the moment.</div>
+                      <div className="text-xs text-red-500">
+                        No prescription lenses available at the moment.
+                      </div>
                     ) : (
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                         {lenses.map((opt) => {
@@ -329,18 +345,26 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                               key={opt.id}
                               type="button"
                               onClick={() => setSelectedLensId(opt.id)}
-                              className={`flex flex-col items-start p-3 rounded-lg border text-left transition-all duration-200 cursor-pointer ${
+                              className={`flex flex-col items-start p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
                                 isSelected
                                   ? "border-[#007C74] bg-[#007C74]/10 dark:bg-[#007C74]/20 ring-1 ring-[#007C74]"
                                   : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/50"
                               }`}
                             >
-                              <span className="text-lg mb-1">🔍</span>
-                              <span className={`text-xs font-bold ${styles.text}`}>{opt.name}</span>
+                              <span className="text-base mb-1">🔍</span>
+                              <span className={`text-xs font-bold ${styles.text}`}>
+                                {opt.name}
+                              </span>
                               {opt.description && (
-                                <span className={`text-[10px] ${styles.textMutedLighter} line-clamp-1 mt-0.5`}>{opt.description}</span>
+                                <span
+                                  className={`text-[10px] ${styles.textMutedLighter} line-clamp-1 mt-0.5`}
+                                >
+                                  {opt.description}
+                                </span>
                               )}
-                              <span className="text-xs font-semibold text-[#007C74] mt-1.5">+ ৳{opt.price.toFixed(2)}</span>
+                              <span className="text-xs font-bold text-[#007C74] mt-1.5">
+                                + ৳{opt.price.toFixed(2)}
+                              </span>
                             </button>
                           );
                         })}
@@ -350,38 +374,50 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
                   {/* Left/Right SPH Power dropdowns */}
                   <div>
-                    <label className={`block text-xs font-semibold uppercase tracking-wider ${styles.textMutedLighter} mb-3`}>
+                    <label
+                      className={`block text-xs font-bold uppercase tracking-wider ${styles.textMutedLighter} mb-3`}
+                    >
                       2. Input Lens Power (SPH)
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {/* Left Eye */}
                       <div className="space-y-1.5">
-                        <span className={`text-xs font-medium ${styles.textMuted} flex items-center`}>
-                          <span className="w-2 h-2 rounded-full bg-blue-500 mr-1.5" /> Left Eye (OS / Left Power)
+                        <span
+                          className={`text-xs font-medium ${styles.textMuted} flex items-center`}
+                        >
+                          <span className="w-2 h-2 rounded-full bg-blue-500 mr-1.5" />{" "}
+                          Left Eye (OS / Left Power)
                         </span>
                         <select
                           value={leftEyePower}
                           onChange={(e) => setLeftEyePower(e.target.value)}
-                          className={`w-full p-2.5 rounded-lg border text-sm bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 ${styles.border} focus:ring-1 focus:ring-[#007C74] outline-none cursor-pointer`}
+                          className={`w-full p-2.5 rounded-xl border text-xs sm:text-sm bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 ${styles.border} focus:ring-1 focus:ring-[#007C74] outline-none cursor-pointer`}
                         >
-                          {powerOptions.map((opt) => (
-                            <option key={`left-${opt}`} value={opt}>{opt}</option>
+                          {POWER_OPTIONS.map((opt) => (
+                            <option key={`left-${opt}`} value={opt}>
+                              {opt}
+                            </option>
                           ))}
                         </select>
                       </div>
 
                       {/* Right Eye */}
                       <div className="space-y-1.5">
-                        <span className={`text-xs font-medium ${styles.textMuted} flex items-center`}>
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5" /> Right Eye (OD / Right Power)
+                        <span
+                          className={`text-xs font-medium ${styles.textMuted} flex items-center`}
+                        >
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5" />{" "}
+                          Right Eye (OD / Right Power)
                         </span>
                         <select
                           value={rightEyePower}
                           onChange={(e) => setRightEyePower(e.target.value)}
-                          className={`w-full p-2.5 rounded-lg border text-sm bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 ${styles.border} focus:ring-1 focus:ring-[#007C74] outline-none cursor-pointer`}
+                          className={`w-full p-2.5 rounded-xl border text-xs sm:text-sm bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 ${styles.border} focus:ring-1 focus:ring-[#007C74] outline-none cursor-pointer`}
                         >
-                          {powerOptions.map((opt) => (
-                            <option key={`right-${opt}`} value={opt}>{opt}</option>
+                          {POWER_OPTIONS.map((opt) => (
+                            <option key={`right-${opt}`} value={opt}>
+                              {opt}
+                            </option>
                           ))}
                         </select>
                       </div>
@@ -394,11 +430,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
           {/* Quantity and Add to Cart */}
           <div>
-            <div className="flex flex-col xs:flex-row sm:items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               {/* Quantity Selector */}
               <div
                 className={cn(
-                  "flex items-center border rounded-md w-fit",
+                  "flex items-center border rounded-full w-fit",
                   selectedVariant.inStock ? "flex" : "hidden",
                   styles.border
                 )}
@@ -412,7 +448,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 >
                   -
                 </MyButton>
-                <span className={`w-10 text-center ${styles.text}`}>
+                <span className={`w-10 text-center font-bold text-xs sm:text-sm ${styles.text}`}>
                   {quantity}
                 </span>
                 <MyButton
@@ -441,7 +477,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                       color: selectedVariant.color,
                       colorName: selectedVariant.title?.split(" ").pop() || "",
                       price: (selectedVariant.mainPrice || 0) + lensPrice,
-                      priceAfterDiscount: selectedVariant.priceAfterDiscount ? (selectedVariant.priceAfterDiscount + lensPrice) : undefined,
+                      priceAfterDiscount: selectedVariant.priceAfterDiscount
+                        ? selectedVariant.priceAfterDiscount + lensPrice
+                        : undefined,
                       inStock: selectedVariant.inStock,
                       quantity: selectedVariant.quantity,
                       img:
@@ -452,15 +490,26 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     }}
                     productId={product.id}
                     cartQuantity={quantity}
-                    lensPowerDetails={addPowerGlass && selectedLens ? { lensType: selectedLens.name, leftEye: leftEyePower, rightEye: rightEyePower } : null}
+                    lensPowerDetails={
+                      addPowerGlass && selectedLens
+                        ? {
+                            lensType: selectedLens.name,
+                            leftEye: leftEyePower,
+                            rightEye: rightEyePower,
+                          }
+                        : null
+                    }
                     lensId={addPowerGlass && selectedLens ? selectedLens.id : null}
                   />
-                  <WishlistButton productId={product.id} productName={product.title} />
+                  <WishlistButton
+                    productId={product.id}
+                    productName={product.title}
+                  />
                 </div>
-                
+
                 {!selectedVariant.inStock && (
                   <div className="w-full md:w-auto min-w-[200px]">
-                    <RequestStockButton 
+                    <RequestStockButton
                       productId={product.id}
                       variantId={selectedVariant.id}
                     />
@@ -474,7 +523,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
           {/* Tabs */}
           <Tabs defaultValue="specifications">
-            <TabsList className={`grid ${product.videoUrl ? 'grid-cols-3' : 'grid-cols-2'} ${styles.border}`}>
+            <TabsList
+              className={`grid ${
+                product.videoUrl ? "grid-cols-3" : "grid-cols-2"
+              } ${styles.border}`}
+            >
               <TabsTrigger
                 value="specifications"
                 className={cn(styles.tabInactive, styles.tabActive)}
@@ -500,65 +553,122 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             </TabsList>
 
             <TabsContent value="description" className="mt-4">
-              <p className={styles.textMuted}>{product.longDescription}</p>
+              <p className={`text-xs sm:text-sm ${styles.textMuted} leading-relaxed`}>
+                {product.longDescription}
+              </p>
             </TabsContent>
 
             <TabsContent value="specifications" className="mt-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
                 <div className="space-y-2">
                   <div>
-                    <span className={`font-semibold ${styles.text}`} data-translate="product.brand">Brand:</span>{" "}
+                    <span
+                      className={`font-bold ${styles.text}`}
+                      data-translate="product.brand"
+                    >
+                      Brand:
+                    </span>{" "}
                     <span className={styles.textMuted}>{product.brand}</span>
                   </div>
                   <div>
-                    <span className={`font-semibold ${styles.text}`} data-translate="product.material">Material:</span>{" "}
+                    <span
+                      className={`font-bold ${styles.text}`}
+                      data-translate="product.material"
+                    >
+                      Material:
+                    </span>{" "}
                     <span className={styles.textMuted}>{product.material}</span>
                   </div>
                   <div>
-                    <span className={`font-semibold ${styles.text}`} data-translate="product.dimensions">Dimensions:</span>{" "}
+                    <span
+                      className={`font-bold ${styles.text}`}
+                      data-translate="product.dimensions"
+                    >
+                      Dimensions:
+                    </span>{" "}
                     <span className={styles.textMuted}>{product.dimensions}</span>
                   </div>
                   <div>
-                    <span className={`font-semibold ${styles.text}`} data-translate="product.weight">Weight:</span>{" "}
+                    <span
+                      className={`font-bold ${styles.text}`}
+                      data-translate="product.weight"
+                    >
+                      Weight:
+                    </span>{" "}
                     <span className={styles.textMuted}>{product.weight}</span>
                   </div>
                   <div>
-                    <span className={`font-semibold ${styles.text}`} data-translate="product.frameType">Frame Type:</span>{" "}
+                    <span
+                      className={`font-bold ${styles.text}`}
+                      data-translate="product.frameType"
+                    >
+                      Frame Type:
+                    </span>{" "}
                     <span className={styles.textMuted}>{product.frameType}</span>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div>
-                    <span className={`font-semibold ${styles.text}`} data-translate="product.lensType">Lens Type:</span>{" "}
+                    <span
+                      className={`font-bold ${styles.text}`}
+                      data-translate="product.lensType"
+                    >
+                      Lens Type:
+                    </span>{" "}
                     <span className={styles.textMuted}>{product.lensType}</span>
                   </div>
                   <div>
-                    <span className={`font-semibold ${styles.text}`} data-translate="product.warranty">Warranty:</span>{" "}
+                    <span
+                      className={`font-bold ${styles.text}`}
+                      data-translate="product.warranty"
+                    >
+                      Warranty:
+                    </span>{" "}
                     <span className={styles.textMuted}>{product.warranty}</span>
                   </div>
                   <div>
-                    <span className={`font-semibold ${styles.text}`} data-translate="product.countryOfOrigin">Country of Origin:</span>{" "}
+                    <span
+                      className={`font-bold ${styles.text}`}
+                      data-translate="product.countryOfOrigin"
+                    >
+                      Country of Origin:
+                    </span>{" "}
                     <span className={styles.textMuted}>{product.countryOfOrigin}</span>
                   </div>
                   <div>
-                    <span className={`font-semibold ${styles.text}`} data-translate="product.targetAudience">Target Audience:</span>{" "}
+                    <span
+                      className={`font-bold ${styles.text}`}
+                      data-translate="product.targetAudience"
+                    >
+                      Target Audience:
+                    </span>{" "}
                     <span className={styles.textMuted}>{product.targetAudience}</span>
                   </div>
                   <div>
-                    <span className={`font-semibold ${styles.text}`} data-translate="product.shippingInfo">Shipping:</span>{" "}
+                    <span
+                      className={`font-bold ${styles.text}`}
+                      data-translate="product.shippingInfo"
+                    >
+                      Shipping:
+                    </span>{" "}
                     <span className={styles.textMuted}>{product.shippingInfo}</span>
                   </div>
                 </div>
               </div>
-              <div className="mt-4">
-                <span className={`font-semibold ${styles.text}`} data-translate="product.careInstructions">Care Instructions:</span>{" "}
+              <div className="mt-4 text-xs sm:text-sm">
+                <span
+                  className={`font-bold ${styles.text}`}
+                  data-translate="product.careInstructions"
+                >
+                  Care Instructions:
+                </span>{" "}
                 <span className={styles.textMuted}>{product.careInstructions}</span>
               </div>
             </TabsContent>
 
             {product.videoUrl && (
               <TabsContent value="video" className="mt-4">
-                <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg border border-neutral-200 dark:border-neutral-800">
+                <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg border border-neutral-200 dark:border-neutral-800">
                   {getYoutubeEmbedUrl(product.videoUrl) ? (
                     <iframe
                       src={getYoutubeEmbedUrl(product.videoUrl)!}
@@ -568,10 +678,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                       allowFullScreen
                     />
                   ) : (
-                    <div className="flex flex-col items-center justify-center p-8 bg-neutral-100 dark:bg-neutral-900/50 text-neutral-500 rounded-xl border border-neutral-200 dark:border-neutral-800">
+                    <div className="flex flex-col items-center justify-center p-8 bg-neutral-100 dark:bg-neutral-900/50 text-neutral-500 rounded-2xl border border-neutral-200 dark:border-neutral-800">
                       <span className="text-3xl mb-2">⚠️</span>
                       <p className="text-sm font-semibold">Invalid Video URL</p>
-                      <p className="text-xs">The video URL provided is not a valid YouTube link.</p>
+                      <p className="text-xs">
+                        The video URL provided is not a valid YouTube link.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -582,13 +694,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       </div>
 
       {/* Similar Products */}
-      <SimilarProducts
-        productId={product.id}
-      />
+      <SimilarProducts productId={product.id} />
 
       {/* Reviews Section */}
       <div className="mt-8 md:mt-16">
-        <ProductReview productId={product.id} initialReviews={product.reviews || []} />
+        <ProductReview
+          productId={product.id}
+          initialReviews={product.reviews || []}
+        />
       </div>
     </motion.div>
   );

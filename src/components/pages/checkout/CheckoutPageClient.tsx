@@ -1,61 +1,55 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import { useCart } from "@/hooks/use-cart"
-import { useToast } from "@/hooks/use-toast"
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { useValidateCouponMutation } from "@/redux/features/coupon/couponApi"
-import { useCreateOrderMutation } from "@/redux/features/order/orderApi"
-import { useAppSelector, useAppDispatch } from "@/redux/hooks"
-import { setCoupon } from "@/redux/features/checkout/checkoutSlice"
+import { useCart } from "@/hooks/use-cart";
+import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useValidateCouponMutation } from "@/redux/features/coupon/couponApi";
+import { useCreateOrderMutation } from "@/redux/features/order/orderApi";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
+import { setCoupon } from "@/redux/features/checkout/checkoutSlice";
 
-import CheckoutStepper from "@/components/pages/checkout/CheckoutStepper"
-import CheckoutSummary from "@/components/pages/checkout/CheckoutSummary"
-import OrderConfirmation from "@/components/pages/checkout/OrderConfirmation"
-import OrderReview from "@/components/pages/checkout/OrderReview"
-import ShippingForm from "@/components/pages/checkout/ShippingForm"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft, ShoppingCart } from "lucide-react"
-import Link from "next/link"
+import CheckoutStepper from "@/components/pages/checkout/CheckoutStepper";
+import CheckoutSummary from "@/components/pages/checkout/CheckoutSummary";
+import OrderConfirmation from "@/components/pages/checkout/OrderConfirmation";
+import OrderReview from "@/components/pages/checkout/OrderReview";
+import ShippingForm from "@/components/pages/checkout/ShippingForm";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ShoppingCart } from "lucide-react";
+import Link from "next/link";
 
 export default function CheckoutPageClient() {
-  const { items, totalPrice, clearCart, updateItemQuantity } = useCart()
-  const { toast } = useToast()
-  const [validateCoupon] = useValidateCouponMutation()
-  const [createOrder] = useCreateOrderMutation()
-  const dispatch = useAppDispatch()
-  const reduxCoupon = useAppSelector((state) => state.checkout.coupon)
+  const { items, totalPrice, clearCart, updateItemQuantity } = useCart();
+  const { toast } = useToast();
+  const [validateCoupon] = useValidateCouponMutation();
+  const [createOrder] = useCreateOrderMutation();
+  const dispatch = useAppDispatch();
+  const reduxCoupon = useAppSelector((state) => state.checkout.coupon);
 
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const pathname = usePathname()
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
-  const stepParam = searchParams.get("step")
-  const initialStep = stepParam ? parseInt(stepParam, 10) : 1
-  const [currentStep, setCurrentStep] = useState(initialStep)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [orderComplete, setOrderComplete] = useState(false)
-  const [orderData, setOrderData] = useState<any>(null)
+  const stepParam = searchParams.get("step");
+  const initialStep = stepParam ? parseInt(stepParam, 10) : 1;
+  const [currentStep, setCurrentStep] = useState(initialStep);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderComplete, setOrderComplete] = useState(false);
+  const [orderData, setOrderData] = useState<any>(null);
 
-  const updateStepInUrl = (step: number, replace: boolean = false) => {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set("step", step.toString())
-    if (replace) {
-      router.replace(`${pathname}?${params.toString()}`)
-    } else {
-      router.push(`${pathname}?${params.toString()}`)
-    }
-  }
-
-  const getCartContext = () => {
-    if (typeof window === "undefined") return null
-    try {
-      const raw = sessionStorage.getItem("cart_checkout_context")
-      return raw ? JSON.parse(raw) : null
-    } catch { return null }
-  }
-  const cartCtx = getCartContext()
+  const updateStepInUrl = useCallback(
+    (step: number, replace: boolean = false) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("step", step.toString());
+      if (replace) {
+        router.replace(`${pathname}?${params.toString()}`);
+      } else {
+        router.push(`${pathname}?${params.toString()}`);
+      }
+    },
+    [pathname, router, searchParams]
+  );
 
   const [shippingDetails, setShippingDetails] = useState({
     firstName: "",
@@ -68,199 +62,220 @@ export default function CheckoutPageClient() {
     zipCode: "",
     country: "Bangladesh",
     saveAddress: false,
-  })
+  });
 
-  const [paymentMethod ] = useState("CASH_ON_DELIVERY")
-  const [paymentDetails] = useState<any>({})
+  const [paymentMethod] = useState("CASH_ON_DELIVERY");
+  const [paymentDetails] = useState<any>({});
 
-  const [shippingMethod, setShippingMethod] = useState("standard")
-  const shippingCost = shippingMethod === "express" ? 120 : 60
+  const [shippingMethod, setShippingMethod] = useState("standard");
+  const shippingCost = shippingMethod === "express" ? 120 : 60;
 
-  const subtotal = totalPrice
-  const initialCode = reduxCoupon?.code ?? cartCtx?.couponCode ?? ""
-  const [couponCode, setCouponCode] = useState(initialCode)
-  const initialDiscount = reduxCoupon
-    ? subtotal * (reduxCoupon.discount / 100)
-    : (cartCtx?.couponDiscountRate
-      ? subtotal * (cartCtx.couponDiscountRate / 100)
-      : (cartCtx?.couponDiscount ?? 0))
-  const [discount, setDiscount] = useState(initialDiscount)
+  const subtotal = totalPrice;
+  const initialCode = reduxCoupon?.code ?? "";
+  const [couponCode, setCouponCode] = useState(initialCode);
+  const initialDiscount = reduxCoupon ? subtotal * (reduxCoupon.discount / 100) : 0;
+  const [discount, setDiscount] = useState(initialDiscount);
 
-  const [rewardPointsUsed] = useState<number>(cartCtx?.rewardPointsUsed ?? 0)
-  const [rewardDiscount] = useState<number>(cartCtx?.rewardDiscount ?? 0)
+  const [rewardPointsUsed] = useState<number>(0);
+  const [rewardDiscount] = useState<number>(0);
 
+  const displayTotal = useMemo(
+    () => Math.max(0, subtotal + shippingCost - discount - rewardDiscount),
+    [subtotal, shippingCost, discount, rewardDiscount]
+  );
 
-  const displayTotal = subtotal + shippingCost - discount - rewardDiscount
-
-  const nextStep = () => {
+  const nextStep = useCallback(() => {
     if (currentStep < 2) {
-      const next = currentStep + 1
-      setCurrentStep(next)
-      updateStepInUrl(next)
-      window.scrollTo(0, 0)
+      const next = currentStep + 1;
+      setCurrentStep(next);
+      updateStepInUrl(next);
+      window.scrollTo(0, 0);
     }
-  }
+  }, [currentStep, updateStepInUrl]);
 
-  const prevStep = () => {
+  const prevStep = useCallback(() => {
     if (currentStep > 1) {
-      const prev = currentStep - 1
-      setCurrentStep(prev)
-      updateStepInUrl(prev)
-      window.scrollTo(0, 0)
+      const prev = currentStep - 1;
+      setCurrentStep(prev);
+      updateStepInUrl(prev);
+      window.scrollTo(0, 0);
     }
-  }
+  }, [currentStep, updateStepInUrl]);
 
-  // Synchronize state when query parameters change (e.g., browser back button)
+  // Synchronize state when query parameters change
   useEffect(() => {
-    const step = stepParam ? parseInt(stepParam, 10) : 1
+    const step = stepParam ? parseInt(stepParam, 10) : 1;
     if (step !== currentStep) {
-      setCurrentStep(step)
+      setCurrentStep(step);
     }
-  }, [stepParam, currentStep])
+  }, [stepParam, currentStep]);
 
   useEffect(() => {
     if (!searchParams.get("step")) {
-      updateStepInUrl(1, true) // Replace history so we don't pollute stack with step-less url
+      updateStepInUrl(1, true);
     }
-  }, [searchParams])
+  }, [searchParams, updateStepInUrl]);
 
   useEffect(() => {
     if (currentStep === 2 && !shippingDetails.address) {
-      setCurrentStep(1)
-      updateStepInUrl(1, true)
+      setCurrentStep(1);
+      updateStepInUrl(1, true);
     }
-  }, [currentStep, shippingDetails.address])
+  }, [currentStep, shippingDetails.address, updateStepInUrl]);
 
   const handleShippingSubmit = (data: any) => {
     setShippingDetails((prev) => ({
       ...prev,
       ...data,
       country: data.country || prev.country || "Bangladesh",
-    }))
-    nextStep()
-  }
+    }));
+    nextStep();
+  };
 
-  // const handlePaymentSubmit = (method: string, details: typeof paymentDetails) => {
-  //   setPaymentMethod(method)
-  //   setPaymentDetails(details)
-  //   nextStep()
-  // }
-
-  const orderPayload = {
-    paymentMethod,
-    couponCode: couponCode || undefined,
-    shippingAddress: {
-      name: `${shippingDetails.firstName} ${shippingDetails.lastName}`.trim(),
-      street: shippingDetails.address,
-      city: shippingDetails.city,
-      state: shippingDetails.state,
-      zipCode: shippingDetails.zipCode,
-      country: shippingDetails.country || "Bangladesh",
-      phone: shippingDetails.phone,
-      // Pass original fields for backend compatibility
-      firstName: shippingDetails.firstName,
-      lastName: shippingDetails.lastName,
-      address: shippingDetails.address,
-    },
-    shippingMethod,
-    saveAddress: shippingDetails.saveAddress,
-    rewardPointsUsed: rewardPointsUsed || undefined,
-  }
+  const orderPayload = useMemo(
+    () => ({
+      paymentMethod,
+      couponCode: couponCode || undefined,
+      shippingAddress: {
+        name: `${shippingDetails.firstName} ${shippingDetails.lastName}`.trim(),
+        street: shippingDetails.address,
+        city: shippingDetails.city,
+        state: shippingDetails.state,
+        zipCode: shippingDetails.zipCode,
+        country: shippingDetails.country || "Bangladesh",
+        phone: shippingDetails.phone,
+        firstName: shippingDetails.firstName,
+        lastName: shippingDetails.lastName,
+        address: shippingDetails.address,
+      },
+      shippingMethod,
+      saveAddress: shippingDetails.saveAddress,
+      rewardPointsUsed: rewardPointsUsed || undefined,
+    }),
+    [paymentMethod, couponCode, shippingDetails, shippingMethod, rewardPointsUsed]
+  );
 
   const placeOrder = async () => {
-    let adjusted = false
+    let adjusted = false;
     for (const item of items) {
       if (item.quantity > item.maxQuantity) {
-        await updateItemQuantity(item.id, item.maxQuantity)
-        adjusted = true
+        await updateItemQuantity(item.id, item.maxQuantity);
+        adjusted = true;
       }
     }
 
     if (adjusted) {
       toast({
         title: "Stock levels adjusted",
-        description: "Some items in your cart exceeded the available stock and have been adjusted to the maximum available quantity. Please review your total.",
+        description:
+          "Some items in your cart exceeded the available stock and have been adjusted to the maximum available quantity. Please review your total.",
         type: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
-      const result = await createOrder(orderPayload).unwrap()
-      const newOrder = result?.data?.order || result?.data
-      setOrderData(newOrder)
-      setOrderComplete(true)
-      clearCart()
-      sessionStorage.removeItem("cart_checkout_context")
+      const result = await createOrder(orderPayload).unwrap();
+      const newOrder = result?.data?.order || result?.data;
+      setOrderData(newOrder);
+      setOrderComplete(true);
+      clearCart();
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("cart_checkout_context");
+      }
     } catch (error: any) {
-      console.error("Error placing order:", error)
+      console.error("Error placing order:", error);
       const errorMsg = error?.data?.errorMessages?.[0]?.message
         ? `${error.data.message}: ${error.data.errorMessages[0].path} - ${error.data.errorMessages[0].message}`
-        : error?.data?.message || error?.message || "There was an error processing your order. Please try again."
+        : error?.data?.message ||
+          error?.message ||
+          "There was an error processing your order. Please try again.";
       toast({
         title: "Error placing order",
         description: errorMsg,
         type: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const applyCoupon = async (code: string) => {
     try {
-      const result = await validateCoupon({ code: code.toUpperCase().trim() }).unwrap()
-      const couponData = result?.data
+      const result = await validateCoupon({
+        code: code.toUpperCase().trim(),
+      }).unwrap();
+      const couponData = result?.data;
       if (couponData) {
-        const discountAmount = subtotal * (couponData.discount / 100)
-        setDiscount(discountAmount)
-        setCouponCode(couponData.code)
-        dispatch(setCoupon({ code: couponData.code, discount: couponData.discount }))
-        toast({ title: "Coupon applied", description: `${couponData.discount}% discount has been applied.`, type: "success" })
+        const discountAmount = subtotal * (couponData.discount / 100);
+        setDiscount(discountAmount);
+        setCouponCode(couponData.code);
+        dispatch(
+          setCoupon({ code: couponData.code, discount: couponData.discount })
+        );
+        toast({
+          title: "Coupon applied",
+          description: `${couponData.discount}% discount has been applied.`,
+          type: "success",
+        });
       }
     } catch (err: any) {
-      toast({ title: "Invalid coupon", description: err?.data?.message || "The coupon code you entered is invalid or expired.", type: "destructive" })
+      toast({
+        title: "Invalid coupon",
+        description:
+          err?.data?.message ||
+          "The coupon code you entered is invalid or expired.",
+        type: "destructive",
+      });
     }
-  }
+  };
 
   const removeCoupon = () => {
-    setCouponCode("")
-    setDiscount(0)
-    dispatch(setCoupon(null))
-    toast({ title: "Coupon removed", description: "Coupon has been removed from your order.", type: "success" })
-  }
+    setCouponCode("");
+    setDiscount(0);
+    dispatch(setCoupon(null));
+    toast({
+      title: "Coupon removed",
+      description: "Coupon has been removed from your order.",
+      type: "success",
+    });
+  };
 
   if (orderComplete) {
-    return (
-      <OrderConfirmation
-        orderData={orderData}
-        items={items}
-      />
-    )
+    return <OrderConfirmation orderData={orderData} items={items} />;
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <Link href="/product-filter" className="inline-flex items-center text-sm text-gray-600 hover:text-primary mb-4">
-          <ArrowLeft size={16} className="mr-1" />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 py-8 sm:py-12 lg:py-16">
+      <div className="mb-6 sm:mb-8">
+        <Link
+          href="/product-filter"
+          className="inline-flex items-center text-xs sm:text-sm font-semibold text-neutral-600 dark:text-neutral-400 hover:text-[#007C74] transition-colors mb-3"
+        >
+          <ArrowLeft size={16} className="mr-1.5" />
           Continue Shopping
         </Link>
-        <h1 className="text-3xl font-bold">Checkout</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white">
+          Checkout
+        </h1>
       </div>
 
       {items.length === 0 ? (
         <div className="text-center py-16">
-          <ShoppingCart size={48} className="mx-auto text-gray-300 mb-4" />
-          <h2 className="text-xl font-medium text-gray-700 mb-2">Your cart is empty</h2>
-          <p className="text-gray-500 mb-6">Add items to your cart to proceed with checkout.</p>
-          <Button asChild className="bg-primary hover:bg-primary/90">
+          <ShoppingCart size={48} className="mx-auto text-neutral-300 dark:text-neutral-700 mb-4" />
+          <h2 className="text-lg sm:text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-2">
+            Your cart is empty
+          </h2>
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mb-6">
+            Add items to your cart to proceed with checkout.
+          </p>
+          <Button asChild className="bg-[#007C74] hover:bg-[#006059] text-white rounded-full px-6 text-xs sm:text-sm font-bold">
             <Link href="/product-filter">Browse Products</Link>
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           <div className="lg:col-span-2">
             <CheckoutStepper currentStep={currentStep} />
 
@@ -299,13 +314,13 @@ export default function CheckoutPageClient() {
               shipping={shippingCost}
               discount={discount}
               total={displayTotal}
-  couponCode={couponCode}
-  onApplyCoupon={applyCoupon}
-  onRemoveCoupon={removeCoupon}
+              couponCode={couponCode}
+              onApplyCoupon={applyCoupon}
+              onRemoveCoupon={removeCoupon}
             />
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

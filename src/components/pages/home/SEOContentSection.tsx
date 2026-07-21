@@ -440,7 +440,7 @@ export default function SEOContentSection() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex flex-wrap items-center justify-center gap-2 mb-8 sm:mb-10 lg:mb-12"
         >
-          {CONTENT_TABS.map((tab, index) => (
+          {CONTENT_TABS.map((tab, ) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -659,7 +659,7 @@ export default function SEOContentSection() {
           {/* FAQ Tab */}
           {activeTab === "faq" && (
             <div className="space-y-3.5">
-              {FAQS.map((faq, index) => (
+              {FAQS.map((faq, ) => (
                 <div
                   key={faq.id}
                   className={`rounded-2xl backdrop-blur-sm border ${styles.card} overflow-hidden transition-all duration-200`}
@@ -722,7 +722,7 @@ export default function SEOContentSection() {
           {activeTab === "articles" && (
             <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {ARTICLES.map((article, index) => (
+                {ARTICLES.map((article, ) => (
                   <motion.div
                     key={article.id}
                     whileHover={{ y: -4 }}

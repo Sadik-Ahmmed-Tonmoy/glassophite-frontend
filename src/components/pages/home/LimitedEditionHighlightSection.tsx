@@ -158,7 +158,6 @@ export default function LimitedEditionHighlightSection() {
     seconds: 30,
   });
   const [activeProduct, setActiveProduct] = useState(0);
-  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
 
   const isInView = useInView(containerRef, { once: true, amount: 0.15 });
 
@@ -397,7 +396,7 @@ export default function LimitedEditionHighlightSection() {
                 { value: timeLeft.hours, label: "Hours", key: "hours" },
                 { value: timeLeft.minutes, label: "Minutes", key: "minutes" },
                 { value: timeLeft.seconds, label: "Seconds", key: "seconds" },
-              ].map((unit, index) => (
+              ].map((unit) => (
                 <div key={unit.key} className="text-center">
                   <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-[#007C74] to-[#3C55A5] bg-clip-text text-transparent">
                     {unit.value.toString().padStart(2, "0")}
@@ -582,8 +581,8 @@ export default function LimitedEditionHighlightSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.4, delay: 0.6 + index * 0.08 }}
-              onHoverStart={() => setHoveredProduct(product.id)}
-              onHoverEnd={() => setHoveredProduct(null)}
+              // onHoverStart={() => setHoveredProduct(product.id)}
+              // onHoverEnd={() => setHoveredProduct(null)}
               className={`relative rounded-2xl overflow-hidden backdrop-blur-sm border ${styles.card} group flex flex-col justify-between shadow-xs`}
             >
               <div className="relative aspect-square">

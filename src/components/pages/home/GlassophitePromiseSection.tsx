@@ -387,7 +387,7 @@ export default function GlassophitePromiseSection() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex flex-wrap items-center justify-center gap-2 mb-8 sm:mb-10 lg:mb-12"
         >
-          {PROMISE_CATEGORIES.map((category, index) => (
+          {PROMISE_CATEGORIES.map((category) => (
             <button
               key={category.id}
               className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 transition-all cursor-pointer ${
@@ -544,7 +544,7 @@ export default function GlassophitePromiseSection() {
           </h3>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {GUARANTEES.map((guarantee, index) => (
+            {GUARANTEES.map((guarantee) => (
               <motion.div
                 key={guarantee.key}
                 whileHover={{ y: -4 }}

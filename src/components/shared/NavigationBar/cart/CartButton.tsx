@@ -4,6 +4,7 @@ import { useCart } from "@/hooks/use-cart"
 import { MdOutlineShoppingBag } from "react-icons/md"
 import { Loader2 } from "lucide-react"
 import styles from "../PCNavBar/PCNavBar.module.css"
+import { cn } from "@/lib/utils"
 
 interface CartButtonProps {
   onClick?: () => void;
@@ -21,8 +22,8 @@ export default function CartButton({ onClick }: CartButtonProps) {
     >
       <MdOutlineShoppingBag className="w-6 h-6" />
       <span className="relative">
-        <span data-translate>My Bag</span>
-        <span className={styles.text} data-translate>My Bag</span>
+        <span data-translate className="hidden lg:block">My Bag</span>
+        <span className={cn(styles.text, "hidden lg:block")} data-translate>My Bag</span>
       </span>
       {showLoader ? (
         <span className="absolute -top-[6px] right-[1px] rounded-full h-[18px] w-[18px] bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center text-xs">

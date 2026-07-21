@@ -22,6 +22,29 @@ import CartDrawer from "../cart/CartDrawer";
 import DropDownMenus from "../DropDownMenus/DropDownMenus";
 import styles from "./PCNavBar.module.css";
 
+const SEARCH_PLACEHOLDERS = [
+  "polarized sunglasses",
+  "UV protection glasses",
+  "blue light blocking glasses",
+  "aviator sunglasses",
+  "sports sunglasses",
+  "prescription sunglasses",
+  "designer sunglasses",
+  "mirrored sunglasses",
+  "round frame sunglasses",
+  "retro style sunglasses",
+  "wayfarer sunglasses",
+  "oversized sunglasses",
+  "kids sunglasses",
+  "foldable sunglasses",
+  "photochromic lenses",
+  "gradient lenses",
+  "cat eye sunglasses",
+  "square frame sunglasses",
+  "vintage sunglasses",
+  "bamboo frame sunglasses",
+];
+
 const PCNavBar = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -65,29 +88,6 @@ const PCNavBar = () => {
     prevTotalItemsRef.current = totalItems;
   }, [totalItems, isCartLoading, isCartFetching]);
   const [searchValue, setSearchValue] = useState("");
-  // search bar start
-  const placeholders = [
-    "polarized sunglasses",
-    "UV protection glasses",
-    "blue light blocking glasses",
-    "aviator sunglasses",
-    "sports sunglasses",
-    "prescription sunglasses",
-    "designer sunglasses",
-    "mirrored sunglasses",
-    "round frame sunglasses",
-    "retro style sunglasses",
-    "wayfarer sunglasses",
-    "oversized sunglasses",
-    "kids sunglasses",
-    "foldable sunglasses",
-    "photochromic lenses",
-    "gradient lenses",
-    "cat eye sunglasses",
-    "square frame sunglasses",
-    "vintage sunglasses",
-    "bamboo frame sunglasses",
-  ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -98,26 +98,26 @@ const PCNavBar = () => {
       router.push(`/product-filter?search=${encodeURIComponent(searchValue.trim())}`);
     }
   };
-  // search bar end
+  
   return (
-    <div className={`${styles.navbar} w-full dark:bg-[#1f2020 dark:`}>
+    <div className={`${styles.navbar} w-full dark:bg-[#1f2020]/90 backdrop-blur-md`}>
       {/* first row start */}
-      <div className=" w-full container mx-auto flex justify-between items-center py-3">
+      <div className="w-full container mx-auto flex justify-between items-center py-2.5 px-4 lg:px-6 xl:px-8 gap-4">
         <Link href={"/"}>
-          <h3 className="text-2xl me-32 font-bold tracking-wider text-[#007C74] dark:text-white">
+          <h3 className="text-xl lg:text-2xl font-bold tracking-wider text-[#007C74] dark:text-white shrink-0 lg:me-4 xl:me-12 2xl:me-24">
             Glassophite
           </h3>
         </Link>
 
-        <div className="  w-[40%]">
+        <div className="flex-1 max-w-sm lg:max-w-md xl:max-w-lg mx-2 lg:mx-4">
           <PlaceholdersAndVanishInput
-            placeholders={placeholders}
+            placeholders={SEARCH_PLACEHOLDERS}
             onChange={handleChange}
             onSubmit={onSubmit}
           />
         </div>
 
-        <div className=" flex items-center gap-5 text-xs whitespace-nowrap">
+        <div className="flex items-center gap-3 lg:gap-4 xl:gap-6 text-xs whitespace-nowrap shrink-0">
           <div className="relative group">
             <button
               className={`${styles.accountButton} ${styles.textHoverEffect} flex items-center gap-2 cursor-pointer`}

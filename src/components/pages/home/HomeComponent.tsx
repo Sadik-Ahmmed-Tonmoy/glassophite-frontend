@@ -27,7 +27,7 @@ const HomeComponent = () => {
       <CollectionSpotlightSection />
       <BestSellerCarouselSection />
       <NewArrivalsSection />
-      <FeaturedCollectionSection />
+      {/* <FeaturedCollectionSection /> */}
       <HeroParallaxDemo />
       {/* <VideoShowcaseSection /> */}
           {/* <SmoothScroll> */}

@@ -3,7 +3,7 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import React, { useRef, useState, useMemo, useCallback, useEffect } from "react";
+import React, { useRef, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { ArrowRight, Sparkles, Eye, ShoppingBag, Award, AlertCircle } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -17,18 +17,11 @@ const TABS = [
   { id: "luxury", label: "Limited", icon: Award, typeFilter: "luxury" },
 ] as const;
 
-const getThemeStyles = (isDark: boolean) => ({
-  text: isDark ? "text-white" : "text-neutral-900",
-  textMuted: isDark ? "text-neutral-400" : "text-neutral-500",
-  border: isDark ? "border-white/10" : "border-neutral-200",
-  orb: isDark ? "bg-primary/15" : "bg-primary/8",
-});
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.2 },
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
   },
 };
 
@@ -60,28 +53,28 @@ export default function FeaturedCollectionSection() {
   const [tabLoading, setTabLoading] = useState(false);
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [isTouch, setIsTouch] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setPrefersReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-      setIsTouch('ontouchstart' in window);
-    }
-  }, []);
-
-  const styles = getThemeStyles(isDark);
+  const styles = useMemo(
+    () => ({
+      text: isDark ? "text-white" : "text-neutral-900",
+      textMuted: isDark ? "text-neutral-400" : "text-neutral-500",
+      border: isDark ? "border-white/10" : "border-neutral-200",
+      orb: isDark ? "bg-primary/15" : "bg-primary/8",
+    }),
+    [isDark]
+  );
 
   const { data: featuredProductsData, isLoading: queryLoading } = useGetFeaturedProductsQuery(20);
-  const featuredProducts = (featuredProductsData as any)?.data || [];
+  const featuredProducts = useMemo(() => (featuredProductsData as any)?.data || [], [featuredProductsData]);
 
   const filteredProducts = useMemo(() => {
-    const tab = TABS.find(t => t.id === activeTab);
+    const tab = TABS.find((t) => t.id === activeTab);
     if (!tab || !tab.typeFilter) return featuredProducts;
     if (tab.id === "luxury") {
-      return featuredProducts.filter((p: any) =>
-        p.types?.some((t: string) => t.toLowerCase().includes("luxury")) ||
-        (p.averageRating || 0) >= 4.5
+      return featuredProducts.filter(
+        (p: any) =>
+          p.types?.some((t: string) => t.toLowerCase().includes("luxury")) ||
+          (p.averageRating || 0) >= 4.5
       );
     }
     return featuredProducts.filter((p: any) =>
@@ -95,32 +88,34 @@ export default function FeaturedCollectionSection() {
     setTimeout(() => setTabLoading(false), 150);
   }, []);
 
-  const currentLabel = TABS.find(t => t.id === activeTab)?.label || "All Premium";
+  const currentLabel = useMemo(
+    () => TABS.find((t) => t.id === activeTab)?.label || "All Premium",
+    [activeTab]
+  );
+  
   const isLoading = queryLoading || tabLoading;
-  const first = filteredProducts[0];
-  const rest = filteredProducts.slice(1);
 
   return (
     <section
       ref={sectionRef}
-      className={`relative py-20 sm:py-28 overflow-hidden bg-gradient-to-b ${
+      className={`relative py-16 sm:py-24 lg:py-28 overflow-hidden bg-gradient-to-b ${
         isDark ? "from-black via-gray-950 to-black" : "from-neutral-50 via-white to-neutral-50"
       }`}
       aria-label="Featured Premium Sunglasses Collection"
     >
-      {/* Background */}
+      {/* Background Orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className={`absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[140px] ${styles.orb}`} />
-        <div className={`absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] ${styles.orb}`} />
+        <div className={`absolute top-[-20%] -right-20 w-[clamp(300px,45vw,600px)] h-[clamp(300px,45vw,600px)] rounded-full blur-[90px] sm:blur-[140px] ${styles.orb}`} />
+        <div className={`absolute bottom-[-20%] -left-20 w-[clamp(250px,40vw,500px)] h-[clamp(250px,40vw,500px)] rounded-full blur-[80px] sm:blur-[120px] ${styles.orb}`} />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5 }}
-          className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10 sm:mb-14"
+          className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 sm:mb-12 lg:mb-14"
         >
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -129,8 +124,8 @@ export default function FeaturedCollectionSection() {
                 Curated Collection
               </span>
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-              <span className={`${isDark ? "text-white" : "text-neutral-900"}`}>Featured </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
+              <span className={isDark ? "text-white" : "text-neutral-900"}>Featured </span>
               <span className="text-primary">Premium</span>
             </h2>
           </div>
@@ -138,9 +133,9 @@ export default function FeaturedCollectionSection() {
           {!isLoading && filteredProducts.length > 0 && (
             <Link
               href="/shop"
-              className="group hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              className="group hidden sm:inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-primary hover:text-primary/80 transition-colors"
             >
-              View All
+              <span>View All</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
           )}
@@ -151,7 +146,7 @@ export default function FeaturedCollectionSection() {
           initial={{ opacity: 0, y: 12 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="flex gap-1 mb-10 overflow-x-auto pb-1 scrollbar-hide"
+          className="flex gap-1.5 sm:gap-2 mb-8 sm:mb-10 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           {TABS.map((tab) => {
             const Icon = tab.icon;
@@ -160,8 +155,10 @@ export default function FeaturedCollectionSection() {
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`relative flex-shrink-0 px-4 py-2 text-sm font-medium transition-colors ${
-                  isActive ? "text-primary" : `${styles.textMuted} hover:text-${isDark ? "white" : "neutral-900"}`
+                className={`relative shrink-0 px-4 py-2 text-xs sm:text-sm font-bold transition-colors cursor-pointer rounded-full ${
+                  isActive
+                    ? "text-primary bg-primary/10"
+                    : `${styles.textMuted} hover:text-${isDark ? "white" : "neutral-900"} hover:bg-neutral-100 dark:hover:bg-neutral-900`
                 }`}
                 aria-pressed={isActive}
               >
@@ -172,7 +169,7 @@ export default function FeaturedCollectionSection() {
                 {isActive && (
                   <motion.span
                     layoutId="featured-tab-underline"
-                    className="absolute bottom-0 left-2 right-2 h-[2px] bg-primary rounded-full"
+                    className="absolute bottom-0 left-3 right-3 h-[2px] bg-primary rounded-full"
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   />
                 )}
@@ -183,7 +180,7 @@ export default function FeaturedCollectionSection() {
 
         {/* Content */}
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} />)}
           </div>
         ) : filteredProducts.length > 0 ? (
@@ -192,7 +189,7 @@ export default function FeaturedCollectionSection() {
               variants={containerVariants}
               initial="hidden"
               animate={isInView ? "visible" : "hidden"}
-              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6"
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
             >
               {filteredProducts.map((product: any) => (
                 <motion.div
@@ -209,32 +206,29 @@ export default function FeaturedCollectionSection() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={isInView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.4, delay: 0.6 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
               className="sm:hidden mt-10 text-center"
             >
               <Link
                 href="/shop"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors shadow-md"
               >
-                View Complete Collection
-                <ArrowRight className="w-4 h-4" />
+                <span>View Complete Collection</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </motion.div>
           </>
         ) : (
-          <div className="text-center py-20">
-            <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${isDark ? 'bg-white/5' : 'bg-black/5'} mb-4`}>
-              <AlertCircle className={`w-8 h-8 ${styles.textMuted}`} />
+          <div className="text-center py-16 sm:py-20">
+            <div className={`inline-flex items-center justify-center w-14 h-14 rounded-full ${isDark ? 'bg-white/5' : 'bg-black/5'} mb-4`}>
+              <AlertCircle className={`w-6 h-6 ${styles.textMuted}`} />
             </div>
-            <p className={`${styles.textMuted} text-sm`}>No products found in &ldquo;{currentLabel}&rdquo;</p>
+            <p className={`${styles.textMuted} text-xs sm:text-sm font-semibold`}>
+              No products found in &ldquo;{currentLabel}&rdquo;
+            </p>
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
     </section>
   );
 }

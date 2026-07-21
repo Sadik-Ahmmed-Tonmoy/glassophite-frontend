@@ -4,14 +4,14 @@ import PCNavBar from "./PCNavBar/PCNavBar";
 
 const NavigationBar = () => {
   return (
-    <div>
+    <header className="w-full relative z-50">
       <div className="hidden lg:block">
         <PCNavBar />
       </div>
       <div className="block lg:hidden">
         <MobileNavBar />
       </div>
-    </div>
+    </header>
   );
 };
 

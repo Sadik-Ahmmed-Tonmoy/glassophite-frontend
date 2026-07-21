@@ -14,7 +14,7 @@ import HeroParallaxDemo from "./hero-parallax-demo";
 
 const HomeComponent = () => {
   return (
-    <div id="top" className="w-full overflow-x-hidden">
+    <div id="top" className="w-full relative">
       <HeroCinematicSection />
       <WhyChooseGlassophiteSection />
       <CollectionSpotlightSection />

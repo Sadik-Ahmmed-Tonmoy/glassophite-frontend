@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
 import {
   motion,
   useMotionValueEvent,
@@ -13,28 +14,18 @@ import logo from "@/assets/logos/glassophite-logo.png";
 const TOTAL_FRAMES = 235;
 const LOAD_CONCURRENCY = 6;
 
-// NOTE: this assumes frames are zero-padded to 3 digits (001.webp ... 235.webp).
-// If your ffmpeg output used a plain %d pattern, your files are actually
-// named 1.webp, 2.webp, ... 235.webp — in that case replace this with:
-//   const IMAGE_PATH = (i: number) => `/sunglassGreenEffectImages/${i}.webp`;
 const IMAGE_PATH = (i: number) =>
   `/sunglassGreenEffectImages/${String(i).padStart(3, "0")}.webp`;
 
 const ScrollAnimationEffect = () => {
-  // sectionRef is the tall scroll-driver — its height IS the scroll distance
-  // the user has to travel to go from frame 1 to frame TOTAL_FRAMES.
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef(1);
 
-  // Tracks which frame indices (0-based) have finished loading, so the
-  // scroll handler can tell "not loaded yet" apart from "loaded but not
-  // drawn yet" and jump the priority queue when the user scrolls ahead
-  // of what's been fetched so far.
   const loadedRef = useRef<Set<number>>(new Set());
   const loadOneRef = useRef<((index: number) => Promise<void>) | undefined>(
-    undefined,
+    undefined
   );
 
   const [ready, setReady] = useState(false);
@@ -44,24 +35,10 @@ const ScrollAnimationEffect = () => {
     offset: ["start start", "end end"],
   });
 
-  // Text fades/slides in as the user scrolls into the section, holds
-  // through the middle of the sequence, then fades/slides out before the
-  // frame sequence finishes — so it never fights with the tail-end frames.
-  const textOpacity = useTransform(
-    scrollYProgress,
-    [0, 0.15, 0.3, 1],
-    [0, 1, 1, 0],
-  );
-  const textY = useTransform(
-    scrollYProgress,
-    [0, 0.15, 0.85, 1],
-    [30, 0, 0, -20],
-  );
-  const textBlur = useTransform(
-    scrollYProgress,
-    [0, 0.15, 0.3, 1],
-    [8, 0, 0, 6],
-  );
+  // Text visible from start of section, fading out near end
+  const textOpacity = useTransform(scrollYProgress, [0, 0.8, 1], [1, 1, 0]);
+  const textY = useTransform(scrollYProgress, [0, 0.8, 1], [0, 0, -20]);
+  const textBlur = useTransform(scrollYProgress, [0, 0.8, 1], [0, 0, 6]);
 
   const springTextOpacity = useSpring(textOpacity, {
     stiffness: 100,
@@ -80,7 +57,6 @@ const ScrollAnimationEffect = () => {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Cover-fit: fill the canvas box without distorting the image.
     const canvasRatio = canvas.width / canvas.height;
     const imgRatio = img.naturalWidth / img.naturalHeight;
 
@@ -106,37 +82,23 @@ const ScrollAnimationEffect = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Cap DPR at 1.5 rather than 2 — retina sharpness matters much less
-    // on a fast-cutting frame sequence than the cost of drawing ~2x the
-    // pixels on every single scroll-driven redraw, especially now that
-    // there are 235 frames' worth of draws happening over the scroll range.
-    // const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-
     const isLowEndDevice =
-  ((navigator as any).deviceMemory && (navigator as any).deviceMemory <= 4) ||
-  (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+      ((navigator as any).deviceMemory && (navigator as any).deviceMemory <= 4) ||
+      (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
     const dpr = Math.min(
       window.devicePixelRatio || 1,
-      isLowEndDevice ? 1.5 : 2,
+      isLowEndDevice ? 1.25 : 1.5
     );
 
     const width = window.innerWidth;
-    const height = window.innerHeight;  
+    const height = window.innerHeight;
 
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
 
     drawFrame(currentFrameRef.current);
   }, [drawFrame]);
 
-  // Load frames with bounded concurrency instead of firing all 235
-  // requests at once. Frame 1 loads alone first (so first paint is as
-  // fast as possible and isn't competing with 234 other requests), then
-  // the rest stream in via a small worker pool. loadOneRef exposes a way
-  // to jump-load any specific frame on demand (see the scroll handler
-  // below) for when the user scrolls ahead of what's been fetched.
   useEffect(() => {
     let isMounted = true;
     const imgs: HTMLImageElement[] = new Array(TOTAL_FRAMES);
@@ -169,11 +131,16 @@ const ScrollAnimationEffect = () => {
     loadOneRef.current = loadOne;
 
     async function run() {
-      await loadOne(0); // first frame loads alone, unblocked by the rest
+      // Preload first 15 frames immediately in parallel for zero lag start
+      const firstBatch = Array.from({ length: 15 }, (_, i) => loadOne(i));
+      await Promise.all(firstBatch);
 
+      if (!isMounted) return;
+
+      // Stream remaining frames in concurrency pool
       const remaining = Array.from(
-        { length: TOTAL_FRAMES - 1 },
-        (_, i) => i + 1,
+        { length: TOTAL_FRAMES - 15 },
+        (_, i) => i + 15
       );
       let cursor = 0;
 
@@ -185,7 +152,7 @@ const ScrollAnimationEffect = () => {
       }
 
       await Promise.all(
-        Array.from({ length: LOAD_CONCURRENCY }, () => worker()),
+        Array.from({ length: LOAD_CONCURRENCY }, () => worker())
       );
     }
 
@@ -205,74 +172,72 @@ const ScrollAnimationEffect = () => {
   useEffect(() => {
     if (!ready) return;
     resizeCanvas();
+    drawFrame(currentFrameRef.current);
     window.addEventListener("resize", resizeCanvas);
     return () => window.removeEventListener("resize", resizeCanvas);
-  }, [ready, resizeCanvas]);
+  }, [ready, resizeCanvas, drawFrame]);
 
   const frameValue = useTransform(scrollYProgress, [0, 1], [1, TOTAL_FRAMES]);
 
   useMotionValueEvent(frameValue, "change", (latest) => {
     const frame = Math.min(TOTAL_FRAMES, Math.max(1, Math.round(latest)));
 
-    // Skip redundant work when the rounded frame hasn't actually changed —
-    // otherwise every rAF tick re-clears and redraws the canvas even when
-    // nothing visually needs to update.
     if (frame === currentFrameRef.current) return;
     currentFrameRef.current = frame;
 
     const index = frame - 1;
     if (!loadedRef.current.has(index)) {
-      // User scrolled ahead of the loading queue — fetch this exact frame
-      // immediately instead of waiting for the sequential queue to reach
-      // it. The last successfully drawn frame stays on screen until this
-      // resolves, which reads better than a blank frame mid-scrub.
       loadOneRef.current?.(index);
-      return;
     }
 
     drawFrame(frame);
   });
 
   return (
-    // h-[400vh] = 4 viewport-heights of scroll distance for the full
-    // frame sequence. Increase for a slower scrub, decrease for faster.
-    <div ref={sectionRef} className="relative h-[400vh] bg-black">
+    <div ref={sectionRef} className="relative h-[250vh] sm:h-[350vh] lg:h-[400vh] bg-black">
       <div className="sticky top-0 h-screen w-full overflow-hidden">
-        <div className="w-full h-full flex items-center justify-center relative   ">
-          {/* add dark overlay */}
-          <div className="absolute inset-0 bg-black/30" />
+        <div className="w-full h-full relative">
+          {/* Canvas Layer */}
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full z-0 block"
+            style={{ display: ready ? "block" : "none" }}
+          />
+
+          {/* Dark Overlay */}
+          <div className="absolute inset-0 bg-black/40 z-10 pointer-events-none" />
+
+          {/* Logo Watermark */}
           <img
             src={logo.src}
-            alt="logo"
-            className="absolute -bottom-2  right-12 w-60 h-auto"
+            alt="Glassophite Logo"
+            className="absolute bottom-4 right-4 sm:bottom-6 sm:right-8 lg:bottom-8 lg:right-12 w-28 sm:w-44 lg:w-60 h-auto pointer-events-none opacity-80 z-20"
           />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10">
+
+          {/* Text Content Overlay */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 sm:px-6 z-20 pointer-events-none select-none">
             <motion.div
               style={{
                 opacity: springTextOpacity,
                 y: springTextY,
                 filter: textFilter,
               }}
+              className="max-w-xl mx-auto space-y-2 sm:space-y-3"
             >
-              <span className="text-[#007C74] text-sm font-semibold tracking-[0.2em] uppercase mb-4 block">
+              <span className="text-[#007C74] text-xs sm:text-sm font-bold tracking-[0.2em] uppercase block">
                 Craftsmanship Revealed
               </span>
-              <h2 className="text-4xl sm:text-5xl md:text-7xl font-bold text-white leading-tight mb-4">
+              <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight">
                 Every Detail
                 <br />
                 <span className="text-[#007C74]">Matters</span>
               </h2>
-              <p className="text-white/60 text-sm sm:text-base max-w-md mx-auto">
+              <p className="text-white/70 text-xs sm:text-sm md:text-base max-w-sm sm:max-w-md mx-auto leading-relaxed">
                 From precision engineering to hand-finished acetates — witness
                 the artistry behind every frame.
               </p>
             </motion.div>
           </div>
-          <canvas
-            ref={canvasRef}
-            className="h-full w-full object-cover object-top"
-            style={{ display: ready ? "block" : "none" }}
-          />
         </div>
       </div>
     </div>

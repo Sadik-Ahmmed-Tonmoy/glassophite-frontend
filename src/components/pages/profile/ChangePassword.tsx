@@ -10,8 +10,10 @@ import { toast } from "sonner";
 import { useAppDispatch } from "@/redux/hooks";
 import { logout } from "@/redux/features/auth/authSlice";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { useProfileTheme } from "@/hooks/useProfileTheme";
 import { fadeInUp } from "@/lib/profileAnimations";
+import { baseApi } from "@/redux/api/baseApi";
 
 function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
   let score = 0;
@@ -71,7 +73,9 @@ export default function ChangePassword() {
       await changePassword({ oldPassword: formData.currentPassword, newPassword: formData.newPassword }).unwrap();
       toast.success("Password changed successfully. Please login again.");
       setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      await signOut({ redirect: false });
       dispatch(logout());
+      dispatch(baseApi.util.resetApiState());
       router.push("/auth/login");
     } catch {
       toast.error("Failed to change password");

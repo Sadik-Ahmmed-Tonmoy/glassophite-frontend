@@ -5,10 +5,10 @@ import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-van
 import { useCart } from "@/hooks/use-cart";
 import { LanguageSwitcher, TranslateInitializer } from "@/lib/GoogleTranslateProvider";
 import { cn } from "@/lib/utils";
-import { useGetMeQuery, useLogoutMutation } from "@/redux/features/auth/authApi";
-import { logout } from "@/redux/features/auth/authSlice";
+import LogoutDialog from "@/components/shared/LogoutDialog";
+import { useGetMeQuery } from "@/redux/features/auth/authApi";
 import { useGetWishlistQuery } from "@/redux/features/wishlist/wishlistApi";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { useAppSelector } from "@/redux/hooks";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,7 +16,6 @@ import { useEffect, useRef, useState } from "react";
 import { AiOutlineHeart } from "react-icons/ai";
 import { BsPerson } from "react-icons/bs";
 import { PiShoppingBagOpenFill } from "react-icons/pi";
-import { toast } from "sonner";
 import CartButton from "../cart/CartButton";
 import CartDrawer from "../cart/CartDrawer";
 import DropDownMenus from "../DropDownMenus/DropDownMenus";
@@ -46,29 +45,17 @@ const SEARCH_PLACEHOLDERS = [
 ];
 
 const PCNavBar = () => {
-  const dispatch = useAppDispatch();
   const router = useRouter();
   const token = useAppSelector((state) => state.auth.access_token);
+  const authUser = useAppSelector((state) => state.auth.user);
   const { data: meData } = useGetMeQuery(undefined, { skip: !token });
   const { data: wishlistData, isLoading: isWishlistLoading, isFetching: isWishlistFetching } = useGetWishlistQuery(undefined, { skip: !token });
-  const [logoutApi] = useLogoutMutation();
   const { totalItems, totalPrice, isLoading: isCartLoading, isFetching: isCartFetching } = useCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const user = meData?.data || meData;
+  const user = meData?.data || meData || authUser;
   const isLoggedIn = !!token && !!user;
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-
-  const handleLogout = async () => {
-    try {
-      await logoutApi(undefined).unwrap();
-    } catch {
-      // safe fallback
-    }
-    dispatch(logout());
-    toast.success("Logged out successfully");
-    router.push("/auth/login");
-  };
   const [shakeCartFloatingButton, setShakeCartFloatingButton] = useState(false);
   const prevTotalItemsRef = useRef<number | null>(null);
 
@@ -120,7 +107,7 @@ const PCNavBar = () => {
         <div className="flex items-center gap-3 lg:gap-4 xl:gap-6 text-xs whitespace-nowrap shrink-0">
           <div className="relative group">
             <button
-              className={`${styles.accountButton} ${styles.textHoverEffect} flex items-center gap-2 cursor-pointer`}
+              className={`${styles.accountButton} ${styles.textHoverEffect} flex items-center cursor-pointer`}
             >
               <BsPerson className="w-6 h-6" />
               <span className="relative">
@@ -147,17 +134,18 @@ const PCNavBar = () => {
                       </Link>
                     )}
                     <div className="border-t border-neutral-200 dark:border-neutral-800 my-1" />
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-3 py-2 hover:bg-red-500/10 text-red-650 rounded-lg font-bold transition-colors cursor-pointer"
-                    >
-                      Logout
-                    </button>
+                    <LogoutDialog>
+                      <button
+                        className="w-full text-left px-3 py-2 hover:bg-red-500/10 text-red-650 rounded-lg font-bold transition-colors cursor-pointer"
+                      >
+                        Logout
+                      </button>
+                    </LogoutDialog>
                   </>
                 ) : (
                   <>
                     <Link href="/auth/login" className="px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-200 font-bold transition-colors">
-                      Login / Sign In
+                      Login
                     </Link>
                     <Link href="/auth/register" className="px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-200 font-bold transition-colors">
                       Register Account

@@ -5,6 +5,8 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistStore } from "redux-persist";
 
+import NextAuthSync from "@/components/shared/NextAuthSync";
+
 export default function ReduxStoreProvider({ children }: { children: React.ReactNode }) {
 
   // const storeRef = useRef<{ store: AppStore; persistor: ReturnType<typeof persistStore> }>();
@@ -22,6 +24,7 @@ export default function ReduxStoreProvider({ children }: { children: React.React
   return (
     <Provider store={storeRef.current.store}>
       <PersistGate loading={null} persistor={storeRef.current.persistor}>
+        <NextAuthSync />
         {children}
       </PersistGate>
     </Provider>

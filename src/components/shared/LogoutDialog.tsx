@@ -17,12 +17,15 @@ import { useAppDispatch } from "@/redux/hooks"
 import { logout as logoutAction } from "@/redux/features/auth/authSlice"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { signOut } from "next-auth/react"
 import { useState } from "react"
 
 interface LogoutDialogProps {
   children: React.ReactNode
   className?: string
 }
+
+import { baseApi } from "@/redux/api/baseApi"
 
 export default function LogoutDialog({ children, className }: LogoutDialogProps) {
   const { isDark } = useProfileTheme()
@@ -33,7 +36,9 @@ export default function LogoutDialog({ children, className }: LogoutDialogProps)
 
   const handleLogout = async () => {
     try { await logoutApi(undefined).unwrap() } catch { /* proceed */ }
+    await signOut({ redirect: false })
     dispatch(logoutAction())
+    dispatch(baseApi.util.resetApiState())
     toast.success("Logged out successfully")
     router.push("/auth/login")
     setOpen(false)

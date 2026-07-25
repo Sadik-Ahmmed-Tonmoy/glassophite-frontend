@@ -35,11 +35,10 @@ import CartDrawer from "../cart/CartDrawer";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import { useGetAllNavbarMenusQuery } from "@/redux/features/navbar/navbarApi";
 import { useGetWishlistQuery } from "@/redux/features/wishlist/wishlistApi";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { logout } from "@/redux/features/auth/authSlice";
-import { useGetMeQuery, useLogoutMutation } from "@/redux/features/auth/authApi";
+import { useAppSelector } from "@/redux/hooks";
+import { useGetMeQuery } from "@/redux/features/auth/authApi";
+import LogoutDialog from "@/components/shared/LogoutDialog";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 const SEARCH_PLACEHOLDERS = [
   "polarized sunglasses",
@@ -88,29 +87,16 @@ export default function MobileNavBar() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
 
-  const dispatch = useAppDispatch();
   const router = useRouter();
   const token = useAppSelector((state) => state.auth.access_token);
+  const authUser = useAppSelector((state) => state.auth.user);
   const { data: meData } = useGetMeQuery(undefined, { skip: !token });
   const { data: wishlistData } = useGetWishlistQuery(undefined, { skip: !token });
-  const [logoutApi] = useLogoutMutation();
 
-  const user = meData?.data || meData;
+  const user = meData?.data || meData || authUser;
   const isLoggedIn = !!token && !!user;
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
   const wishlistCount = wishlistData?.data?.items?.length || 0;
-
-  const handleLogout = async () => {
-    try {
-      await logoutApi(undefined).unwrap();
-    } catch {
-      // safe fallback
-    }
-    dispatch(logout());
-    setIsMenuOpen(false);
-    toast.success("Logged out successfully");
-    router.push("/auth/login");
-  };
 
   const { data: navbarData } = useGetAllNavbarMenusQuery(undefined);
   const navbarMenus: MenuItemData[] = navbarData?.data || [];
@@ -376,13 +362,14 @@ export default function MobileNavBar() {
                 )}
               </div>
 
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white text-xs font-bold transition-all cursor-pointer active:scale-98"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-                <span>Logout</span>
-              </button>
+              <LogoutDialog>
+                <button
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white text-xs font-bold transition-all cursor-pointer active:scale-98"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Logout</span>
+                </button>
+              </LogoutDialog>
             </div>
           ) : (
             <div className="flex gap-3">

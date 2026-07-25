@@ -10,8 +10,11 @@ import { useAppDispatch } from "@/redux/hooks";
 import { logout } from "@/redux/features/auth/authSlice";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { useProfileTheme } from "@/hooks/useProfileTheme";
 import { fadeInUp } from "@/lib/profileAnimations";
+
+import { baseApi } from "@/redux/api/baseApi";
 
 export default function DeleteAccount() {
   const { isDark, theme: styles } = useProfileTheme();
@@ -26,7 +29,9 @@ export default function DeleteAccount() {
     try {
       await deleteAccount(undefined).unwrap();
       toast.success("Account deleted permanently");
+      await signOut({ redirect: false });
       dispatch(logout());
+      dispatch(baseApi.util.resetApiState());
       router.push("/");
     } catch {
       toast.error("Failed to delete account");

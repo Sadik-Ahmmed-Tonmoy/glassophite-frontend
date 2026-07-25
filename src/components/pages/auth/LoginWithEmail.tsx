@@ -7,19 +7,20 @@ import { LinkPreview } from "@/components/ui/link-preview";
 import MyFormInputAceternity from "@/components/ui/MyForm/MyFormInputAceternity/MyFormInputAceternity";
 import MyFormWrapper from "@/components/ui/MyForm/MyFormWrapper/MyFormWrapper";
 
-import MyFormCheckBox from "@/components/ui/MyForm/MyFormCheckBox/MyFormCheckBox";
-import Link from "next/link";
-import { FieldValues } from "react-hook-form";
-import { BsGithub, BsGoogle } from "react-icons/bs";
-import Button from "@/components/ui/buttons/Button/Button";
 import BottomGradient from "@/components/ui/BottomGradient";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import Button from "@/components/ui/buttons/Button/Button";
+import MyFormCheckBox from "@/components/ui/MyForm/MyFormCheckBox/MyFormCheckBox";
 import { useLoginMutation } from "@/redux/features/auth/authApi";
-import { useAppDispatch } from "@/redux/hooks";
 import { setUser } from "@/redux/features/auth/authSlice";
-import { toast } from "sonner";
+import { useAppDispatch } from "@/redux/hooks";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { FieldValues } from "react-hook-form";
+import { BsGoogle } from "react-icons/bs";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const validationSchema = z.object({
   email: z
@@ -142,19 +143,20 @@ export function LoginWithEmail() {
         <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-4 h-[1px] w-full" />
 
         <div className="flex flex-col space-y-4">
-          <button
+          {/* <button
             className=" relative group/btn flex space-x-2 items-center justify-center ps-2 px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
-            type="submit"
+            type="button"
           >
             <BsGithub className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
             <span className="text-neutral-700 dark:text-neutral-300 text-sm">
               GitHub
             </span>
             <BottomGradient />
-          </button>
+          </button> */}
           <button
-            className=" relative group/btn flex space-x-2 items-center justify-center ps-2 px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
-            type="submit"
+            type="button"
+            onClick={() => signIn("google", { callbackUrl: redirect })}
+            className=" relative group/btn flex space-x-2 items-center justify-center ps-2 px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)] cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
           >
             <BsGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
             <span className="text-neutral-700 dark:text-neutral-300 text-sm">

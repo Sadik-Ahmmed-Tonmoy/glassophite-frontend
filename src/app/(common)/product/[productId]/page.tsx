@@ -156,7 +156,7 @@ export default async function ProductPage({ params }: any) {
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 py-8 sm:py-12 lg:py-16">
+    <main className="container mx-auto px-4   py-8 sm:py-12 lg:py-16">
       <Script
         id={`product-jsonld-${product.id}`}
         type="application/ld+json"

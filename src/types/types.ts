@@ -36,7 +36,8 @@ export type TVariant = {
   inStock: boolean;
   quantity: number;
   productCode: string;
-  shortDescription?: string;
+  shortDescription?: string | null;
+  videoUrl?: string | null;
   imgList: TImage[];
   productId?: string;
   createdAt?: string;
@@ -79,7 +80,6 @@ export type TProduct = {
   averageRating?: number;
   totalReviews?: number;
   status?: "ACTIVE" | "INACTIVE" | "ARCHIVED";
-  videoUrl?: string;
   showPrescriptionLenses?: boolean;
   variants: TVariant[];
   reviews?: TReview[];

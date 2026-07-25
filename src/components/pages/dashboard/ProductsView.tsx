@@ -25,6 +25,7 @@ import {
   Check,
   Package,
   Loader2,
+  Video,
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -171,7 +172,6 @@ export default function ProductsView() {
   const [countryOfOrigin, setCountryOfOrigin] = useState("France");
   const [targetAudience, setTargetAudience] = useState("Unisex, Luxury Seekers");
   const [careInstructions, setCareInstructions] = useState("Clean lenses with a microfiber cloth.");
-  const [videoUrl, setVideoUrl] = useState("");
   const [showPrescriptionLenses, setShowPrescriptionLenses] = useState(true);
   const [isFeatured, setIsFeatured] = useState(false);
   const [isNewArrival, setIsNewArrival] = useState(false);
@@ -197,6 +197,7 @@ export default function ProductsView() {
   const [varQuantity, setVarQuantity] = useState("");
   const [varProductCode, setVarProductCode] = useState("");
   const [varShortDescription, setVarShortDescription] = useState("");
+  const [varVideoUrl, setVarVideoUrl] = useState("");
   const [varImgList, setVarImgList] = useState<{ image: string; id: string }[]>([]);
 
   // Image upload states
@@ -251,7 +252,6 @@ export default function ProductsView() {
     setCountryOfOrigin("France");
     setTargetAudience("Unisex, Luxury Seekers");
     setCareInstructions("Store in a protective case. Clean lenses with a microfiber cloth.");
-    setVideoUrl("");
     setShowPrescriptionLenses(true);
     setIsFeatured(false);
     setIsNewArrival(false);
@@ -290,7 +290,6 @@ export default function ProductsView() {
     setCountryOfOrigin(p.countryOfOrigin || "France");
     setTargetAudience(p.targetAudience || "Unisex");
     setCareInstructions(p.careInstructions || "Clean lenses with a microfiber cloth.");
-    setVideoUrl(p.videoUrl || "");
     setShowPrescriptionLenses(p.showPrescriptionLenses !== false);
     setIsFeatured(!!p.isFeatured);
     setIsNewArrival(!!p.isNewArrival);
@@ -316,6 +315,7 @@ export default function ProductsView() {
     setVarQuantity("");
     setVarProductCode(""); // will be filled by backend below
     setVarShortDescription("");
+    setVarVideoUrl("");
     setVarImgList([]);
     setUrlInput("");
     setFormErrors({});
@@ -336,6 +336,7 @@ export default function ProductsView() {
     setVarQuantity(v.quantity.toString());
     setVarProductCode(v.productCode);
     setVarShortDescription(v.shortDescription || "");
+    setVarVideoUrl(v.videoUrl || "");
     setVarImgList([...v.imgList]);
     setUrlInput("");
     setFormErrors({});
@@ -393,6 +394,7 @@ export default function ProductsView() {
       quantity: Number(varQuantity),
       productCode: varProductCode,
       shortDescription: varShortDescription || `${varTitle} eyewear frame edition.`,
+      videoUrl: varVideoUrl.trim() || undefined,
       imgList: finalImgList,
     };
 
@@ -538,7 +540,7 @@ export default function ProductsView() {
         types: types.length > 0 ? types : undefined, shortDescription, longDescription,
         material, dimensions, weight, shippingInfo, frameType,
         lensType, warranty, countryOfOrigin, targetAudience,
-        careInstructions, videoUrl: videoUrl || null, showPrescriptionLenses, isFeatured, isNewArrival, isBestSeller, isTrending,
+        careInstructions, showPrescriptionLenses, isFeatured, isNewArrival, isBestSeller, isTrending,
         salePercentage: Number(salePercentage) || 0,
       };
 
@@ -554,12 +556,21 @@ export default function ProductsView() {
         // Add new variants
         for (const v of newVariants) {
           const { id: _id, ...variantData } = v;
-          await addVariant({ productId: editingProduct.id, ...variantData }).unwrap();
+          await addVariant({
+            productId: editingProduct.id,
+            ...variantData,
+            videoUrl: variantData.videoUrl ?? undefined,
+          }).unwrap();
         }
         // Update existing variants
         for (const v of updatedVariants) {
           const { id, ...variantData } = v;
-          await updateVariant({ productId: editingProduct.id, variantId: id, ...variantData }).unwrap();
+          await updateVariant({
+            productId: editingProduct.id,
+            variantId: id,
+            ...variantData,
+            videoUrl: variantData.videoUrl ?? undefined,
+          }).unwrap();
         }
 
         toast.success("Product Updated", {
@@ -567,7 +578,10 @@ export default function ProductsView() {
         });
       } else {
         // Create product with all variants at once
-        const variantsPayload = variantsList.map(({ id: _id, ...v }) => v);
+        const variantsPayload = variantsList.map(({ id: _id, ...v }) => ({
+          ...v,
+          videoUrl: v.videoUrl ?? undefined,
+        }));
         await createProduct({ ...productPayload, variants: variantsPayload }).unwrap();
         toast.success("Product Created", {
           description: `${title} collection listing added to catalog.`,
@@ -1122,17 +1136,6 @@ export default function ProductsView() {
                     <label className="font-bold text-muted-foreground">Care Instructions</label>
                     <input value={careInstructions} onChange={(e) => setCareInstructions(e.target.value)} className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
                   </div>
-
-                  <div className="space-y-1">
-                    <label className="font-bold text-muted-foreground">YouTube Video URL (Optional)</label>
-                    <input
-                      type="text"
-                      value={videoUrl}
-                      onChange={(e) => setVideoUrl(e.target.value)}
-                      placeholder="e.g. https://www.youtube.com/watch?v=..."
-                      className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    />
-                  </div>
                 </form>
               </div>
 
@@ -1174,7 +1177,14 @@ export default function ProductsView() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-bold text-foreground truncate">{v.title}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="font-bold text-foreground truncate">{v.title}</p>
+                            {v.videoUrl && (
+                              <span title="Has Video" className="p-0.5 bg-red-500/10 text-red-500 rounded">
+                                <Video className="w-3 h-3" />
+                              </span>
+                            )}
+                          </div>
                           <p className="text-[10px] text-muted-foreground font-mono">{v.productCode} · ৳{v.priceAfterDiscount} · {v.quantity} pcs</p>
                         </div>
                         <span className="w-3 h-3 rounded-full border border-border flex-shrink-0" style={{ backgroundColor: v.color }} />
@@ -1314,6 +1324,20 @@ export default function ProductsView() {
                           onChange={(e) => setVarShortDescription(e.target.value)}
                           placeholder="Optional variant tagline"
                           className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                      </div>
+
+                      <div className="space-y-1 col-span-2">
+                        <label className="font-bold text-muted-foreground flex items-center gap-1">
+                          <Video className="w-3.5 h-3.5 text-red-500" />
+                          YouTube Video URL (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={varVideoUrl}
+                          onChange={(e) => setVarVideoUrl(e.target.value)}
+                          placeholder="e.g. https://www.youtube.com/watch?v=..."
+                          className="w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-xs"
                         />
                       </div>
                     </div>

@@ -128,6 +128,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     product.variants.find((variant) => variant.id === selectedVariantId) ||
     product.variants[0];
 
+  const activeVideoUrl =
+    selectedVariant?.videoUrl ||
+    product.variants?.find((v) => v.videoUrl)?.videoUrl;
+
   useEffect(() => {
     setQuantity(1);
   }, [selectedVariantId]);
@@ -166,15 +170,15 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-10 sm:space-y-14 mt-4 sm:mt-8"
+      className="space-y-8 sm:space-y-12 mt-2 sm:mt-6 px-3 sm:px-6 max-w-7xl mx-auto"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
         {/* Image Slider */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="relative lg:col-span-5"
+          className="relative lg:col-span-5 w-full"
         >
           <ImageSlider
             images={selectedVariant.imgList}
@@ -187,24 +191,24 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="space-y-5 sm:space-y-6 lg:col-span-7"
+          className="space-y-5 sm:space-y-6 lg:col-span-7 w-full"
         >
           {/* Title and Stock Badge */}
           <div>
-            <div className="flex flex-wrap justify-between items-start gap-2">
-              <h1 className={`text-2xl sm:text-3xl font-extrabold ${styles.text}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h1 className={`text-xl sm:text-3xl font-extrabold tracking-tight ${styles.text}`}>
                 {selectedVariant.title}
               </h1>
               {!selectedVariant.inStock ? (
                 <Badge
-                  className="text-xs sm:text-sm border border-red-500 bg-red-50 dark:bg-red-950/20 text-red-500 font-bold"
+                  className="text-xs sm:text-sm border border-red-500 bg-red-50 dark:bg-red-950/20 text-red-500 font-bold self-start sm:self-auto"
                   data-translate="product.outOfStock"
                 >
                   Out of Stock
                 </Badge>
               ) : (
                 <div
-                  className={`text-xs sm:text-sm px-2.5 py-0.5 rounded-full border ${
+                  className={`text-xs sm:text-sm px-2.5 py-0.5 rounded-full border self-start sm:self-auto ${
                     selectedVariant.quantity < 7
                       ? "border-red-500 bg-red-50 dark:bg-red-950/20 text-red-500 font-bold"
                       : styles.badgeSuccess
@@ -221,42 +225,42 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             </p>
 
             {/* Rating and SKU */}
-            <div className="flex items-center mt-3 space-x-2 flex-wrap gap-2">
+            <div className="flex items-center mt-3 flex-wrap gap-x-4 gap-y-2 text-xs sm:text-sm">
               {product.averageRating && (
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 ${
+                      className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
                         i < Math.round(product.averageRating ?? 0)
                           ? styles.starFilled
                           : styles.starEmpty
                       }`}
                     />
                   ))}
-                  <span className={`ml-2 text-xs sm:text-sm ${styles.textMutedLighter}`}>
+                  <span className={`ml-1.5 text-xs sm:text-sm ${styles.textMutedLighter}`}>
                     ({product.averageRating} reviews)
                   </span>
                 </div>
               )}
-              <span className={`text-xs sm:text-sm ${styles.textMutedLighter}`}>
+              <span className={`text-xs sm:text-sm ${styles.textMutedLighter} font-mono`}>
                 SKU: {selectedVariant.productCode}
               </span>
             </div>
           </div>
 
           {/* Price */}
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-baseline gap-2.5 sm:gap-4">
             {selectedVariant.priceAfterDiscount && selectedVariant.mainPrice ? (
               <>
-                <span className="text-2xl sm:text-3xl font-extrabold text-[#007C74] dark:text-[#00A693]">
+                <span className="text-2xl sm:text-3xl font-black text-[#007C74] dark:text-[#00A693]">
                   ৳{(selectedVariant.priceAfterDiscount + lensPrice).toFixed(2)}
                 </span>
-                <span className={`text-base sm:text-lg line-through ${styles.textMutedLighter}`}>
+                <span className={`text-sm sm:text-lg line-through ${styles.textMutedLighter}`}>
                   ৳{(selectedVariant.mainPrice + lensPrice).toFixed(2)}
                 </span>
                 {selectedVariant.discountPercent && (
-                  <Badge className="bg-[#007C74] text-white font-bold">
+                  <Badge className="bg-[#007C74] text-white font-bold text-xs px-2 py-0.5">
                     {selectedVariant.discountPercent}% OFF
                   </Badge>
                 )}
@@ -284,14 +288,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   : `${styles.border} bg-transparent hover:border-neutral-300 dark:hover:border-neutral-700`
               }`}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center space-x-3">
-                  <span className="text-xl">👓</span>
+                  <span className="text-xl sm:text-2xl">👓</span>
                   <div>
-                    <h3 className={`font-bold text-sm sm:text-base ${styles.text}`}>
+                    <h3 className={`font-bold text-xs sm:text-base ${styles.text}`}>
                       Custom Prescription Lenses
                     </h3>
-                    <p className={`text-xs ${styles.textMutedLighter}`}>
+                    <p className={`text-[11px] sm:text-xs ${styles.textMutedLighter}`}>
                       Configure custom power glass for your optical frames
                     </p>
                   </div>
@@ -319,12 +323,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   transition={{ duration: 0.3 }}
-                  className="mt-5 pt-5 border-t border-neutral-200 dark:border-neutral-800 space-y-5"
+                  className="mt-4 sm:mt-5 pt-4 sm:pt-5 border-t border-neutral-200 dark:border-neutral-800 space-y-4 sm:space-y-5"
                 >
                   {/* Lens Protection Type selection */}
                   <div>
                     <label
-                      className={`block text-xs font-bold uppercase tracking-wider ${styles.textMutedLighter} mb-3`}
+                      className={`block text-[11px] sm:text-xs font-bold uppercase tracking-wider ${styles.textMutedLighter} mb-2.5`}
                     >
                       1. Select Lens Protection Type
                     </label>
@@ -337,7 +341,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                         No prescription lenses available at the moment.
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
                         {lenses.map((opt) => {
                           const isSelected = selectedLensId === opt.id;
                           return (
@@ -345,13 +349,13 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                               key={opt.id}
                               type="button"
                               onClick={() => setSelectedLensId(opt.id)}
-                              className={`flex flex-col items-start p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
+                              className={`flex flex-col items-start p-2.5 sm:p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
                                 isSelected
                                   ? "border-[#007C74] bg-[#007C74]/10 dark:bg-[#007C74]/20 ring-1 ring-[#007C74]"
                                   : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/50"
                               }`}
                             >
-                              <span className="text-base mb-1">🔍</span>
+                              <span className="text-sm sm:text-base mb-1">🔍</span>
                               <span className={`text-xs font-bold ${styles.text}`}>
                                 {opt.name}
                               </span>
@@ -375,11 +379,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   {/* Left/Right SPH Power dropdowns */}
                   <div>
                     <label
-                      className={`block text-xs font-bold uppercase tracking-wider ${styles.textMutedLighter} mb-3`}
+                      className={`block text-[11px] sm:text-xs font-bold uppercase tracking-wider ${styles.textMutedLighter} mb-2.5`}
                     >
                       2. Input Lens Power (SPH)
                     </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       {/* Left Eye */}
                       <div className="space-y-1.5">
                         <span
@@ -429,12 +433,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           )}
 
           {/* Quantity and Add to Cart */}
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="pt-2">
+            <div className="flex flex-col xs:flex-row xs:items-center gap-3 sm:gap-4">
               {/* Quantity Selector */}
               <div
                 className={cn(
-                  "flex items-center border rounded-full w-fit",
+                  "flex items-center justify-between border rounded-full px-1 py-0.5 w-full xs:w-auto self-start xs:self-auto",
                   selectedVariant.inStock ? "flex" : "hidden",
                   styles.border
                 )}
@@ -444,11 +448,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   size="icon"
                   onClick={decreaseQuantity}
                   disabled={!selectedVariant.inStock || quantity <= 1}
-                  className={styles.text}
+                  className={cn("h-8 w-8 sm:h-9 sm:w-9 rounded-full", styles.text)}
                 >
                   -
                 </MyButton>
-                <span className={`w-10 text-center font-bold text-xs sm:text-sm ${styles.text}`}>
+                <span className={`w-8 sm:w-10 text-center font-bold text-xs sm:text-sm ${styles.text}`}>
                   {quantity}
                 </span>
                 <MyButton
@@ -459,15 +463,15 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     !selectedVariant.inStock ||
                     quantity >= selectedVariant.quantity
                   }
-                  className={styles.text}
+                  className={cn("h-8 w-8 sm:h-9 sm:w-9 rounded-full", styles.text)}
                 >
                   +
                 </MyButton>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex-1 flex flex-col md:flex-row gap-2 md:gap-4 w-full">
-                <div className="flex-1 flex items-center space-x-2 sm:space-x-4 w-full">
+              <div className="flex-1 flex flex-col sm:flex-row items-center gap-2.5 sm:gap-4 w-full">
+                <div className="flex-1 flex items-center space-x-2 sm:space-x-3 w-full">
                   <AddToCartButton
                     product={{
                       id: selectedVariant.id.toString(),
@@ -508,7 +512,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 </div>
 
                 {!selectedVariant.inStock && (
-                  <div className="w-full md:w-auto min-w-[200px]">
+                  <div className="w-full sm:w-auto min-w-[180px]">
                     <RequestStockButton
                       productId={product.id}
                       variantId={selectedVariant.id}
@@ -525,7 +529,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           <Tabs defaultValue="specifications">
             <TabsList
               className={`grid ${
-                product.videoUrl ? "grid-cols-3" : "grid-cols-2"
+                activeVideoUrl ? "grid-cols-3" : "grid-cols-2"
               } ${styles.border}`}
             >
               <TabsTrigger
@@ -542,7 +546,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               >
                 Description
               </TabsTrigger>
-              {product.videoUrl && (
+              {activeVideoUrl && (
                 <TabsTrigger
                   value="video"
                   className={cn(styles.tabInactive, styles.tabActive)}
@@ -666,12 +670,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               </div>
             </TabsContent>
 
-            {product.videoUrl && (
+            {activeVideoUrl && (
               <TabsContent value="video" className="mt-4">
                 <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg border border-neutral-200 dark:border-neutral-800">
-                  {getYoutubeEmbedUrl(product.videoUrl) ? (
+                  {getYoutubeEmbedUrl(activeVideoUrl) ? (
                     <iframe
-                      src={getYoutubeEmbedUrl(product.videoUrl)!}
+                      src={getYoutubeEmbedUrl(activeVideoUrl)!}
                       title={`${product.title} YouTube Video`}
                       className="absolute inset-0 w-full h-full border-0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

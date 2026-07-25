@@ -38,7 +38,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
       itemType="https://schema.org/Product"
     >
       <meta itemProp="name" content={variant.title} />
-      <meta itemProp="description" content={variant.shortDescription} />
+      <meta itemProp="description" content={variant.shortDescription ?? undefined} />
       <meta itemProp="sku" content={variant.productCode} />
       {product.brand && <meta itemProp="brand" content={product.brand} />}
 

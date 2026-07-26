@@ -1,12 +1,27 @@
 "use client";
 
+import React, { useState } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const LoginWithGoogle = () => {
   const { data: session } = useSession();
-  console.log(session);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    toast.loading("Connecting to Google authentication...", { id: "google-login" });
+    try {
+      await signIn("google");
+    } catch {
+      toast.error("Failed to connect to Google", { id: "google-login" });
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div>
       {session ? (
@@ -26,13 +41,14 @@ const LoginWithGoogle = () => {
         </div>
       ) : (
         <button
-          onClick={() => signIn("google")}
-          className="relative w-full bg-blue-primary text-white py-2 px-4 rounded-md hover:bg-[#4285F4]/90 flex items-center justify-center"
+          disabled={isLoading}
+          onClick={handleGoogleLogin}
+          className="relative w-full bg-blue-primary text-white py-2 px-4 rounded-md hover:bg-[#4285F4]/90 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <div className="absolute top-[3px] left-[3px] bg-white rounded-sm p-1">
-            <FcGoogle size={24} />
+            {isLoading ? <Loader2 size={24} className="animate-spin text-[#4285F4]" /> : <FcGoogle size={24} />}
           </div>
-          Sign up with Google
+          {isLoading ? "Connecting..." : "Sign up with Google"}
         </button>
       )}
 

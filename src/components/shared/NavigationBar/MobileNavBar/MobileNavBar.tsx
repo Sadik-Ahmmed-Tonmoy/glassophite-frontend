@@ -99,7 +99,8 @@ export default function MobileNavBar() {
   const wishlistCount = wishlistData?.data?.items?.length || 0;
 
   const { data: navbarData } = useGetAllNavbarMenusQuery(undefined);
-  const navbarMenus: MenuItemData[] = navbarData?.data || [];
+  const rawNavbarMenus: (MenuItemData & { isActive?: boolean })[] = navbarData?.data || [];
+  const navbarMenus = rawNavbarMenus.filter((m) => m.isActive !== false);
 
   const [searchValue, setSearchValue] = useState("");
 

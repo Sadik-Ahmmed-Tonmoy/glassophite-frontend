@@ -803,7 +803,7 @@ export default function ProductFilterPage() {
                   optionCounts={optionCounts}
                   allBrands={allBrands}
                   allSubCategories={allSubCategories}
-                  allTypes={allTypes}
+                  // allTypes={allTypes}
                   allFrameTypes={allFrameTypes}
                   allLensTypes={allLensTypes}
                   allColors={allColors}

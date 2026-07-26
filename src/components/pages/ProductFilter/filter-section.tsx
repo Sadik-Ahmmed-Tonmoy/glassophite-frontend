@@ -18,7 +18,7 @@ interface FilterSectionProps {
   optionCounts: FilterOptionCounts
   allBrands: string[]
   allSubCategories: string[]
-  allTypes: string[]
+  // allTypes: string[]
   allFrameTypes: string[]
   allLensTypes: string[]
   allColors: { color: string; title: string }[]
@@ -36,7 +36,7 @@ export default function FilterSection({
   optionCounts,
   allBrands,
   allSubCategories,
-  allTypes,
+  // allTypes,
   allFrameTypes,
   allLensTypes,
   allColors,
@@ -156,7 +156,7 @@ export default function FilterSection({
             optionCounts={optionCounts}
             allBrands={allBrands}
           allSubCategories={allSubCategories}
-          allTypes={allTypes}
+          // allTypes={allTypes}
           allFrameTypes={allFrameTypes}
           allLensTypes={allLensTypes}
           allColors={allColors}

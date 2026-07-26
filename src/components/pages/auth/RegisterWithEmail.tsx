@@ -15,6 +15,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FieldValues } from "react-hook-form";
 import { BsGoogle } from "react-icons/bs";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -63,6 +64,18 @@ export function RegisterWithEmail() {
   const [register, { isLoading }] = useRegisterMutation();
   const router = useRouter();
   const [accepted, setAccepted] = React.useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    toast.loading("Connecting to Google authentication...", { id: "google-login" });
+    try {
+      await signIn("google", { callbackUrl: "/" });
+    } catch {
+      toast.error("Failed to connect to Google", { id: "google-login" });
+      setIsGoogleLoading(false);
+    }
+  };
 
   const handleSubmit = async (data: FieldValues) => {
     if (!accepted) {
@@ -186,12 +199,17 @@ export function RegisterWithEmail() {
           </button> */}
           <button
             type="button"
-            onClick={() => signIn("google", { callbackUrl: "/" })}
-            className="relative group/btn flex space-x-2 items-center justify-center ps-2 px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)] cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+            disabled={isGoogleLoading || isLoading}
+            onClick={handleGoogleLogin}
+            className="relative group/btn flex space-x-2 items-center justify-center ps-2 px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)] cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <BsGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
+            {isGoogleLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin text-neutral-800 dark:text-neutral-300" />
+            ) : (
+              <BsGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
+            )}
             <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-              Google
+              {isGoogleLoading ? "Connecting to Google..." : "Google"}
             </span>
             <BottomGradient />
           </button>

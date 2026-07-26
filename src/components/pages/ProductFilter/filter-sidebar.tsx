@@ -7,12 +7,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { normalizeCategoryForDB } from "@/lib/utils";
 import type { FilterOptionCounts, FilterState } from "@/types/filter-types";
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import { useTheme } from "next-themes";
 import PriceRangeSlider from "./price-range-slider";
-import { normalizeCategoryForDB } from "@/lib/utils";
 
 interface FilterSidebarProps {
   filters: FilterState;
@@ -24,7 +24,7 @@ interface FilterSidebarProps {
   optionCounts: FilterOptionCounts;
   allBrands: string[];
   allSubCategories: string[];
-  allTypes: string[];
+  // allTypes: string[];
   allFrameTypes: string[];
   allLensTypes: string[];
   allColors: { color: string; title: string }[];
@@ -39,7 +39,7 @@ export default function FilterSidebar({
   optionCounts,
   allBrands,
   allSubCategories,
-  allTypes,
+  // allTypes,
   allFrameTypes,
   allLensTypes,
   allColors,
@@ -296,7 +296,7 @@ export default function FilterSidebar({
         )}
 
         {/* ========== Type ========== */}
-        {allTypes.length > 0 && (
+        {/* {allTypes.length > 0 && (
           <AccordionItem value="type" className={styles.border}>
             <AccordionTrigger
               className={`text-sm font-medium ${styles.accordionTrigger}`}
@@ -319,7 +319,7 @@ export default function FilterSidebar({
               </div>
             </AccordionContent>
           </AccordionItem>
-        )}
+        )} */}
 
         {/* ========== Price Range ========== */}
         <AccordionItem value="price" className={styles.border}>

@@ -40,6 +40,7 @@ type TNavbarMenu = {
   href: string;
   subMenu: SubMenu[];
   order: number;
+  isActive?: boolean;
 };
 const getCategorySlugOrHref = (menuName: string): string => {
   const m = menuName.toLowerCase().trim();
@@ -71,6 +72,7 @@ export default function NavigationView() {
   const [imageUrl, setImageUrl] = useState("");
   const [href, setHref] = useState("");
   const [order, setOrder] = useState<number>(0);
+  const [isActive, setIsActive] = useState<boolean>(true);
   const [subMenu, setSubMenu] = useState<SubMenu[]>([]);
 
   const hrefAutoGenRef = useRef(true);
@@ -144,6 +146,18 @@ export default function NavigationView() {
     }
   };
 
+  const handleToggleStatus = async (item: TNavbarMenu) => {
+    const newStatus = !(item.isActive ?? true);
+    try {
+      await updateMenu({ id: item.id, isActive: newStatus }).unwrap();
+      toast.success(
+        `"${item.menu}" status changed to ${newStatus ? "Active" : "Deactive"}`
+      );
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to update menu status");
+    }
+  };
+
   const handleOpenAdd = () => {
     setEditingMenu(null);
     setMenu("");
@@ -151,6 +165,7 @@ export default function NavigationView() {
     setHref("");
     hrefAutoGenRef.current = true;
     setOrder(menus.length + 1);
+    setIsActive(true);
     setSubMenu([]);
     setIsModalOpen(true);
   };
@@ -161,6 +176,7 @@ export default function NavigationView() {
     setImageUrl(m.imageUrl || "");
     setHref(m.href || "");
     setOrder(m.order);
+    setIsActive(m.isActive ?? true);
     setSubMenu(m.subMenu ? JSON.parse(JSON.stringify(m.subMenu)) : []);
     setIsModalOpen(true);
   };
@@ -207,6 +223,7 @@ export default function NavigationView() {
       imageUrl: imageUrl.trim() || undefined,
       href: href.trim(),
       order: Number(order),
+      isActive,
       subMenu,
     };
 
@@ -327,6 +344,7 @@ export default function NavigationView() {
                   <th className="pb-4 font-black">Menu Name</th>
                   <th className="pb-4 font-black">Route Link</th>
                   <th className="pb-4 font-black">Submenus</th>
+                  <th className="pb-4 font-black">Status</th>
                   <th className="pb-4 text-right font-black">Actions</th>
                 </tr>
               </thead>
@@ -365,6 +383,25 @@ export default function NavigationView() {
                       ) : (
                         <span className="text-neutral-400">Direct Link</span>
                       )}
+                    </td>
+                    <td className="py-4">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleStatus(item)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black transition-all cursor-pointer border shadow-xs ${
+                          item.isActive !== false
+                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20 dark:text-emerald-400"
+                            : "bg-neutral-500/10 text-neutral-500 border-neutral-500/30 hover:bg-neutral-500/20 dark:text-neutral-400"
+                        }`}
+                        title="Click to toggle Active / Deactive status"
+                      >
+                        <span
+                          className={`w-2 h-2 rounded-full ${
+                            item.isActive !== false ? "bg-emerald-500 animate-pulse" : "bg-neutral-400"
+                          }`}
+                        />
+                        <span>{item.isActive !== false ? "Active" : "Deactive"}</span>
+                      </button>
                     </td>
                     <td className="py-4 text-right">
                       <div className="flex justify-end gap-2">
@@ -475,7 +512,7 @@ export default function NavigationView() {
 
                   <div className="space-y-1.5">
                     <label className="text-[10px] uppercase tracking-wider font-extrabold text-neutral-400">
-                      Sort Order Order
+                      Sort Order
                     </label>
                     <input
                       type="number"
@@ -485,6 +522,29 @@ export default function NavigationView() {
                       onChange={(e) => setOrder(Number(e.target.value))}
                       className="dashboard-input text-xs font-bold"
                     />
+                  </div>
+
+                  <div className="space-y-1.5 flex flex-col justify-end">
+                    <label className="text-[10px] uppercase tracking-wider font-extrabold text-neutral-400">
+                      Navigation Status
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsActive(!isActive)}
+                      className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 dark:text-emerald-400"
+                          : "bg-neutral-100 dark:bg-neutral-900 text-neutral-500 border-neutral-300 dark:border-neutral-800"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${isActive ? "bg-emerald-500 animate-pulse" : "bg-neutral-400"}`} />
+                        {isActive ? "Active (Visible in Header)" : "Deactive (Hidden from Header)"}
+                      </span>
+                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+                        {isActive ? "ON" : "OFF"}
+                      </span>
+                    </button>
                   </div>
                 </div>
 

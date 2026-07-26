@@ -44,6 +44,7 @@ import {
 import { useGetAllNavbarMenusQuery } from "@/redux/features/navbar/navbarApi";
 import { Select } from "antd";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { uploadImageToImgBB } from "@/lib/uploadImageToImgBB";
 
 export default function ProductsView() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -466,32 +467,52 @@ export default function ProductsView() {
     setDeleteConfirm({ isOpen: false, type: null, productId: "", variantId: "", title: "" });
   };
 
-  // Image upload
-  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Image upload to ImgBB with WebP optimization & batch upload
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    const file = files[0];
+    const fileList = Array.from(files);
+
     setIsUploading(true);
-    setUploadProgress(0);
-    const interval = setInterval(() => {
-      setUploadProgress((old) => {
-        if (old >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            const simulatedUrl = URL.createObjectURL(file);
-            setVarImgList((prev) => [
-              ...prev,
-              { id: `IMG-${Math.floor(1000 + Math.random() * 9000)}`, image: simulatedUrl },
-            ]);
-            setIsUploading(false);
-            setUploadProgress(0);
-            toast.success("Image Uploaded", { description: `Uploaded ${file.name} successfully.` });
-          }, 450);
-          return 100;
-        }
-        return old + Math.floor(15 + Math.random() * 20);
+    setUploadProgress(15);
+    const toastId = toast.loading(
+      fileList.length > 1
+        ? `Optimizing & uploading ${fileList.length} images to WebP...`
+        : `Optimizing & uploading image to WebP...`
+    );
+
+    try {
+      setUploadProgress(40);
+
+      // Upload and optimize all selected images concurrently
+      const uploadPromises = fileList.map(async (file) => {
+        const imageUrl = await uploadImageToImgBB(file);
+        return {
+          id: `IMG-${Math.floor(1000 + Math.random() * 9000)}-${Date.now()}`,
+          image: imageUrl,
+        };
       });
-    }, 150);
+
+      const uploadedImages = await Promise.all(uploadPromises);
+      setUploadProgress(100);
+
+      setVarImgList((prev) => [...prev, ...uploadedImages]);
+
+      toast.success(
+        fileList.length > 1 ? "Images Uploaded" : "Image Uploaded",
+        {
+          id: toastId,
+          description: `Optimized & uploaded ${fileList.length} image(s) to ImgBB in WebP format.`,
+        }
+      );
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Image upload failed";
+      toast.error("Upload Failed", { id: toastId, description: errorMessage });
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+      if (e.target) e.target.value = "";
+    }
   };
 
   const handleAddUrlImage = (e: React.MouseEvent) => {
@@ -688,7 +709,7 @@ export default function ProductsView() {
                       </td>
                       <td className="p-4 flex items-center gap-3">
                         <div className="relative w-10 h-10 rounded border border-border bg-muted overflow-hidden flex-shrink-0">
-                          <Image src={displayImg} alt={p.title} fill className="object-cover" unoptimized />
+                          <Image src={displayImg} alt={p.title} fill className="object-cover" sizes="40px" quality={80} />
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
@@ -735,7 +756,7 @@ export default function ProductsView() {
                                 {p.variants?.map((v) => (
                                   <div key={v.id} className="glass-panel p-3 rounded-xl border border-border flex items-center gap-3 bg-card">
                                     <div className="relative w-12 h-12 rounded overflow-hidden border border-border bg-muted flex-shrink-0">
-                                      <Image src={v.imgList?.[0]?.image || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png"} alt={v.title} fill className="object-cover" unoptimized />
+                                      <Image src={v.imgList?.[0]?.image || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png"} alt={v.title} fill className="object-cover" sizes="48px" quality={80} />
                                     </div>
                                     <div className="flex-1 min-w-0 text-xs">
                                       <div className="flex justify-between items-center mb-1">
@@ -785,7 +806,7 @@ export default function ProductsView() {
                 {/* Card header */}
                 <div className="flex items-center gap-3 p-4">
                   <div className="relative w-14 h-14 rounded-xl border border-border bg-muted overflow-hidden flex-shrink-0">
-                    <Image src={displayImg} alt={p.title} fill className="object-cover" unoptimized />
+                    <Image src={displayImg} alt={p.title} fill className="object-cover" sizes="56px" quality={80} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
@@ -823,7 +844,7 @@ export default function ProductsView() {
                     {p.variants.map(v => (
                       <div key={v.id} className="flex items-center gap-3 bg-card rounded-xl border border-border p-3">
                         <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-border bg-muted flex-shrink-0">
-                          <Image src={v.imgList?.[0]?.image || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png"} alt={v.title} fill className="object-cover" unoptimized />
+                          <Image src={v.imgList?.[0]?.image || "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png"} alt={v.title} fill className="object-cover" sizes="40px" quality={80} />
                         </div>
                         <div className="flex-1 min-w-0 text-xs">
                           <div className="flex justify-between">
@@ -1365,7 +1386,7 @@ export default function ProductsView() {
                         >
                           <Upload className="w-3.5 h-3.5" />
                         </button>
-                        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageFileChange} />
+                        <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageFileChange} />
                       </div>
 
                       {isUploading && (
@@ -1381,7 +1402,7 @@ export default function ProductsView() {
                         <div className="flex gap-2 flex-wrap">
                           {varImgList.map((img) => (
                             <div key={img.id} className="relative w-12 h-12 rounded-lg overflow-hidden border border-border bg-muted group">
-                              <Image src={img.image} alt="variant img" fill className="object-cover" unoptimized />
+                              <Image src={img.image} alt="variant img" fill className="object-cover" sizes="48px" quality={80} />
                               <button
                                 onClick={() => handleRemoveVariantImg(img.id)}
                                 className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"

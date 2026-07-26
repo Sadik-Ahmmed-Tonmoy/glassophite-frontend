@@ -55,7 +55,9 @@ export const MenuItem = ({
         {href && !hasChildren ? (
           <Link href={href}>{labelContent}</Link>
         ) : href && hasChildren ? (
-          <Link href={href} onClick={(e) => e.stopPropagation()}>{labelContent}</Link>
+          <Link href={href} onClick={(e) => e.stopPropagation()}>
+            {labelContent}
+          </Link>
         ) : (
           <span>{labelContent}</span>
         )}
@@ -70,7 +72,7 @@ export const MenuItem = ({
             <div
               className={cn(
                 "absolute top-[calc(100%_+_1rem)] left-1/2 transform -translate-x-1/2 pt-4",
-                className
+                className,
               )}
             >
               <motion.div
@@ -104,7 +106,7 @@ export const Menu = ({
       onMouseLeave={() => setActive(null)} // resets the state
       className={cn(
         "relative border-transparent dark:bg-transparent dark:border-white/[0.2]  flex justify-center space-x-4 px-8 py-6 z-40",
-        className
+        className,
       )}
     >
       {children}
@@ -112,16 +114,34 @@ export const Menu = ({
   );
 };
 
-export const ProductItem = ({ title, description, href, src }: { title: string; description: string; href: string; src: string }) => {
+export const ProductItem = ({
+  title,
+  description,
+  href,
+  src,
+}: {
+  title: string;
+  description: string;
+  href: string;
+  src: string;
+}) => {
   return (
     <Link href={href} className="flex space-x-2">
-      <Image src={src} width={150} height={150} alt={title} className="flex-shrink-0 rounded-md shadow-2xl" />
+      <Image
+        src={src}
+        width={150}
+        height={150}
+        alt={title}
+        className="flex-shrink-0 rounded-md shadow-2xl"
+      />
       <div>
         <h4 className="text-xl whitespace-nowrap mb-1 text-black dark:text-white hover:text-[#00a76b] w-min  font-bold relative group cursor-pointer">
           {title}
           <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
         </h4>
-        <p className="text-neutral-700 text-sm max-w-[10rem] dark:text-neutral-300">{description}</p>
+        <p className="text-neutral-700 text-sm max-w-[10rem] dark:text-neutral-300">
+          {description}
+        </p>
       </div>
     </Link>
   );
@@ -129,7 +149,10 @@ export const ProductItem = ({ title, description, href, src }: { title: string; 
 
 export const HoveredLink = ({ children, ...rest }: any) => {
   return (
-    <Link {...rest} className="text-neutral-700 dark:text-neutral-200 hover:text-black ">
+    <Link
+      {...rest}
+      className="text-neutral-700 dark:text-neutral-200 hover:text-black "
+    >
       {children}
     </Link>
   );

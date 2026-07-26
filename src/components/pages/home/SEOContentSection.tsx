@@ -774,7 +774,7 @@ export default function SEOContentSection() {
               </div>
 
               <div className="text-center">
-                <Link href="/blog">
+                <Link href="/blogs">
                   <button
                     className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white text-xs font-bold inline-flex items-center gap-2 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
                   >

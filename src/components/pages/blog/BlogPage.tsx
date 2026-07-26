@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, User } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useGetAllPostsQuery } from "@/redux/features/blog/blogApi";
 
 const containerVariants = {
@@ -96,52 +97,54 @@ export default function BlogPage() {
       >
         <div className="max-w-7xl mx-auto space-y-10 sm:space-y-12">
           {featuredPost && (
-            <motion.article variants={itemVariants} className="group cursor-pointer">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center bg-white dark:bg-black rounded-3xl overflow-hidden border border-neutral-200/80 dark:border-neutral-800 shadow-md hover:shadow-xl transition-all duration-500">
-                <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full min-h-[260px] sm:min-h-[320px] overflow-hidden">
-                  <Image
-                    src={featuredPost.imageUrl || "/placeholder.svg"}
-                    alt={featuredPost.title}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                    priority
-                  />
-                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/90 dark:bg-black/80 text-xs font-bold backdrop-blur-sm shadow-xs">
-                    {featuredPost.category}
+            <motion.article variants={itemVariants} className="group">
+              <Link href={`/blogs/${featuredPost.slug || featuredPost.id}`}>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center bg-white dark:bg-black rounded-3xl overflow-hidden border border-neutral-200/80 dark:border-neutral-800 shadow-md hover:shadow-xl transition-all duration-500 cursor-pointer">
+                  <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full min-h-[260px] sm:min-h-[320px] overflow-hidden">
+                    <Image
+                      src={featuredPost.imageUrl || "/placeholder.svg"}
+                      alt={featuredPost.title}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      priority
+                    />
+                    <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/90 dark:bg-black/80 text-xs font-bold backdrop-blur-sm shadow-xs">
+                      {featuredPost.category}
+                    </div>
+                  </div>
+                  <div className="p-6 sm:p-8 lg:py-12 lg:pr-12 space-y-4">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
+                      <span className="flex items-center gap-1 font-semibold">
+                        <User className="w-3 h-3 text-[#007C74]" />
+                        {featuredPost.author}
+                      </span>
+                      <span>•</span>
+                      <span>
+                        {new Date(featuredPost.date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-[#007C74]/10 text-[#007C74] text-[10px] font-extrabold uppercase">
+                        {featuredPost.readTime}
+                      </span>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold leading-tight group-hover:text-[#007C74] transition-colors">
+                      {featuredPost.title}
+                    </h2>
+                    <p className="text-xs sm:text-sm md:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                      {featuredPost.excerpt}
+                    </p>
+                    <div className="pt-2">
+                      <span className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#007C74] group-hover:gap-3 transition-all">
+                        Read More <ArrowRight className="w-4 h-4" />
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="p-6 sm:p-8 lg:py-12 lg:pr-12 space-y-4">
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
-                    <span className="flex items-center gap-1 font-semibold">
-                      <User className="w-3 h-3 text-[#007C74]" />
-                      {featuredPost.author}
-                    </span>
-                    <span>•</span>
-                    <span>
-                      {new Date(featuredPost.date).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full bg-[#007C74]/10 text-[#007C74] text-[10px] font-extrabold uppercase">
-                      {featuredPost.readTime}
-                    </span>
-                  </div>
-                  <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold leading-tight group-hover:text-[#007C74] transition-colors">
-                    {featuredPost.title}
-                  </h2>
-                  <p className="text-xs sm:text-sm md:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                    {featuredPost.excerpt}
-                  </p>
-                  <div className="pt-2">
-                    <span className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#007C74] group-hover:gap-3 transition-all">
-                      Read More <ArrowRight className="w-4 h-4" />
-                    </span>
-                  </div>
-                </div>
-              </div>
+              </Link>
             </motion.article>
           )}
 
@@ -152,50 +155,52 @@ export default function BlogPage() {
                 variants={itemVariants}
                 className="group cursor-pointer bg-white dark:bg-black rounded-2xl overflow-hidden border border-neutral-200/80 dark:border-neutral-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
               >
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <Image
-                    src={post.imageUrl || "/placeholder.svg"}
-                    alt={post.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-white/90 dark:bg-black/80 text-[10px] font-extrabold backdrop-blur-sm">
-                    {post.category}
+                <Link href={`/blogs/${post.slug || post.id}`} className="flex flex-col justify-between h-full">
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <Image
+                      src={post.imageUrl || "/placeholder.svg"}
+                      alt={post.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-white/90 dark:bg-black/80 text-[10px] font-extrabold backdrop-blur-sm">
+                      {post.category}
+                    </div>
                   </div>
-                </div>
-                <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
-                  <div className="space-y-2.5">
-                    <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">
-                      <span className="flex items-center gap-1 font-semibold">
-                        <User className="w-3 h-3 text-[#007C74]" />
-                        {post.author}
-                      </span>
-                      <span>•</span>
-                      <span>
-                        {new Date(post.date).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded-full bg-[#007C74]/10 text-[#007C74] text-[9px] font-extrabold uppercase">
-                        {post.readTime}
+                  <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
+                    <div className="space-y-2.5">
+                      <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">
+                        <span className="flex items-center gap-1 font-semibold">
+                          <User className="w-3 h-3 text-[#007C74]" />
+                          {post.author}
+                        </span>
+                        <span>•</span>
+                        <span>
+                          {new Date(post.date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded-full bg-[#007C74]/10 text-[#007C74] text-[9px] font-extrabold uppercase">
+                          {post.readTime}
+                        </span>
+                      </div>
+                      <h3 className="text-sm sm:text-base font-bold leading-snug group-hover:text-[#007C74] transition-colors">
+                        {post.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed">
+                        {post.excerpt}
+                      </p>
+                    </div>
+                    <div className="pt-2">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#007C74] group-hover:gap-2.5 transition-all">
+                        Read More <ArrowRight className="w-3.5 h-3.5" />
                       </span>
                     </div>
-                    <h3 className="text-sm sm:text-base font-bold leading-snug group-hover:text-[#007C74] transition-colors">
-                      {post.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed">
-                      {post.excerpt}
-                    </p>
                   </div>
-                  <div className="pt-2">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#007C74] group-hover:gap-2.5 transition-all">
-                      Read More <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </div>
+                </Link>
               </motion.article>
             ))}
           </div>

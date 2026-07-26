@@ -24,9 +24,13 @@ import { toast } from "sonner";
 
 interface BlogDetailPageProps {
   slugOrId: string;
+  initialPost?: any;
 }
 
-export default function BlogDetailPage({ slugOrId }: BlogDetailPageProps) {
+export default function BlogDetailPage({
+  slugOrId,
+  initialPost,
+}: BlogDetailPageProps) {
   const [copied, setCopied] = React.useState(false);
   const {
     data: postData,
@@ -35,7 +39,7 @@ export default function BlogDetailPage({ slugOrId }: BlogDetailPageProps) {
   } = useGetPostBySlugQuery(slugOrId);
   const { data: allPostsData } = useGetAllPostsQuery({});
 
-  const post = postData?.data || postData;
+  const post = postData?.data || postData || initialPost;
 
   const relatedPosts = useMemo(() => {
     const allPosts = allPostsData?.data || [];
@@ -57,7 +61,7 @@ export default function BlogDetailPage({ slugOrId }: BlogDetailPageProps) {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !post) {
     return (
       <div className="w-full min-h-screen bg-neutral-50 dark:bg-[#090909] flex flex-col items-center justify-center gap-3">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007C74]" />
@@ -68,7 +72,7 @@ export default function BlogDetailPage({ slugOrId }: BlogDetailPageProps) {
     );
   }
 
-  if (isError || !post) {
+  if ((isError && !post) || !post) {
     return (
       <div className="w-full min-h-screen bg-neutral-50 dark:bg-[#090909] flex flex-col items-center justify-center gap-4 text-center px-4">
         <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center">
@@ -99,32 +103,46 @@ export default function BlogDetailPage({ slugOrId }: BlogDetailPageProps) {
   return (
     <article className="w-full min-h-screen bg-neutral-50 dark:bg-[#090909] text-neutral-900 dark:text-neutral-100 transition-colors duration-500 py-10 sm:py-14 lg:py-16">
       {/* Breadcrumb & Navigation Header */}
-      <div className="px-4 container mx-auto mb-8">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mb-6 font-medium">
-          <Link href="/" className="hover:text-[#007C74] dark:hover:text-[#00A693] transition-colors">
-            Home
-          </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
-          <Link
-            href="/blogs"
-            className="hover:text-[#007C74] dark:hover:text-[#00A693] transition-colors"
-          >
-            Blogs
-          </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
-          <span className="text-neutral-900 dark:text-white font-bold truncate max-w-[200px] sm:max-w-xs">
-            {post.title}
-          </span>
-        </div>
+      <nav aria-label="Breadcrumb" className="px-4 container mx-auto mb-8">
+        <ol className="flex flex-wrap items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mb-6 font-medium">
+          <li>
+            <Link href="/" className="hover:text-[#007C74] dark:hover:text-[#00A693] transition-colors">
+              Home
+            </Link>
+          </li>
+          <li aria-hidden="true">
+            <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+          </li>
+          <li>
+            <Link
+              href="/blogs"
+              className="hover:text-[#007C74] dark:hover:text-[#00A693] transition-colors"
+            >
+              Blogs
+            </Link>
+          </li>
+          <li aria-hidden="true">
+            <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+          </li>
+          <li>
+            <span
+              className="text-neutral-900 dark:text-white font-bold truncate max-w-[200px] sm:max-w-xs block"
+              aria-current="page"
+            >
+              {post.title}
+            </span>
+          </li>
+        </ol>
 
         <Link
           href="/blogs"
           className="inline-flex items-center gap-2 text-xs font-bold text-[#007C74] dark:text-[#00A693] hover:text-[#006059] transition-colors group mb-4"
+          id="back-to-blogs-link"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Back to Articles</span>
         </Link>
-      </div>
+      </nav>
 
       {/* Article Header */}
       <header className="px-4 container mx-auto mb-10">
@@ -164,13 +182,13 @@ export default function BlogDetailPage({ slugOrId }: BlogDetailPageProps) {
               <span className="hidden sm:inline">•</span>
               <div className="flex items-center gap-1.5 font-medium">
                 <Calendar className="w-3.5 h-3.5 text-[#007C74] dark:text-[#00A693]" />
-                <span>
-                  {new Date(post.date).toLocaleDateString("en-US", {
+                <time dateTime={new Date(post.date || post.createdAt || Date.now()).toISOString()}>
+                  {new Date(post.date || post.createdAt || Date.now()).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
                   })}
-                </span>
+                </time>
               </div>
               <span className="hidden sm:inline">•</span>
               <div className="flex items-center gap-1.5 font-medium">

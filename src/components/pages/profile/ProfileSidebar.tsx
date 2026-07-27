@@ -1,16 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { UserCircle, Settings, ShoppingBag, Bell, ChevronRight, Menu, X, LogOut } from "lucide-react"
-import { cn } from "@/lib/utils"
-import Image from "next/image"
-import { useGetMeQuery } from "@/redux/features/user/userApi"
+import LogoutDialog from "@/components/shared/LogoutDialog"
 import { useProfileTheme, type ProfileTheme } from "@/hooks/useProfileTheme"
 import { fadeInUp } from "@/lib/profileAnimations"
-import LogoutDialog from "@/components/shared/LogoutDialog"
+import { cn } from "@/lib/utils"
+import { useGetMeQuery } from "@/redux/features/user/userApi"
+import { AnimatePresence, motion } from "framer-motion"
+import { ChevronRight, LogOut, Menu, Settings, ShoppingBag, UserCircle, X } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
 
 const sidebarItems = [
   {
@@ -28,11 +28,11 @@ const sidebarItems = [
     icon: ShoppingBag,
     href: "/my-profile/order-history",
   },
-  {
-    title: "Notifications",
-    icon: Bell,
-    href: "/my-profile/notifications",
-  },
+  // {
+  //   title: "Notifications",
+  //   icon: Bell,
+  //   href: "/my-profile/notifications",
+  // },
 ]
 
 export default function ProfileSidebar() {
@@ -92,7 +92,7 @@ export default function ProfileSidebar() {
               isDark ? "bg-white/[0.02] backdrop-blur-2xl border-white/[0.06]" : "bg-white/90 backdrop-blur-xl border-gray-200/60"
             )}
           >
-            <SidebarContent pathname={pathname} isDark={isDark} styles={styles} onLinkClick={() => {}} />
+            <SidebarContent pathname={pathname} isDark={isDark} styles={styles} onLinkClick={() => { }} />
           </aside>
         )}
       </AnimatePresence>

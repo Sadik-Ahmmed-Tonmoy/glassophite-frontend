@@ -236,7 +236,7 @@ export default function HeroCinematicSection() {
 
       {/* ── Main Content ──────────────────────────────────────────────────── */}
       <motion.div
-        className="relative z-[4] flex flex-col justify-center min-h-[100svh] px-5 py-4 max-w-screen-xl mx-auto"
+        className="relative z-[4] flex flex-col justify-center min-h-[100svh] py-4  container"
         style={{ y: contentY }}
       >
         {/* Badge */}

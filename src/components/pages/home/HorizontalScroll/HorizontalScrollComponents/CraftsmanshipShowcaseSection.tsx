@@ -13,7 +13,7 @@ import {
   Play,
   Shield,
   Truck,
-  Users
+  Users,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
@@ -22,19 +22,51 @@ const productData = {
   id: "products",
   title: "Global Selection",
   subtitle: "Curated from the World's Best",
-  description: "We travel the world to bring you premium eyewear. We don't manufacture, we select.",
-  longDescription: "Glassophite partners with family-owned manufacturers in Italy, Japan, and China who've been making eyewear for 30+ years. We curate their best designs, add our branding, and bring them to Dhaka. No factories, no workshops - just great products at fair prices.",
+  description:
+    "We travel the world to bring you premium eyewear. We don't manufacture, we select.",
+  longDescription:
+    "Glassophite partners with family-owned manufacturers in Italy, Japan, and China who've been making eyewear for 30+ years. We curate their best designs, add our branding, and bring them to Dhaka. No factories, no workshops - just great products at fair prices.",
   icon: Globe,
   color: "#3C55A5",
   image: "/images/story/craftsmanship-workshop.jpg",
-  
+
   stats: [
-    { label: "Partner Factories", value: "4", icon: Globe, description: "Italy, Japan & China" },
-    { label: "Partner Experience", value: "30+", icon: Clock, description: "Years combined" },
-    { label: "Quality Check", value: "100%", icon: Shield, description: "Each piece inspected" },
-    { label: "Products", value: "50+", icon: Layers, description: "Styles available" },
-    { label: "Turnaround", value: "2 Days", icon: Truck, description: "Local delivery" },
-    { label: "Warranty", value: "1 Year", icon: Crown, description: "Against defects" },
+    {
+      label: "Partner Factories",
+      value: "4",
+      icon: Globe,
+      description: "Italy, Japan & China",
+    },
+    {
+      label: "Partner Experience",
+      value: "30+",
+      icon: Clock,
+      description: "Years combined",
+    },
+    {
+      label: "Quality Check",
+      value: "100%",
+      icon: Shield,
+      description: "Each piece inspected",
+    },
+    {
+      label: "Products",
+      value: "50+",
+      icon: Layers,
+      description: "Styles available",
+    },
+    {
+      label: "Turnaround",
+      value: "2 Days",
+      icon: Truck,
+      description: "Local delivery",
+    },
+    {
+      label: "Warranty",
+      value: "1 Year",
+      icon: Crown,
+      description: "Against defects",
+    },
   ],
 
   partners: [
@@ -43,7 +75,8 @@ const productData = {
       region: "Cadore, Veneto",
       partner: "SRL Ottica",
       since: "est. 1985",
-      description: "Third-generation family workshop specializing in acetate frames.",
+      description:
+        "Third-generation family workshop specializing in acetate frames.",
       products: ["Acetate frames", "Hand-finished"],
       flag: "🇮🇹",
     },
@@ -71,7 +104,8 @@ const productData = {
     {
       step: 1,
       title: "Sourcing",
-      description: "We partner with established manufacturers in Italy, Japan, and China with 20+ years experience.",
+      description:
+        "We partner with established manufacturers in Italy, Japan, and China with 20+ years experience.",
       duration: "Ongoing",
       team: "Sourcing Team",
       tools: ["Factory visits", "Sample testing"],
@@ -80,7 +114,8 @@ const productData = {
     {
       step: 2,
       title: "Selection",
-      description: "We visit factories twice a year to select designs that work for Bangladesh.",
+      description:
+        "We visit factories twice a year to select designs that work for Bangladesh.",
       duration: "2 weeks",
       team: "Rahman & Tasnim",
       tools: ["Design review", "Price negotiation"],
@@ -89,7 +124,8 @@ const productData = {
     {
       step: 3,
       title: "Import",
-      description: "Frames are shipped to Dhaka in batches. We handle all customs and paperwork.",
+      description:
+        "Frames are shipped to Dhaka in batches. We handle all customs and paperwork.",
       duration: "4-6 weeks",
       team: "Logistics Team",
       tools: ["Shipping", "Customs clearance"],
@@ -98,7 +134,8 @@ const productData = {
     {
       step: 4,
       title: "Quality Check",
-      description: "Every single frame is inspected in our Dhaka office. We reject about 5%.",
+      description:
+        "Every single frame is inspected in our Dhaka office. We reject about 5%.",
       duration: "2 days",
       team: "QC Team (2 inspectors)",
       tools: ["Inspection tools", "Testing"],
@@ -107,7 +144,8 @@ const productData = {
     {
       step: 5,
       title: "Branding",
-      description: "We add our logo to temples and include Glassophite packaging.",
+      description:
+        "We add our logo to temples and include Glassophite packaging.",
       duration: "1 day",
       team: "Packaging Team",
       tools: ["Logo application", "Boxing"],
@@ -153,13 +191,13 @@ const productData = {
       title: "Best New Brand",
       year: "2025",
       description: "Bangladesh Retail Award",
-      impact: "Recognized for quality selection"
+      impact: "Recognized for quality selection",
     },
     {
       title: "Customer Choice",
       year: "2025",
       description: "Online voting",
-      impact: "4.8★ rating from 200+ reviews"
+      impact: "4.8★ rating from 200+ reviews",
     },
   ],
 
@@ -169,21 +207,21 @@ const productData = {
       role: "Founder",
       experience: "12 years",
       specialty: "Sourcing & partnerships",
-      story: "Former Swiss eyewear industry, now bringing global brands to BD"
+      story: "Former Swiss eyewear industry, now bringing global brands to BD",
     },
     {
       name: "Tasnim Khan",
       role: "Sourcing Manager",
       experience: "5 years",
       specialty: "Supplier relations",
-      story: "Travels to factories 3-4 times a year"
+      story: "Travels to factories 3-4 times a year",
     },
     {
       name: "QC Team",
       role: "2 Inspectors",
       experience: "In Dhaka",
       specialty: "Quality control",
-      story: "Every frame checked before shipping"
+      story: "Every frame checked before shipping",
     },
   ],
 };
@@ -195,7 +233,7 @@ export default function ProductShowcaseSection() {
   const [activeStep, setActiveStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
-  
+
   // After mounting, we have access to the theme
   useEffect(() => {
     setMounted(true);
@@ -206,7 +244,7 @@ export default function ProductShowcaseSection() {
   //   offset: ["start end", "end start"],
   // });
 
-    const { scrollYProgress } = useScroll({
+  const { scrollYProgress } = useScroll({
     target: mounted ? containerRef : undefined,
     offset: ["start end", "end start"],
   });
@@ -221,12 +259,18 @@ export default function ProductShowcaseSection() {
   }, [isPlaying]);
 
   const springConfig = { stiffness: 100, damping: 30 };
-  const scale = useSpring(useTransform(scrollYProgress, [0, 0.5], [0.9, 1]), springConfig);
-  const rotateY = useSpring(useTransform(scrollYProgress, [0, 1], [0, 10]), springConfig);
+  const scale = useSpring(
+    useTransform(scrollYProgress, [0, 0.5], [0.9, 1]),
+    springConfig,
+  );
+  const rotateY = useSpring(
+    useTransform(scrollYProgress, [0, 1], [0, 10]),
+    springConfig,
+  );
 
   // Determine current theme - use resolvedTheme to handle 'system'
-  const currentTheme = mounted ? (resolvedTheme || theme) : 'light';
-  const isDark = currentTheme === 'dark';
+  const currentTheme = mounted ? resolvedTheme || theme : "light";
+  const isDark = currentTheme === "dark";
 
   // Theme styles with proper dark/light values
   const themeStyles = {
@@ -251,7 +295,7 @@ export default function ProductShowcaseSection() {
       accent: "text-[#3C55A5]",
       accentBg: "bg-[#3C55A5]/10",
       border: "border-gray-200",
-    }
+    },
   };
 
   const styles = isDark ? themeStyles.dark : themeStyles.light;
@@ -269,9 +313,12 @@ export default function ProductShowcaseSection() {
     >
       {/* Background Pattern - Theme aware */}
       <div className="absolute inset-0 opacity-[0.03]">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0 L60 60 M60 0 L0 60' stroke='${isDark ? '%233C55A5' : '%233C55A5'}' stroke-width='0.5' opacity='0.2'/%3E%3C/svg%3E")`,
-        }} />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0 L60 60 M60 0 L0 60' stroke='${isDark ? "%233C55A5" : "%233C55A5"}' stroke-width='0.5' opacity='0.2'/%3E%3C/svg%3E")`,
+          }}
+        />
       </div>
 
       {/* Floating orbs - Theme aware */}
@@ -287,9 +334,9 @@ export default function ProductShowcaseSection() {
       />
 
       {/* Main Content */}
-      <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 pt-16 lg:pt-32">
+      <div className="relative z-10 h-full container px-4 sm:px-6 pt-16 lg:pt-32">
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -308,7 +355,9 @@ export default function ProductShowcaseSection() {
               Curated for Bangladesh
             </span>
           </h2>
-          <p className={`text-base sm:text-lg ${styles.textMuted} leading-relaxed max-w-xl mx-auto`}>
+          <p
+            className={`text-base sm:text-lg ${styles.textMuted} leading-relaxed max-w-xl mx-auto`}
+          >
             {productData.longDescription}
           </p>
         </motion.div>
@@ -316,15 +365,14 @@ export default function ProductShowcaseSection() {
         {/* Main Grid */}
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-start">
           {/* Left Column - Process Visualization */}
-          <motion.div 
-            style={{ scale }}
-            className="space-y-6 -mt-3"
-          >
+          <motion.div style={{ scale }} className="space-y-6 -mt-3">
             {/* Process Viewer */}
-            <div className={`relative h-[295px]  rounded-2xl ${styles.card} backdrop-blur-md overflow-hidden p-5 lg:p-6 border ${styles.border}`}>
+            <div
+              className={`relative h-[295px]  rounded-2xl ${styles.card} backdrop-blur-md overflow-hidden p-5 lg:p-6 border ${styles.border}`}
+            >
               {/* Step Number */}
               <div className="absolute top-6 right-6 text-7xl lg:text-8xl font-bold opacity-10 text-[#3C55A5]">
-                {String(activeStep + 1).padStart(2, '0')}
+                {String(activeStep + 1).padStart(2, "0")}
               </div>
 
               {/* Active Step Content */}
@@ -337,38 +385,61 @@ export default function ProductShowcaseSection() {
                 className="h-full flex flex-col"
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-full ${styles.accentBg} flex items-center justify-center`}>
-                    <span className="text-xl lg:text-2xl font-bold text-[#3C55A5]">{activeStep + 1}</span>
+                  <div
+                    className={`w-10 h-10 lg:w-12 lg:h-12 rounded-full ${styles.accentBg} flex items-center justify-center`}
+                  >
+                    <span className="text-xl lg:text-2xl font-bold text-[#3C55A5]">
+                      {activeStep + 1}
+                    </span>
                   </div>
                   <div>
-                    <h3 className={`text-lg lg:text-xl font-bold ${styles.text}`}>
+                    <h3
+                      className={`text-lg lg:text-xl font-bold ${styles.text}`}
+                    >
                       {productData.process[activeStep].title}
                     </h3>
-                    <p className={`text-xs lg:text-sm ${styles.textMutedLighter}`}>
+                    <p
+                      className={`text-xs lg:text-sm ${styles.textMutedLighter}`}
+                    >
                       {productData.process[activeStep].duration}
                     </p>
                   </div>
                 </div>
 
-                <p className={`text-sm ${styles.textMuted} mb-4 flex-1 line-clamp-3 lg:line-clamp-none`}>
+                <p
+                  className={`text-sm ${styles.textMuted} mb-4 flex-1 line-clamp-3 lg:line-clamp-none`}
+                >
                   {productData.process[activeStep].description}
                 </p>
 
                 {/* Team & Tools - Hidden on mobile */}
                 <div className="space-y-3 hidden lg:block">
                   <div>
-                    <p className={`text-xs uppercase tracking-wider ${styles.textMutedLighter} mb-2`}>Team</p>
+                    <p
+                      className={`text-xs uppercase tracking-wider ${styles.textMutedLighter} mb-2`}
+                    >
+                      Team
+                    </p>
                     <div className="flex flex-wrap gap-2">
-                      <span className={`px-2 py-1 rounded-full text-xs ${styles.card} border ${styles.border}`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${styles.card} border ${styles.border}`}
+                      >
                         {productData.process[activeStep].team}
                       </span>
                     </div>
                   </div>
                   <div>
-                    <p className={`text-xs uppercase tracking-wider ${styles.textMutedLighter} mb-2`}>Tools</p>
+                    <p
+                      className={`text-xs uppercase tracking-wider ${styles.textMutedLighter} mb-2`}
+                    >
+                      Tools
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       {productData.process[activeStep].tools.map((tool, i) => (
-                        <span key={i} className={`px-2 py-1 rounded-full text-xs ${styles.card} border ${styles.border}`}>
+                        <span
+                          key={i}
+                          className={`px-2 py-1 rounded-full text-xs ${styles.card} border ${styles.border}`}
+                        >
                           {tool}
                         </span>
                       ))}
@@ -384,10 +455,11 @@ export default function ProductShowcaseSection() {
                   className={`p-1.5 lg:p-2 rounded-full ${styles.card} hover:bg-opacity-80 transition-colors border ${styles.border}`}
                   aria-label={isPlaying ? "Pause" : "Play"}
                 >
-                  {isPlaying ? 
-                    <Pause className="w-3 h-3 lg:w-4 lg:h-4 text-[#3C55A5]" /> : 
+                  {isPlaying ? (
+                    <Pause className="w-3 h-3 lg:w-4 lg:h-4 text-[#3C55A5]" />
+                  ) : (
                     <Play className="w-3 h-3 lg:w-4 lg:h-4 text-[#3C55A5]" />
-                  }
+                  )}
                 </button>
                 <div className="flex gap-1">
                   {productData.process.map((_, i) => (
@@ -398,9 +470,9 @@ export default function ProductShowcaseSection() {
                         setIsPlaying(false);
                       }}
                       className={`h-1 rounded-full transition-all ${
-                        activeStep === i 
-                          ? 'w-4 lg:w-8 bg-[#3C55A5]' 
-                          : `w-1 lg:w-2 ${isDark ? 'bg-gray-600' : 'bg-gray-300'}`
+                        activeStep === i
+                          ? "w-4 lg:w-8 bg-[#3C55A5]"
+                          : `w-1 lg:w-2 ${isDark ? "bg-gray-600" : "bg-gray-300"}`
                       }`}
                       aria-label={`Go to step ${i + 1}`}
                     />
@@ -425,21 +497,26 @@ export default function ProductShowcaseSection() {
                   className={`p-3 rounded-xl ${styles.card} backdrop-blur-sm border ${styles.border} text-center`}
                 >
                   <stat.icon className="w-4 h-4 text-[#3C55A5] mx-auto mb-1" />
-                  <span className={`text-sm font-bold ${styles.text}`}>{stat.value}</span>
-                  <p className={`text-[9px] ${styles.textMutedLighter}`}>{stat.label}</p>
+                  <span className={`text-sm font-bold ${styles.text}`}>
+                    {stat.value}
+                  </span>
+                  <p className={`text-[9px] ${styles.textMutedLighter}`}>
+                    {stat.label}
+                  </p>
                 </motion.div>
               ))}
             </div>
           </motion.div>
 
           {/* Right Column - Partners & Materials */}
-          <motion.div 
-            style={{ rotateY }}
-            className="space-y-4 lg:space-y-6"
-          >
+          <motion.div style={{ rotateY }} className="space-y-4 lg:space-y-6">
             {/* Partners Showcase */}
-            <div className={`p-5 lg:p-6 rounded-2xl ${styles.card} backdrop-blur-md border ${styles.border}`}>
-              <h3 className={`text-base lg:text-xl font-semibold mb-3 lg:mb-4 flex items-center gap-2 ${styles.text}`}>
+            <div
+              className={`p-5 lg:p-6 rounded-2xl ${styles.card} backdrop-blur-md border ${styles.border}`}
+            >
+              <h3
+                className={`text-base lg:text-xl font-semibold mb-3 lg:mb-4 flex items-center gap-2 ${styles.text}`}
+              >
                 <Users className="w-4 h-4 lg:w-5 lg:h-5 text-[#3C55A5]" />
                 <span>Our Partners</span>
               </h3>
@@ -455,11 +532,19 @@ export default function ProductShowcaseSection() {
                       {partner.flag}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className={`text-sm lg:text-base font-medium ${styles.text}`}>{partner.country}</h4>
-                      <p className={`text-[10px] lg:text-xs ${styles.textMutedLighter}`}>
+                      <h4
+                        className={`text-sm lg:text-base font-medium ${styles.text}`}
+                      >
+                        {partner.country}
+                      </h4>
+                      <p
+                        className={`text-[10px] lg:text-xs ${styles.textMutedLighter}`}
+                      >
                         {partner.partner} {partner.since}
                       </p>
-                      <p className={`text-[8px] lg:text-[10px] ${styles.textMutedLighter} mt-0.5`}>
+                      <p
+                        className={`text-[8px] lg:text-[10px] ${styles.textMutedLighter} mt-0.5`}
+                      >
                         {partner.products.join(" • ")}
                       </p>
                     </div>
@@ -469,23 +554,31 @@ export default function ProductShowcaseSection() {
               </div>
             </div>
 
-        
-
             {/* Warranty & Team */}
             <div className="grid grid-cols-2 gap-3">
-              <div className={`p-3 rounded-xl ${styles.card} backdrop-blur-sm border ${styles.border}`}>
+              <div
+                className={`p-3 rounded-xl ${styles.card} backdrop-blur-sm border ${styles.border}`}
+              >
                 <Shield className="w-5 h-5 text-[#3C55A5] mb-1" />
-                <p className={`text-xs font-medium ${styles.text}`}>1 Year Warranty</p>
-                <p className={`text-[8px] ${styles.textMutedLighter}`}>On all frames</p>
+                <p className={`text-xs font-medium ${styles.text}`}>
+                  1 Year Warranty
+                </p>
+                <p className={`text-[8px] ${styles.textMutedLighter}`}>
+                  On all frames
+                </p>
               </div>
-              <div className={`p-3 rounded-xl ${styles.card} backdrop-blur-sm border ${styles.border}`}>
+              <div
+                className={`p-3 rounded-xl ${styles.card} backdrop-blur-sm border ${styles.border}`}
+              >
                 <Award className="w-5 h-5 text-[#3C55A5] mb-1" />
-                <p className={`text-xs font-medium ${styles.text}`}>4.8★ Rating</p>
-                <p className={`text-[8px] ${styles.textMutedLighter}`}>From 200+ reviews</p>
+                <p className={`text-xs font-medium ${styles.text}`}>
+                  4.8★ Rating
+                </p>
+                <p className={`text-[8px] ${styles.textMutedLighter}`}>
+                  From 200+ reviews
+                </p>
               </div>
             </div>
-
-          
           </motion.div>
         </div>
       </div>

@@ -142,8 +142,8 @@ const LIMITED_EDITION_PRODUCTS = [
 // Deterministic particles
 const PARTICLES = Array.from({ length: 16 }, (_, i) => ({
   id: i,
-  top: `${((i * 47 + 11) % 90)}%`,
-  left: `${((i * 37 + 19) % 90)}%`,
+  top: `${(i * 47 + 11) % 90}%`,
+  left: `${(i * 37 + 19) % 90}%`,
   duration: 18 + (i % 5) * 4,
 }));
 
@@ -229,7 +229,7 @@ export default function LimitedEditionHighlightSection() {
             border: "border-neutral-200",
             borderGlow: "border-[#007C74]/40",
           },
-    [isDark]
+    [isDark],
   );
 
   const currentProduct = LIMITED_EDITION_PRODUCTS[activeProduct];
@@ -284,19 +284,26 @@ export default function LimitedEditionHighlightSection() {
       </motion.div>
 
       {/* Floating Particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      <div
+        className="absolute inset-0 overflow-hidden pointer-events-none"
+        aria-hidden="true"
+      >
         {PARTICLES.map((p) => (
           <motion.div
             key={p.id}
             className={`absolute w-1 h-1 rounded-full ${isDark ? "bg-white/20" : "bg-[#007C74]/20"}`}
             style={{ top: p.top, left: p.left }}
             animate={{ y: [0, -20, 0] }}
-            transition={{ duration: p.duration, repeat: Infinity, ease: "easeInOut" }}
+            transition={{
+              duration: p.duration,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
           />
         ))}
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 container">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -488,7 +495,9 @@ export default function LimitedEditionHighlightSection() {
                 >
                   {currentProduct.title}
                 </h3>
-                <p className={`text-xs sm:text-sm md:text-base ${styles.textMuted} leading-relaxed`}>
+                <p
+                  className={`text-xs sm:text-sm md:text-base ${styles.textMuted} leading-relaxed`}
+                >
                   {currentProduct.longDescription}
                 </p>
               </div>
@@ -500,7 +509,9 @@ export default function LimitedEditionHighlightSection() {
                     <div className="p-1 rounded-lg bg-[#007C74]/10 text-[#007C74] shrink-0">
                       <Gift className="w-3 h-3" />
                     </div>
-                    <span className={`text-xs font-semibold ${styles.textMuted}`}>
+                    <span
+                      className={`text-xs font-semibold ${styles.textMuted}`}
+                    >
                       {feature}
                     </span>
                   </div>
@@ -617,15 +628,21 @@ export default function LimitedEditionHighlightSection() {
               </div>
 
               <div className="p-3 sm:p-4 space-y-2">
-                <h4 className={`text-xs sm:text-sm font-bold ${styles.text} line-clamp-1`}>
+                <h4
+                  className={`text-xs sm:text-sm font-bold ${styles.text} line-clamp-1`}
+                >
                   {product.title}
                 </h4>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className={`text-[10px] sm:text-xs ${styles.textMutedLighter} line-through`}>
+                    <span
+                      className={`text-[10px] sm:text-xs ${styles.textMutedLighter} line-through`}
+                    >
                       ৳{product.mainPrice}
                     </span>
-                    <span className={`text-xs sm:text-sm font-extrabold ${styles.text} ml-1.5`}>
+                    <span
+                      className={`text-xs sm:text-sm font-extrabold ${styles.text} ml-1.5`}
+                    >
                       ৳{product.priceAfterDiscount}
                     </span>
                   </div>
@@ -648,7 +665,9 @@ export default function LimitedEditionHighlightSection() {
           className="text-center mt-10 sm:mt-12"
         >
           <Link href="/product-filter?category=best+sellers">
-            <button className={`inline-flex items-center gap-2 text-xs sm:text-sm font-bold ${styles.textMuted} hover:text-[#007C74] transition-colors cursor-pointer group`}>
+            <button
+              className={`inline-flex items-center gap-2 text-xs sm:text-sm font-bold ${styles.textMuted} hover:text-[#007C74] transition-colors cursor-pointer group`}
+            >
               <span data-translate="limited.viewAll">
                 View All Limited Editions
               </span>

@@ -154,9 +154,9 @@ export default function OriginStorySection() {
   // });
 
   const { scrollYProgress } = useScroll({
-  target: mounted ? containerRef : undefined,
-  offset: ["start end", "end start"],
-});
+    target: mounted ? containerRef : undefined,
+    offset: ["start end", "end start"],
+  });
 
   const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 };
   const scale = useSpring(
@@ -231,10 +231,10 @@ export default function OriginStorySection() {
           }}
         />
       </div>
- {/* Animated Scan Line */}
+      {/* Animated Scan Line */}
       <motion.div
         animate={{
-          y: ['-100%', '200%'],
+          y: ["-100%", "200%"],
         }}
         transition={{
           duration: 8,
@@ -262,7 +262,7 @@ export default function OriginStorySection() {
         className="absolute bottom-20 left-20 w-[500px] h-[500px] bg-[#3C55A5]/10 rounded-full blur-[120px]"
       />
 
-      <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="relative z-10 h-full container px-4 sm:px-6">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center pt-12 lg:pt-32">
           {/* Left Column - Main Story */}
           <motion.div style={{ y, scale }} className="space-y-6 lg:space-y-8">

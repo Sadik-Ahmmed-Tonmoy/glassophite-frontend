@@ -170,7 +170,7 @@ export default function SocialProofSection() {
         <Quote className="w-32 h-32 text-[#3C55A5]" />
       </motion.div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 container">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

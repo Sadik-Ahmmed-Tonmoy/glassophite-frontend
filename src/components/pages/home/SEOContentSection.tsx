@@ -275,7 +275,10 @@ const ARTICLES = [
 const COMPARISON_DATA = {
   categories: ["Feature", "Glassophite", "Premium Brands", "Standard Brands"],
   rows: [
-    { feature: "UV Protection", values: ["100% UV400", "100% UV400", "Varies"] },
+    {
+      feature: "UV Protection",
+      values: ["100% UV400", "100% UV400", "Varies"],
+    },
     {
       feature: "Lens Material",
       values: ["Crystal/Mineral", "Mineral/Glass", "Polycarbonate"],
@@ -311,11 +314,7 @@ export default function SEOContentSection() {
   // Smooth Parallax transforms
   const y1 = useTransform(scrollYProgress, [0, 1], [0, -40]);
   const y2 = useTransform(scrollYProgress, [0, 1], [0, 40]);
-  const opacity = useTransform(
-    scrollYProgress,
-    [0, 0.2, 0.8, 1],
-    [0, 1, 1, 0]
-  );
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
 
   // Auto-rotate guides
   useEffect(() => {
@@ -351,10 +350,11 @@ export default function SEOContentSection() {
             border: "border-neutral-200",
             borderGlow: "border-[#007C74]/40",
             tabActive: "bg-[#007C74] text-white shadow-xs",
-            tabInactive: "bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200/60",
+            tabInactive:
+              "bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200/60",
             faqExpanded: "bg-neutral-100/80",
           },
-    [isDark]
+    [isDark],
   );
 
   return (
@@ -392,7 +392,7 @@ export default function SEOContentSection() {
         className="absolute bottom-10 right-5 sm:bottom-20 sm:right-20 w-[clamp(220px,30vw,500px)] h-[clamp(220px,30vw,500px)] bg-[#3C55A5]/10 rounded-full blur-[90px] sm:blur-[120px] pointer-events-none"
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 container">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -429,7 +429,8 @@ export default function SEOContentSection() {
             className={`text-xs sm:text-sm md:text-base lg:text-lg ${styles.textMuted} max-w-2xl mx-auto px-2 leading-relaxed`}
             data-translate="seo.description"
           >
-            Expert guides, answers, and insights to help you make the perfect choice
+            Expert guides, answers, and insights to help you make the perfect
+            choice
           </p>
         </motion.div>
 
@@ -440,14 +441,12 @@ export default function SEOContentSection() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex flex-wrap items-center justify-center gap-2 mb-8 sm:mb-10 lg:mb-12"
         >
-          {CONTENT_TABS.map((tab, ) => (
+          {CONTENT_TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 transition-all cursor-pointer ${
-                activeTab === tab.id
-                  ? styles.tabActive
-                  : styles.tabInactive
+                activeTab === tab.id ? styles.tabActive : styles.tabInactive
               }`}
             >
               <tab.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -475,7 +474,9 @@ export default function SEOContentSection() {
                     className={`p-4 rounded-2xl text-center backdrop-blur-sm border ${styles.card}`}
                   >
                     <stat.icon className="w-5 h-5 text-[#007C74] mx-auto mb-2" />
-                    <div className={`text-lg sm:text-xl font-extrabold ${styles.text}`}>
+                    <div
+                      className={`text-lg sm:text-xl font-extrabold ${styles.text}`}
+                    >
                       {stat.value}
                     </div>
                     <div className={`text-xs ${styles.textMutedLighter}`}>
@@ -486,14 +487,22 @@ export default function SEOContentSection() {
               </div>
 
               {/* Brand Story */}
-              <div className={`p-6 sm:p-8 rounded-3xl backdrop-blur-sm border ${styles.card}`}>
-                <h3 className={`text-lg sm:text-xl font-bold ${styles.text} mb-3`}>
+              <div
+                className={`p-6 sm:p-8 rounded-3xl backdrop-blur-sm border ${styles.card}`}
+              >
+                <h3
+                  className={`text-lg sm:text-xl font-bold ${styles.text} mb-3`}
+                >
                   {ABOUT_CONTENT.brand.title}
                 </h3>
-                <p className={`text-xs sm:text-sm ${styles.textMuted} mb-4 leading-relaxed`}>
+                <p
+                  className={`text-xs sm:text-sm ${styles.textMuted} mb-4 leading-relaxed`}
+                >
                   {ABOUT_CONTENT.brand.description}
                 </p>
-                <p className={`text-xs sm:text-sm ${styles.textMutedLighter} leading-relaxed`}>
+                <p
+                  className={`text-xs sm:text-sm ${styles.textMutedLighter} leading-relaxed`}
+                >
                   {ABOUT_CONTENT.brand.longDescription}
                 </p>
               </div>
@@ -501,26 +510,41 @@ export default function SEOContentSection() {
               {/* Mission & Values */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Mission */}
-                <div className={`p-6 sm:p-8 rounded-3xl backdrop-blur-sm border ${styles.card}`}>
-                  <h3 className={`text-base sm:text-lg font-bold ${styles.text} mb-3`}>
+                <div
+                  className={`p-6 sm:p-8 rounded-3xl backdrop-blur-sm border ${styles.card}`}
+                >
+                  <h3
+                    className={`text-base sm:text-lg font-bold ${styles.text} mb-3`}
+                  >
                     {ABOUT_CONTENT.mission.title}
                   </h3>
-                  <p className={`text-xs sm:text-sm ${styles.textMuted} mb-4 leading-relaxed`}>
+                  <p
+                    className={`text-xs sm:text-sm ${styles.textMuted} mb-4 leading-relaxed`}
+                  >
                     {ABOUT_CONTENT.mission.description}
                   </p>
                   <ul className="space-y-2.5">
                     {ABOUT_CONTENT.mission.points.map((point, index) => (
-                      <li key={index} className="flex items-center gap-2.5 text-xs sm:text-sm">
+                      <li
+                        key={index}
+                        className="flex items-center gap-2.5 text-xs sm:text-sm"
+                      >
                         <CheckCircle className="w-4 h-4 text-[#007C74] shrink-0" />
-                        <span className={`font-semibold ${styles.textMuted}`}>{point}</span>
+                        <span className={`font-semibold ${styles.textMuted}`}>
+                          {point}
+                        </span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
                 {/* Values */}
-                <div className={`p-6 sm:p-8 rounded-3xl backdrop-blur-sm border ${styles.card}`}>
-                  <h3 className={`text-base sm:text-lg font-bold ${styles.text} mb-4`}>
+                <div
+                  className={`p-6 sm:p-8 rounded-3xl backdrop-blur-sm border ${styles.card}`}
+                >
+                  <h3
+                    className={`text-base sm:text-lg font-bold ${styles.text} mb-4`}
+                  >
                     Our Core Values
                   </h3>
                   <div className="space-y-4">
@@ -528,10 +552,14 @@ export default function SEOContentSection() {
                       <div key={index} className="flex items-start gap-3">
                         <value.icon className="w-5 h-5 text-[#007C74] shrink-0 mt-0.5" />
                         <div>
-                          <h4 className={`text-xs sm:text-sm font-bold ${styles.text}`}>
+                          <h4
+                            className={`text-xs sm:text-sm font-bold ${styles.text}`}
+                          >
                             {value.title}
                           </h4>
-                          <p className={`text-xs ${styles.textMutedLighter} mt-0.5`}>
+                          <p
+                            className={`text-xs ${styles.textMutedLighter} mt-0.5`}
+                          >
                             {value.description}
                           </p>
                         </div>
@@ -576,12 +604,18 @@ export default function SEOContentSection() {
                   </div>
 
                   {/* Guide Content */}
-                  <div className={`p-6 sm:p-8 ${styles.card} flex flex-col justify-between`}>
+                  <div
+                    className={`p-6 sm:p-8 ${styles.card} flex flex-col justify-between`}
+                  >
                     <div>
-                      <h3 className={`text-lg sm:text-xl font-bold ${styles.text} mb-3`}>
+                      <h3
+                        className={`text-lg sm:text-xl font-bold ${styles.text} mb-3`}
+                      >
                         {BUYING_GUIDES[activeGuide].title}
                       </h3>
-                      <p className={`text-xs sm:text-sm ${styles.textMuted} mb-4 leading-relaxed`}>
+                      <p
+                        className={`text-xs sm:text-sm ${styles.textMuted} mb-4 leading-relaxed`}
+                      >
                         {BUYING_GUIDES[activeGuide].description}
                       </p>
 
@@ -589,19 +623,26 @@ export default function SEOContentSection() {
                         {BUYING_GUIDES[activeGuide].categories.map(
                           (category, idx) => (
                             <div key={idx}>
-                              <h4 className={`text-xs sm:text-sm font-bold ${styles.text} mb-1.5`}>
+                              <h4
+                                className={`text-xs sm:text-sm font-bold ${styles.text} mb-1.5`}
+                              >
                                 {category.title}
                               </h4>
                               <ul className="space-y-1">
                                 {category.items.map((item, i) => (
-                                  <li key={i} className="flex items-start gap-2 text-xs">
+                                  <li
+                                    key={i}
+                                    className="flex items-start gap-2 text-xs"
+                                  >
                                     <CheckCircle className="w-3.5 h-3.5 text-[#007C74] mt-0.5 shrink-0" />
-                                    <span className={styles.textMutedLighter}>{item}</span>
+                                    <span className={styles.textMutedLighter}>
+                                      {item}
+                                    </span>
                                   </li>
                                 ))}
                               </ul>
                             </div>
-                          )
+                          ),
                         )}
                       </div>
                     </div>
@@ -610,7 +651,9 @@ export default function SEOContentSection() {
                       <button
                         className={`text-xs sm:text-sm font-bold text-[#007C74] hover:text-[#00A693] transition-colors flex items-center gap-1.5 mt-4 cursor-pointer group`}
                       >
-                        <span data-translate="seo.readFullGuide">Read Full Guide</span>
+                        <span data-translate="seo.readFullGuide">
+                          Read Full Guide
+                        </span>
                         <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                       </button>
                     </Link>
@@ -647,7 +690,9 @@ export default function SEOContentSection() {
                     }`}
                   >
                     <BookOpen className="w-4 h-4 text-[#007C74] mx-auto mb-1.5" />
-                    <span className={`text-xs font-bold ${styles.text} line-clamp-1`}>
+                    <span
+                      className={`text-xs font-bold ${styles.text} line-clamp-1`}
+                    >
                       {guide.title}
                     </span>
                   </button>
@@ -659,16 +704,20 @@ export default function SEOContentSection() {
           {/* FAQ Tab */}
           {activeTab === "faq" && (
             <div className="space-y-3.5">
-              {FAQS.map((faq, ) => (
+              {FAQS.map((faq) => (
                 <div
                   key={faq.id}
                   className={`rounded-2xl backdrop-blur-sm border ${styles.card} overflow-hidden transition-all duration-200`}
                 >
                   <button
-                    onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
+                    onClick={() =>
+                      setExpandedFaq(expandedFaq === faq.id ? null : faq.id)
+                    }
                     className="w-full p-4 sm:p-5 flex items-center justify-between text-left cursor-pointer"
                   >
-                    <span className={`text-xs sm:text-sm font-bold ${styles.text} pr-4`}>
+                    <span
+                      className={`text-xs sm:text-sm font-bold ${styles.text} pr-4`}
+                    >
                       {faq.question}
                     </span>
                     {expandedFaq === faq.id ? (
@@ -686,14 +735,20 @@ export default function SEOContentSection() {
                       transition={{ duration: 0.3 }}
                       className={`px-4 sm:px-5 pb-4 ${styles.faqExpanded}`}
                     >
-                      <p className={`text-xs sm:text-sm ${styles.textMutedLighter} leading-relaxed`}>
+                      <p
+                        className={`text-xs sm:text-sm ${styles.textMutedLighter} leading-relaxed`}
+                      >
                         {faq.answer}
                       </p>
                       <div className="flex items-center gap-2 mt-3 pt-2 border-t border-neutral-200/30 dark:border-white/5">
-                        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${styles.card}`}>
+                        <span
+                          className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${styles.card}`}
+                        >
                           {faq.category}
                         </span>
-                        <span className={`text-[10px] ${styles.textMutedLighter}`}>
+                        <span
+                          className={`text-[10px] ${styles.textMutedLighter}`}
+                        >
                           Was this helpful?
                         </span>
                         <button className="p-1 hover:bg-[#007C74]/10 rounded-full transition-colors cursor-pointer">
@@ -722,7 +777,7 @@ export default function SEOContentSection() {
           {activeTab === "articles" && (
             <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {ARTICLES.map((article, ) => (
+                {ARTICLES.map((article) => (
                   <motion.div
                     key={article.id}
                     whileHover={{ y: -4 }}
@@ -744,10 +799,14 @@ export default function SEOContentSection() {
                     </div>
 
                     <div className="p-4 sm:p-5">
-                      <h3 className={`text-xs sm:text-sm font-bold ${styles.text} mb-2 line-clamp-2`}>
+                      <h3
+                        className={`text-xs sm:text-sm font-bold ${styles.text} mb-2 line-clamp-2`}
+                      >
                         {article.title}
                       </h3>
-                      <p className={`text-xs ${styles.textMutedLighter} mb-4 line-clamp-2 leading-relaxed`}>
+                      <p
+                        className={`text-xs ${styles.textMutedLighter} mb-4 line-clamp-2 leading-relaxed`}
+                      >
                         {article.excerpt}
                       </p>
 
@@ -775,10 +834,10 @@ export default function SEOContentSection() {
 
               <div className="text-center">
                 <Link href="/blogs">
-                  <button
-                    className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white text-xs font-bold inline-flex items-center gap-2 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
-                  >
-                    <span data-translate="seo.readAllArticles">Read All Articles</span>
+                  <button className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white text-xs font-bold inline-flex items-center gap-2 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer">
+                    <span data-translate="seo.readAllArticles">
+                      Read All Articles
+                    </span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </Link>
@@ -788,8 +847,12 @@ export default function SEOContentSection() {
 
           {/* Comparison Tab */}
           {activeTab === "comparison" && (
-            <div className={`p-5 sm:p-8 rounded-3xl backdrop-blur-sm border ${styles.card}`}>
-              <h3 className={`text-lg sm:text-xl font-bold ${styles.text} mb-4`}>
+            <div
+              className={`p-5 sm:p-8 rounded-3xl backdrop-blur-sm border ${styles.card}`}
+            >
+              <h3
+                className={`text-lg sm:text-xl font-bold ${styles.text} mb-4`}
+              >
                 Glassophite vs. The Competition
               </h3>
 
@@ -811,8 +874,13 @@ export default function SEOContentSection() {
                   </thead>
                   <tbody>
                     {COMPARISON_DATA.rows.map((row, rowIndex) => (
-                      <tr key={rowIndex} className={`border-b ${styles.border} last:border-0`}>
-                        <td className={`py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold ${styles.text}`}>
+                      <tr
+                        key={rowIndex}
+                        className={`border-b ${styles.border} last:border-0`}
+                      >
+                        <td
+                          className={`py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold ${styles.text}`}
+                        >
                           {row.feature}
                         </td>
                         {row.values.map((value, colIndex) => (
@@ -834,10 +902,13 @@ export default function SEOContentSection() {
               </div>
 
               <div className="mt-6 p-4 rounded-xl bg-[#007C74]/10 border border-[#007C74]/20">
-                <p className={`text-xs sm:text-sm ${styles.textMuted} flex items-center gap-2 font-medium`}>
+                <p
+                  className={`text-xs sm:text-sm ${styles.textMuted} flex items-center gap-2 font-medium`}
+                >
                   <Info className="w-4 h-4 text-[#007C74] shrink-0" />
                   <span data-translate="seo.comparisonNote">
-                    Glassophite offers premium quality at accessible prices, making luxury eyewear available in Bangladesh.
+                    Glassophite offers premium quality at accessible prices,
+                    making luxury eyewear available in Bangladesh.
                   </span>
                 </p>
               </div>
@@ -850,9 +921,10 @@ export default function SEOContentSection() {
           <h1>Glassophite Premium Sunglasses Bangladesh</h1>
           <h2>Luxury Eyewear in Dhaka</h2>
           <p>
-            Glassophite is Bangladesh&apos;s premier luxury sunglass brand, offering premium quality eyewear
-            with 100% UV protection, lifetime warranty, and authentic craftsmanship. Shop our collection
-            of aviator, wayfarer, and sports sunglasses in Dhaka, Bangladesh.
+            Glassophite is Bangladesh&apos;s premier luxury sunglass brand,
+            offering premium quality eyewear with 100% UV protection, lifetime
+            warranty, and authentic craftsmanship. Shop our collection of
+            aviator, wayfarer, and sports sunglasses in Dhaka, Bangladesh.
           </p>
           <ul>
             <li>Premium Sunglasses Bangladesh</li>
@@ -870,21 +942,22 @@ export default function SEOContentSection() {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              "name": "Glassophite",
-              "url": "https://glassophite.com",
-              "logo": "https://glassophite.com/logo.png",
-              "description": "Premium sunglass brand in Bangladesh offering luxury eyewear with UV protection.",
-              "address": {
+              name: "Glassophite",
+              url: "https://glassophite.com",
+              logo: "https://glassophite.com/logo.png",
+              description:
+                "Premium sunglass brand in Bangladesh offering luxury eyewear with UV protection.",
+              address: {
                 "@type": "PostalAddress",
-                "addressLocality": "Dhaka",
-                "addressCountry": "BD",
+                addressLocality: "Dhaka",
+                addressCountry: "BD",
               },
-              "contactPoint": {
+              contactPoint: {
                 "@type": "ContactPoint",
-                "telephone": "+8801234567890",
-                "contactType": "customer service",
+                telephone: "+8801234567890",
+                contactType: "customer service",
               },
-              "sameAs": [
+              sameAs: [
                 "https://facebook.com/glassophite",
                 "https://instagram.com/glassophite",
               ],

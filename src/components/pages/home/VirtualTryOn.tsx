@@ -23,10 +23,16 @@ import Link from "next/link";
 
 declare global {
   interface Window {
-    FaceMesh: new (config?: { locateFile?: (path: string, prefix?: string) => string }) => {
+    FaceMesh: new (config?: {
+      locateFile?: (path: string, prefix?: string) => string;
+    }) => {
       close(): Promise<void>;
-      onResults(listener: (results: FaceMeshResults) => void | Promise<void>): void;
-      send(inputs: { image: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement }): Promise<void>;
+      onResults(
+        listener: (results: FaceMeshResults) => void | Promise<void>,
+      ): void;
+      send(inputs: {
+        image: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
+      }): Promise<void>;
       setOptions(options: {
         maxNumFaces?: number;
         refineLandmarks?: boolean;
@@ -36,7 +42,11 @@ declare global {
     };
     Camera: new (
       video: HTMLVideoElement,
-      options: { onFrame: () => Promise<void> | null; width?: number; height?: number }
+      options: {
+        onFrame: () => Promise<void> | null;
+        width?: number;
+        height?: number;
+      },
     ) => { start(): Promise<void>; stop(): Promise<void> };
   }
 }
@@ -644,7 +654,7 @@ export default function VirtualTryOn() {
         />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 container">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

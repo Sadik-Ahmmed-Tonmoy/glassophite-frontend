@@ -20,7 +20,7 @@ export default function WishlistPage() {
   useEffect(() => {
     if (wishlistData?.data?.items) {
       const items = wishlistData.data.items.map(
-        (item: any) => item.product || item
+        (item: any) => item.product || item,
       );
       setWishlistItems(items);
     }
@@ -47,7 +47,7 @@ export default function WishlistPage() {
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-[#0a0a0a] dark:via-neutral-900 dark:to-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-500 py-10 sm:py-14 lg:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 space-y-10 sm:space-y-12">
+      <div className="container space-y-10 sm:space-y-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -16 }}
@@ -72,7 +72,10 @@ export default function WishlistPage() {
         <div className="max-w-4xl mx-auto">
           <AnimatePresence mode="popLayout">
             {wishlistItems.length > 0 ? (
-              <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
+              <motion.div
+                layout
+                className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6"
+              >
                 {wishlistItems.map((product) => {
                   const variant = product.variants?.[0];
                   if (!variant) return null;
@@ -83,7 +86,11 @@ export default function WishlistPage() {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 25,
+                      }}
                       className="glass-panel p-4 sm:p-5 rounded-3xl flex gap-3.5 sm:gap-4 hover:shadow-md transition-all duration-300 relative group overflow-hidden border border-neutral-200/80 dark:border-white/10"
                     >
                       {/* Image container */}
@@ -146,7 +153,9 @@ export default function WishlistPage() {
                           </button>
 
                           <button
-                            onClick={() => handleRemoveItem(product.id, variant.title)}
+                            onClick={() =>
+                              handleRemoveItem(product.id, variant.title)
+                            }
                             className="p-2 bg-neutral-100 hover:bg-red-500/10 dark:bg-neutral-800 dark:hover:bg-red-500/20 text-neutral-500 hover:text-red-500 dark:hover:text-red-400 rounded-full border border-neutral-200/60 dark:border-neutral-800 transition-colors cursor-pointer shrink-0"
                             aria-label={`Remove ${variant.title} from wishlist`}
                           >

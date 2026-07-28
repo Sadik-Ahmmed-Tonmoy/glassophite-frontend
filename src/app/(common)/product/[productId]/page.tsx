@@ -4,7 +4,8 @@ import ProductDetails from "@/components/pages/productDetails/productDetails";
 import type { Metadata } from "next";
 import Script from "next/script";
 
-const API_BASE = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5016/api/v1";
+const API_BASE =
+  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5016/api/v1";
 
 async function getProduct(productId: string) {
   try {
@@ -74,7 +75,7 @@ export default async function ProductPage({ params }: any) {
 
   if (!product) {
     return (
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 py-16 text-center min-h-[50vh] flex flex-col items-center justify-center">
+      <main className="container py-16 text-center min-h-[50vh] flex flex-col items-center justify-center">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white">
           Product Not Found
         </h1>
@@ -88,7 +89,7 @@ export default async function ProductPage({ params }: any) {
   const variant = product.variants?.[0];
   const allImages =
     product.variants?.flatMap(
-      (v: any) => v.imgList?.map((img: any) => img.image) || []
+      (v: any) => v.imgList?.map((img: any) => img.image) || [],
     ) || [];
   const uniqueImages = [...new Set(allImages)];
 

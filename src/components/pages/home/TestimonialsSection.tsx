@@ -53,13 +53,19 @@ const AVATAR_IMAGES = [
   "https://images.unsplash.com/photo-1531427186111-516fd60ff1bc?w=200&auto=format&fit=crop",
 ] as const;
 
-const LOCATIONS = ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi"] as const;
+const LOCATIONS = [
+  "Dhaka",
+  "Chittagong",
+  "Sylhet",
+  "Khulna",
+  "Rajshahi",
+] as const;
 
 // Deterministic particles
 const PARTICLES = Array.from({ length: 16 }, (_, i) => ({
   id: i,
-  top: `${((i * 43 + 17) % 95)}%`,
-  left: `${((i * 53 + 9) % 95)}%`,
+  top: `${(i * 43 + 17) % 95}%`,
+  left: `${(i * 53 + 9) % 95}%`,
   dx: ((i % 5) - 2) * 6,
   duration: 20 + (i % 6) * 3,
   delay: (i * 0.3) % 3,
@@ -78,7 +84,7 @@ export default function Testimonials() {
   const { data: reviewsData } = useGetAllReviewsQuery(undefined);
   const rawReviews = useMemo(
     () => (Array.isArray(reviewsData) ? reviewsData : reviewsData?.data || []),
-    [reviewsData]
+    [reviewsData],
   );
 
   // Deterministic enhanced reviews to prevent SSR/CSR hydration errors
@@ -87,14 +93,13 @@ export default function Testimonials() {
       rawReviews.map((review: any, index: number) => ({
         ...review,
         location: LOCATIONS[index % LOCATIONS.length],
-        avatar: review.profileImage || AVATAR_IMAGES[index % AVATAR_IMAGES.length],
+        avatar:
+          review.profileImage || AVATAR_IMAGES[index % AVATAR_IMAGES.length],
         helpful: review.helpful || ((index * 7 + 12) % 40) + 10,
-        unhelpful: review.unhelpful || (index % 3),
-        date:
-          review.date ||
-          `Jan ${1 + (index % 28)}, 2024`,
+        unhelpful: review.unhelpful || index % 3,
+        date: review.date || `Jan ${1 + (index % 28)}, 2024`,
       })),
-    [rawReviews]
+    [rawReviews],
   );
 
   const { scrollYProgress } = useScroll({
@@ -108,22 +113,29 @@ export default function Testimonials() {
   const rotate = useTransform(scrollYProgress, [0, 1], [0, 180]);
 
   // Memoized Stats
-  const { averageRating, totalReviews, verifiedReviews, fiveStarReviews } = useMemo(() => {
-    if (enhancedReviews.length === 0) {
-      return { averageRating: "5.0", totalReviews: 0, verifiedReviews: 0, fiveStarReviews: 0 };
-    }
-    const avg = (
-      enhancedReviews.reduce((acc, r) => acc + (r.rating || 5), 0) / enhancedReviews.length
-    ).toFixed(1);
-    const verified = enhancedReviews.filter((r) => r.verified).length;
-    const fiveStar = enhancedReviews.filter((r) => r.rating === 5).length;
-    return {
-      averageRating: avg,
-      totalReviews: enhancedReviews.length,
-      verifiedReviews: verified,
-      fiveStarReviews: fiveStar,
-    };
-  }, [enhancedReviews]);
+  const { averageRating, totalReviews, verifiedReviews, fiveStarReviews } =
+    useMemo(() => {
+      if (enhancedReviews.length === 0) {
+        return {
+          averageRating: "5.0",
+          totalReviews: 0,
+          verifiedReviews: 0,
+          fiveStarReviews: 0,
+        };
+      }
+      const avg = (
+        enhancedReviews.reduce((acc, r) => acc + (r.rating || 5), 0) /
+        enhancedReviews.length
+      ).toFixed(1);
+      const verified = enhancedReviews.filter((r) => r.verified).length;
+      const fiveStar = enhancedReviews.filter((r) => r.rating === 5).length;
+      return {
+        averageRating: avg,
+        totalReviews: enhancedReviews.length,
+        verifiedReviews: verified,
+        fiveStarReviews: fiveStar,
+      };
+    }, [enhancedReviews]);
 
   const styles = useMemo(
     () =>
@@ -154,7 +166,7 @@ export default function Testimonials() {
             swiperPagination: "bg-neutral-300",
             swiperPaginationActive: "bg-[#007C74]",
           },
-    [isDark]
+    [isDark],
   );
 
   const toggleAutoplay = () => {
@@ -209,7 +221,10 @@ export default function Testimonials() {
       </motion.div>
 
       {/* Floating Particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      <div
+        className="absolute inset-0 overflow-hidden pointer-events-none"
+        aria-hidden="true"
+      >
         {PARTICLES.map((p) => (
           <motion.div
             key={p.id}
@@ -230,7 +245,7 @@ export default function Testimonials() {
         ))}
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 container">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -268,7 +283,8 @@ export default function Testimonials() {
             className={`text-xs sm:text-sm md:text-base lg:text-lg ${styles.textMuted} max-w-2xl mx-auto px-2 leading-relaxed`}
             data-translate="testimonials.description"
           >
-            Real reviews from real customers who have experienced the Glassophite difference.
+            Real reviews from real customers who have experienced the
+            Glassophite difference.
           </p>
 
           {/* Stats Row */}
@@ -362,7 +378,9 @@ export default function Testimonials() {
                 <div
                   className={`relative p-5 sm:p-6 rounded-2xl backdrop-blur-sm border ${styles.card} h-full transition-all duration-300 flex flex-col justify-between`}
                 >
-                  <Quote className={`absolute top-4 right-4 w-7 h-7 sm:w-8 sm:h-8 ${styles.quote}`} />
+                  <Quote
+                    className={`absolute top-4 right-4 w-7 h-7 sm:w-8 sm:h-8 ${styles.quote}`}
+                  />
 
                   <div>
                     {/* Rating */}
@@ -380,7 +398,9 @@ export default function Testimonials() {
                     </div>
 
                     {/* Review Content */}
-                    <p className={`text-xs sm:text-sm ${styles.textMuted} mb-4 leading-relaxed line-clamp-4`}>
+                    <p
+                      className={`text-xs sm:text-sm ${styles.textMuted} mb-4 leading-relaxed line-clamp-4`}
+                    >
                       &quot;{review.comment}&quot;
                     </p>
                   </div>
@@ -398,12 +418,16 @@ export default function Testimonials() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-xs sm:text-sm font-bold ${styles.text} truncate`}>
+                        <p
+                          className={`text-xs sm:text-sm font-bold ${styles.text} truncate`}
+                        >
                           {review.name}
                         </p>
                         <div className="flex items-center gap-1 mt-0.5">
                           <MapPin className="w-3 h-3 text-[#007C74] shrink-0" />
-                          <p className={`text-[10px] sm:text-xs ${styles.textMutedLighter} truncate`}>
+                          <p
+                            className={`text-[10px] sm:text-xs ${styles.textMutedLighter} truncate`}
+                          >
                             {review.location}
                           </p>
                         </div>
@@ -419,7 +443,9 @@ export default function Testimonials() {
                       {review.verified && (
                         <div className="flex items-center gap-1 font-semibold">
                           <Verified className={`w-3 h-3 ${styles.verified}`} />
-                          <span data-translate="testimonials.verified">Verified Order</span>
+                          <span data-translate="testimonials.verified">
+                            Verified Order
+                          </span>
                         </div>
                       )}
                     </div>
@@ -445,7 +471,11 @@ export default function Testimonials() {
                 className={`p-2.5 rounded-full border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center cursor-pointer bg-white/70 dark:bg-black/50 text-neutral-800 dark:text-neutral-200 active:scale-95`}
                 aria-label={isPlaying ? "Pause autoplay" : "Start autoplay"}
               >
-                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                {isPlaying ? (
+                  <Pause className="w-4 h-4" />
+                ) : (
+                  <Play className="w-4 h-4 ml-0.5" />
+                )}
               </button>
             </div>
 

@@ -95,17 +95,17 @@ export default function BestSellerCarouselSection() {
 
   const leftX = useSpring(
     useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [-180, 0, 0, -180]),
-    { stiffness: 120, damping: 18, mass: 0.8 }
+    { stiffness: 120, damping: 18, mass: 0.8 },
   );
 
   const rightX = useSpring(
     useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [180, 0, 0, 180]),
-    { stiffness: 120, damping: 18, mass: 0.8 }
+    { stiffness: 120, damping: 18, mass: 0.8 },
   );
 
   const leafOpacity = useSpring(
     useTransform(scrollYProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]),
-    { stiffness: 120, damping: 20 }
+    { stiffness: 120, damping: 20 },
   );
 
   const {
@@ -115,7 +115,10 @@ export default function BestSellerCarouselSection() {
     error,
   } = useGetBestSellersQuery(undefined);
 
-  const bestSellers = useMemo(() => (bestSellersData as any)?.data || [], [bestSellersData]);
+  const bestSellers = useMemo(
+    () => (bestSellersData as any)?.data || [],
+    [bestSellersData],
+  );
 
   const styles = useMemo(
     () =>
@@ -132,7 +135,7 @@ export default function BestSellerCarouselSection() {
             textMuted: "text-neutral-600",
             textMutedLighter: "text-neutral-500",
           },
-    [isDark]
+    [isDark],
   );
 
   const handleSwiperInit = (swiper: SwiperType) => {
@@ -160,7 +163,8 @@ export default function BestSellerCarouselSection() {
 
   const isLoadingState = isLoading || (isFetching && bestSellers.length === 0);
   const isErrorState = !!error;
-  const isEmptyState = !isLoadingState && !isErrorState && bestSellers.length === 0;
+  const isEmptyState =
+    !isLoadingState && !isErrorState && bestSellers.length === 0;
 
   return (
     <section
@@ -220,7 +224,7 @@ export default function BestSellerCarouselSection() {
       <div className="absolute top-16 left-1/4 w-[clamp(150px,25vw,300px)] h-[clamp(150px,25vw,300px)] bg-[#007C74]/8 rounded-full blur-[90px] sm:blur-[120px] pointer-events-none" />
       <div className="absolute bottom-10 right-1/4 w-[clamp(180px,30vw,350px)] h-[clamp(180px,30vw,350px)] bg-[#00A693]/6 rounded-full blur-[100px] sm:blur-[140px] pointer-events-none" />
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 container">
         {/* Loading state */}
         {isLoadingState && (
           <>
@@ -262,7 +266,9 @@ export default function BestSellerCarouselSection() {
         {/* Empty state */}
         {isEmptyState && (
           <div className="text-center py-10">
-            <h2 className={`text-3xl sm:text-4xl font-extrabold ${styles.text} mb-4`}>
+            <h2
+              className={`text-3xl sm:text-4xl font-extrabold ${styles.text} mb-4`}
+            >
               No best sellers available
             </h2>
             <p className={`${styles.textMuted} max-w-lg mx-auto text-sm`}>
@@ -304,8 +310,8 @@ export default function BestSellerCarouselSection() {
                   className={`text-xs sm:text-sm ${styles.textMuted} max-w-xl leading-relaxed`}
                   data-translate="bestseller.description"
                 >
-                  Join thousands of satisfied customers who trust Glassophite for
-                  premium quality and timeless style.
+                  Join thousands of satisfied customers who trust Glassophite
+                  for premium quality and timeless style.
                 </p>
               </motion.div>
 
@@ -321,7 +327,11 @@ export default function BestSellerCarouselSection() {
                   className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-850 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center cursor-pointer bg-white/70 dark:bg-black/50 text-neutral-800 dark:text-neutral-200 active:scale-95"
                   aria-label={isPlaying ? "Pause autoplay" : "Start autoplay"}
                 >
-                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                  {isPlaying ? (
+                    <Pause className="w-4 h-4" />
+                  ) : (
+                    <Play className="w-4 h-4" />
+                  )}
                 </button>
 
                 <button
@@ -365,8 +375,16 @@ export default function BestSellerCarouselSection() {
                   380: { slidesPerView: 1.3, spaceBetween: 12 },
                   480: { slidesPerView: 1.6, spaceBetween: 16 },
                   640: { slidesPerView: 2.2, spaceBetween: 16 },
-                  768: { slidesPerView: 2.7, spaceBetween: 20, freeMode: false },
-                  1024: { slidesPerView: 3.3, spaceBetween: 24, freeMode: false },
+                  768: {
+                    slidesPerView: 2.7,
+                    spaceBetween: 20,
+                    freeMode: false,
+                  },
+                  1024: {
+                    slidesPerView: 3.3,
+                    spaceBetween: 24,
+                    freeMode: false,
+                  },
                   1280: { slidesPerView: 4, spaceBetween: 24, freeMode: false },
                 }}
                 className="!px-1"
@@ -394,11 +412,17 @@ export default function BestSellerCarouselSection() {
                 <div className="w-12 h-1 rounded-full bg-[#007C74]/30">
                   <motion.div
                     animate={{ x: ["0%", "100%", "0%"] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                     className="w-4 h-full rounded-full bg-[#007C74]"
                   />
                 </div>
-                <span className={`text-[10px] ${styles.textMutedLighter} ml-2 font-bold`}>
+                <span
+                  className={`text-[10px] ${styles.textMutedLighter} ml-2 font-bold`}
+                >
                   Swipe to explore
                 </span>
               </motion.div>
@@ -434,7 +458,9 @@ export default function BestSellerCarouselSection() {
                   whileTap={{ scale: 0.97 }}
                   className="group px-6 md:px-8 py-2.5 md:py-3 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white font-semibold inline-flex items-center gap-2 text-sm shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
                 >
-                  <span data-translate="bestseller.viewAll">See All Best Sellers</span>
+                  <span data-translate="bestseller.viewAll">
+                    See All Best Sellers
+                  </span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                 </motion.button>
               </Link>
@@ -455,7 +481,9 @@ export default function BestSellerCarouselSection() {
                   className="text-center"
                   whileHover={{ y: -2 }}
                 >
-                  <div className={`text-base md:text-lg font-black ${styles.text}`}>
+                  <div
+                    className={`text-base md:text-lg font-black ${styles.text}`}
+                  >
                     {item.number}
                   </div>
                   <div

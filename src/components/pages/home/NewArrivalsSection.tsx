@@ -88,7 +88,7 @@ export default function NewArrivalsSection() {
         ? "bg-white/5 border-white/5"
         : "bg-neutral-100 border-neutral-200/50",
     }),
-    [isDark]
+    [isDark],
   );
 
   // Queries
@@ -114,12 +114,18 @@ export default function NewArrivalsSection() {
 
   const hasError = !!errorNewArrivals || !!errorAll;
 
-  const primaryProducts = useMemo(() => (newArrivalsData as any)?.data || [], [newArrivalsData]);
-  const fallbackProducts = useMemo(() => (allProductsData as any)?.data || [], [allProductsData]);
-  
+  const primaryProducts = useMemo(
+    () => (newArrivalsData as any)?.data || [],
+    [newArrivalsData],
+  );
+  const fallbackProducts = useMemo(
+    () => (allProductsData as any)?.data || [],
+    [allProductsData],
+  );
+
   const products = useMemo(
     () => (primaryProducts.length > 0 ? primaryProducts : fallbackProducts),
-    [primaryProducts, fallbackProducts]
+    [primaryProducts, fallbackProducts],
   );
 
   const stats = useMemo(
@@ -129,7 +135,7 @@ export default function NewArrivalsSection() {
       { icon: Clock, label: "Craft Time", value: "72 hrs" },
       { icon: Eye, label: "New Styles", value: `${products.length}+` },
     ],
-    [products.length]
+    [products.length],
   );
 
   // Loading State
@@ -138,7 +144,7 @@ export default function NewArrivalsSection() {
       <section
         className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.background} py-16 sm:py-20 px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20`}
       >
-        <div className="relative z-10 max-w-7xl mx-auto">
+        <div className="relative z-10 container">
           <div className="h-8 w-40 bg-neutral-300 dark:bg-neutral-800 rounded animate-pulse mb-6" />
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -156,7 +162,7 @@ export default function NewArrivalsSection() {
       <section
         className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.background} py-16 sm:py-20 px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20`}
       >
-        <div className="relative z-10 max-w-7xl mx-auto text-center py-10">
+        <div className="relative z-10 container text-center py-10">
           <div className="inline-flex p-3 rounded-full bg-red-500/10 text-red-500 mb-4">
             <AlertCircle className="w-6 h-6" />
           </div>
@@ -183,7 +189,7 @@ export default function NewArrivalsSection() {
       <section
         className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.background} py-16 sm:py-20 px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20`}
       >
-        <div className="relative z-10 max-w-7xl mx-auto text-center py-10">
+        <div className="relative z-10 container text-center py-10">
           <div className="inline-flex p-3 rounded-full bg-neutral-200/50 dark:bg-neutral-800/50 mb-4">
             <Gem className="w-6 h-6 text-neutral-400" />
           </div>
@@ -228,7 +234,7 @@ export default function NewArrivalsSection() {
       </div>
 
       {/* Mobile Header */}
-      <div className="relative z-10 max-w-7xl mx-auto mb-8 lg:hidden">
+      <div className="relative z-10 container mb-8 lg:hidden">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -254,7 +260,7 @@ export default function NewArrivalsSection() {
         </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 container">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           {/* LEFT: Editorial */}
           <div className="lg:col-span-4">
@@ -276,7 +282,9 @@ export default function NewArrivalsSection() {
               >
                 New Arrivals
               </h2>
-              <p className={`${styles.textMuted} text-xs sm:text-sm leading-relaxed`}>
+              <p
+                className={`${styles.textMuted} text-xs sm:text-sm leading-relaxed`}
+              >
                 Discover the latest additions to our curated luxury eyewear
                 collection. Each frame is handcrafted by master artisans using
                 premium materials from around the world.

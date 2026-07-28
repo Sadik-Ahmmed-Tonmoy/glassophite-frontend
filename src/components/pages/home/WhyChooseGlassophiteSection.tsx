@@ -22,8 +22,8 @@ import { useRef, useState, useMemo } from "react";
 // Deterministic floating particles to avoid SSR/CSR hydration mismatches
 const PARTICLES = Array.from({ length: 16 }, (_, i) => ({
   id: i,
-  top: `${((i * 41 + 13) % 95)}%`,
-  left: `${((i * 59 + 7) % 95)}%`,
+  top: `${(i * 41 + 13) % 95}%`,
+  left: `${(i * 59 + 7) % 95}%`,
   dx: ((i % 5) - 2) * 8,
   duration: 22 + (i % 8) * 3,
   delay: (i * 0.4) % 4,
@@ -156,7 +156,7 @@ export default function WhyChooseGlassophiteSection() {
             iconBg: "bg-neutral-100 dark:bg-neutral-800",
             badgeBg: "border-neutral-200 bg-white/80 shadow-xs",
           },
-    [isDark]
+    [isDark],
   );
 
   return (
@@ -194,7 +194,10 @@ export default function WhyChooseGlassophiteSection() {
       />
 
       {/* Floating Particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      <div
+        className="absolute inset-0 overflow-hidden pointer-events-none"
+        aria-hidden="true"
+      >
         {PARTICLES.map((p) => (
           <motion.div
             key={p.id}
@@ -217,7 +220,7 @@ export default function WhyChooseGlassophiteSection() {
         ))}
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 container">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -300,10 +303,14 @@ export default function WhyChooseGlassophiteSection() {
                   </div>
 
                   {/* Content */}
-                  <h3 className={`text-base sm:text-lg font-bold ${styles.text} mb-2`}>
+                  <h3
+                    className={`text-base sm:text-lg font-bold ${styles.text} mb-2`}
+                  >
                     {feature.title}
                   </h3>
-                  <p className={`text-xs sm:text-sm ${styles.textMutedLighter} mb-4 leading-relaxed`}>
+                  <p
+                    className={`text-xs sm:text-sm ${styles.textMutedLighter} mb-4 leading-relaxed`}
+                  >
                     {feature.description}
                   </p>
                 </div>
@@ -352,10 +359,14 @@ export default function WhyChooseGlassophiteSection() {
                     <feature.icon className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className={`text-xs sm:text-sm font-bold ${styles.text} mb-0.5`}>
+                    <h4
+                      className={`text-xs sm:text-sm font-bold ${styles.text} mb-0.5`}
+                    >
                       {feature.title}
                     </h4>
-                    <p className={`text-xs ${styles.textMutedLighter} leading-relaxed`}>
+                    <p
+                      className={`text-xs ${styles.textMutedLighter} leading-relaxed`}
+                    >
                       {feature.description}
                     </p>
                   </div>
@@ -391,10 +402,14 @@ export default function WhyChooseGlassophiteSection() {
                     <feature.icon className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className={`text-xs sm:text-sm font-bold ${styles.text} mb-0.5`}>
+                    <h4
+                      className={`text-xs sm:text-sm font-bold ${styles.text} mb-0.5`}
+                    >
                       {feature.title}
                     </h4>
-                    <p className={`text-xs ${styles.textMutedLighter} leading-relaxed`}>
+                    <p
+                      className={`text-xs ${styles.textMutedLighter} leading-relaxed`}
+                    >
                       {feature.description}
                     </p>
                   </div>

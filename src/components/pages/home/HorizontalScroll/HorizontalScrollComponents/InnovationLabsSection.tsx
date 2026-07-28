@@ -172,7 +172,7 @@ export default function InnovationLabsSection() {
   //   offset: ["start end", "end start"],
   // });
 
-    const { scrollYProgress } = useScroll({
+  const { scrollYProgress } = useScroll({
     target: mounted ? containerRef : undefined,
     offset: ["start end", "end start"],
   });
@@ -270,7 +270,7 @@ export default function InnovationLabsSection() {
       ))}
 
       {/* Main Content */}
-      <div className="relative z-10 h-full max-w-7xl mx-auto px-6 py-12 flex flex-col">
+      <div className="relative z-10 h-full container px-6 py-12 flex flex-col">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

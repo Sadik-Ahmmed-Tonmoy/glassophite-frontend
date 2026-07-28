@@ -28,13 +28,13 @@ export default function BrandsPage() {
       .sort(
         (a: any, b: any) =>
           Number(b.featured) - Number(a.featured) ||
-          a.name?.localeCompare(b.name)
+          a.name?.localeCompare(b.name),
       );
   }, [brands, searchTerm]);
 
   const featuredBrands = useMemo(
     () => activeBrands.filter((brand: any) => brand.featured).slice(0, 3),
-    [activeBrands]
+    [activeBrands],
   );
 
   if (isLoading) {
@@ -49,7 +49,7 @@ export default function BrandsPage() {
     <div className="w-full min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-[#090909] dark:via-neutral-900 dark:to-[#090909] text-neutral-900 dark:text-neutral-100 transition-colors duration-500 py-10 sm:py-14 lg:py-16">
       {/* Header Section */}
       <section className="px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 pb-8 sm:pb-12 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black">
-        <div className="max-w-7xl mx-auto">
+        <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:gap-8 items-end">
             <div className="space-y-3 sm:space-y-4 pt-4 sm:pt-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#007C74]/10 text-[#007C74] text-[11px] font-extrabold uppercase tracking-wider">
@@ -60,7 +60,8 @@ export default function BrandsPage() {
                 Explore <span className="text-[#007C74]">Brands</span>
               </h1>
               <p className="text-xs sm:text-sm md:text-base lg:text-lg text-neutral-600 dark:text-neutral-400 max-w-xl leading-relaxed">
-                Discover world-class eyewear brands curated for style, precision, and durability.
+                Discover world-class eyewear brands curated for style,
+                precision, and durability.
               </p>
             </div>
             <div className="relative">
@@ -80,7 +81,7 @@ export default function BrandsPage() {
       {/* Featured Brands */}
       {featuredBrands.length > 0 && (
         <section className="px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 py-12 sm:py-16">
-          <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+          <div className="container space-y-6 sm:space-y-8">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -161,7 +162,7 @@ export default function BrandsPage() {
 
       {/* All Brands Grid */}
       <section className="px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 pb-16">
-        <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+        <div className="container space-y-6 sm:space-y-8">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}

@@ -48,7 +48,7 @@ export default function CheckoutPageClient() {
         router.push(`${pathname}?${params.toString()}`);
       }
     },
-    [pathname, router, searchParams]
+    [pathname, router, searchParams],
   );
 
   const [shippingDetails, setShippingDetails] = useState({
@@ -73,7 +73,9 @@ export default function CheckoutPageClient() {
   const subtotal = totalPrice;
   const initialCode = reduxCoupon?.code ?? "";
   const [couponCode, setCouponCode] = useState(initialCode);
-  const initialDiscount = reduxCoupon ? subtotal * (reduxCoupon.discount / 100) : 0;
+  const initialDiscount = reduxCoupon
+    ? subtotal * (reduxCoupon.discount / 100)
+    : 0;
   const [discount, setDiscount] = useState(initialDiscount);
 
   const [rewardPointsUsed] = useState<number>(0);
@@ -81,7 +83,7 @@ export default function CheckoutPageClient() {
 
   const displayTotal = useMemo(
     () => Math.max(0, subtotal + shippingCost - discount - rewardDiscount),
-    [subtotal, shippingCost, discount, rewardDiscount]
+    [subtotal, shippingCost, discount, rewardDiscount],
   );
 
   const nextStep = useCallback(() => {
@@ -152,7 +154,13 @@ export default function CheckoutPageClient() {
       saveAddress: shippingDetails.saveAddress,
       rewardPointsUsed: rewardPointsUsed || undefined,
     }),
-    [paymentMethod, couponCode, shippingDetails, shippingMethod, rewardPointsUsed]
+    [
+      paymentMethod,
+      couponCode,
+      shippingDetails,
+      shippingMethod,
+      rewardPointsUsed,
+    ],
   );
 
   const placeOrder = async () => {
@@ -212,7 +220,7 @@ export default function CheckoutPageClient() {
         setDiscount(discountAmount);
         setCouponCode(couponData.code);
         dispatch(
-          setCoupon({ code: couponData.code, discount: couponData.discount })
+          setCoupon({ code: couponData.code, discount: couponData.discount }),
         );
         toast({
           title: "Coupon applied",
@@ -247,7 +255,7 @@ export default function CheckoutPageClient() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 py-8 sm:py-12 lg:py-16">
+    <div className="container py-8 sm:py-12 lg:py-16">
       <div className="mb-6 sm:mb-8">
         <Link
           href="/product-filter"
@@ -263,14 +271,20 @@ export default function CheckoutPageClient() {
 
       {items.length === 0 ? (
         <div className="text-center py-16">
-          <ShoppingCart size={48} className="mx-auto text-neutral-300 dark:text-neutral-700 mb-4" />
+          <ShoppingCart
+            size={48}
+            className="mx-auto text-neutral-300 dark:text-neutral-700 mb-4"
+          />
           <h2 className="text-lg sm:text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-2">
             Your cart is empty
           </h2>
           <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mb-6">
             Add items to your cart to proceed with checkout.
           </p>
-          <Button asChild className="bg-[#007C74] hover:bg-[#006059] text-white rounded-full px-6 text-xs sm:text-sm font-bold">
+          <Button
+            asChild
+            className="bg-[#007C74] hover:bg-[#006059] text-white rounded-full px-6 text-xs sm:text-sm font-bold"
+          >
             <Link href="/product-filter">Browse Products</Link>
           </Button>
         </div>

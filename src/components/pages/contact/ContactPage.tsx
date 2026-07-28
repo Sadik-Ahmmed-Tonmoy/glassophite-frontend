@@ -86,7 +86,7 @@ const ContactTextareaAceternity = ({
                   focus-visible:outline-none focus-visible:ring-[2px] focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600
                   disabled:cursor-not-allowed disabled:opacity-50
                   dark:shadow-[0px_0px_1px_1px_var(--neutral-700)]
-                  group-hover/input:shadow-none transition duration-400 resize-none`
+                  group-hover/input:shadow-none transition duration-400 resize-none`,
                 )}
                 placeholder={placeholder}
                 {...field}
@@ -110,7 +110,7 @@ export default function ContactPage() {
 
   const handleFormSubmit = (
     data: Record<string, string>,
-    reset: () => void
+    reset: () => void,
   ) => {
     toast.success("Message Sent Successfully!", {
       description:
@@ -123,7 +123,7 @@ export default function ContactPage() {
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-[#0a0a0a] dark:via-neutral-900 dark:to-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-500 py-10 sm:py-14 lg:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 space-y-10 sm:space-y-12">
+      <div className="container space-y-10 sm:space-y-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -16 }}
@@ -139,7 +139,8 @@ export default function ContactPage() {
             data-translate="contact.subtitle"
           >
             Have a question about our collections, customized lenses, or need
-            assistance? Reach out, and our team will provide personalized assistance.
+            assistance? Reach out, and our team will provide personalized
+            assistance.
           </p>
         </motion.div>
 
@@ -357,7 +358,9 @@ export default function ContactPage() {
                     type="submit"
                     className="w-full py-3 bg-[#007C74] hover:bg-[#006059] text-white font-bold text-xs sm:text-sm rounded-full shadow-md hover:shadow-lg hover:shadow-[#007c74]/20 transition-all duration-300 flex items-center justify-center gap-2 group cursor-pointer"
                   >
-                    <span data-translate="contact.submit_btn">Submit Message</span>
+                    <span data-translate="contact.submit_btn">
+                      Submit Message
+                    </span>
                     <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform duration-300" />
                   </button>
                 </div>

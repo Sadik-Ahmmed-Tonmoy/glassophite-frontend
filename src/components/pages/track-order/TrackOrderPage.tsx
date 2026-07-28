@@ -56,7 +56,7 @@ export default function TrackOrderPage() {
 
   const handleFormSubmit = async (
     data: { orderId: string; email: string },
-    reset: () => void
+    reset: () => void,
   ) => {
     const formattedId = data.orderId.trim();
     setErrorMsg(null);
@@ -74,17 +74,20 @@ export default function TrackOrderPage() {
         });
         reset();
       } else {
-        setErrorMsg("Order not found. Please verify your order number and email.");
+        setErrorMsg(
+          "Order not found. Please verify your order number and email.",
+        );
         toast.error("Tracking Failed", {
           description: "No order matched this ID and email combination.",
         });
       }
     } catch (err: any) {
       setErrorMsg(
-        err?.data?.message || "Verify your Order ID and billing email address."
+        err?.data?.message || "Verify your Order ID and billing email address.",
       );
       toast.error("Tracking Failed", {
-        description: err?.data?.message || "Verify your Order ID and email address.",
+        description:
+          err?.data?.message || "Verify your Order ID and email address.",
       });
     }
   };
@@ -96,14 +99,18 @@ export default function TrackOrderPage() {
       const city = shippingAddressObj.city || "";
       const country = shippingAddressObj.country || "";
       const addressStr =
-        [street, city, country].filter(Boolean).join(", ") || "No address provided";
+        [street, city, country].filter(Boolean).join(", ") ||
+        "No address provided";
 
       const itemNames =
         order.items
           ?.map((item: any) => `${item.name} (x${item.quantity})`)
           .join(", ") || "Eyewear Collection Item";
 
-      const formatDate = (dateStr: string | null | undefined, placeholder: string) => {
+      const formatDate = (
+        dateStr: string | null | undefined,
+        placeholder: string,
+      ) => {
         if (!dateStr) return placeholder;
         return new Date(dateStr).toLocaleDateString("en-US", {
           year: "numeric",
@@ -131,7 +138,8 @@ export default function TrackOrderPage() {
         });
       };
 
-      let stepStatus: "placed" | "processing" | "transit" | "delivered" = "placed";
+      let stepStatus: "placed" | "processing" | "transit" | "delivered" =
+        "placed";
       let statusText = "Order Placed";
       if (order.status === "DELIVERED") {
         stepStatus = "delivered";
@@ -168,8 +176,8 @@ export default function TrackOrderPage() {
           date: order.processingDate
             ? formatDate(order.processingDate, "")
             : order.status !== "PROCESSING" && order.status !== "CANCELLED"
-            ? formatDate(order.createdAt, "")
-            : "In Progress",
+              ? formatDate(order.createdAt, "")
+              : "In Progress",
         },
         {
           title: "In Transit",
@@ -179,14 +187,16 @@ export default function TrackOrderPage() {
               ? "Dispatched from warehouse via courier."
               : "Awaiting dispatch.",
           translateDescKey:
-            order.status === "SHIPPED" ? "track.step3_desc" : "track.step3_desc_pending",
+            order.status === "SHIPPED"
+              ? "track.step3_desc"
+              : "track.step3_desc_pending",
           date: order.shippingDate
             ? formatDate(order.shippingDate, "")
             : order.status === "DELIVERED"
-            ? formatDate(order.createdAt, "")
-            : order.status === "SHIPPED"
-            ? "In Transit"
-            : "Awaiting Shipment",
+              ? formatDate(order.createdAt, "")
+              : order.status === "SHIPPED"
+                ? "In Transit"
+                : "Awaiting Shipment",
         },
         {
           title: "Delivered",
@@ -196,7 +206,9 @@ export default function TrackOrderPage() {
               ? "Package signed and received by recipient."
               : "Pending delivery.",
           translateDescKey:
-            order.status === "DELIVERED" ? "track.step4_desc" : "track.step4_desc_pending",
+            order.status === "DELIVERED"
+              ? "track.step4_desc"
+              : "track.step4_desc_pending",
           date: order.deliveryDate
             ? formatDate(order.deliveryDate, "")
             : "Pending Delivery",
@@ -215,7 +227,7 @@ export default function TrackOrderPage() {
         steps,
       };
     },
-    []
+    [],
   );
 
   const getStatusIndex = (status: string) => {
@@ -235,13 +247,14 @@ export default function TrackOrderPage() {
 
   const dbOrder = trackResponse?.data;
   const mappedOrder = useMemo(
-    () => (dbOrder ? mapDbOrderToMappedOrder(dbOrder, defaultValues.email) : null),
-    [dbOrder, mapDbOrderToMappedOrder, defaultValues.email]
+    () =>
+      dbOrder ? mapDbOrderToMappedOrder(dbOrder, defaultValues.email) : null,
+    [dbOrder, mapDbOrderToMappedOrder, defaultValues.email],
   );
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-[#0a0a0a] dark:via-neutral-900 dark:to-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-500 py-10 sm:py-14 lg:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 space-y-10 sm:space-y-12">
+      <div className="container space-y-10 sm:space-y-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -16 }}
@@ -256,8 +269,8 @@ export default function TrackOrderPage() {
             className="text-xs sm:text-sm md:text-base text-neutral-600 dark:text-neutral-400 font-medium max-w-xl mx-auto leading-relaxed"
             data-translate="track.subtitle"
           >
-            Enter your Order ID (e.g. ORD-XXXXXX) and your billing email address to
-            check the live delivery progress.
+            Enter your Order ID (e.g. ORD-XXXXXX) and your billing email address
+            to check the live delivery progress.
           </p>
         </motion.div>
 
@@ -299,7 +312,9 @@ export default function TrackOrderPage() {
                     </>
                   ) : (
                     <>
-                      <span data-translate="track.search_btn">Track Progress</span>
+                      <span data-translate="track.search_btn">
+                        Track Progress
+                      </span>
                       <Search className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                     </>
                   )}
@@ -346,8 +361,8 @@ export default function TrackOrderPage() {
                   className="text-xs sm:text-sm text-neutral-500 max-w-sm mx-auto leading-relaxed"
                   data-translate="track.empty_desc"
                 >
-                  Provide your details above to pull current assembly, inspection, and
-                  dispatch metrics.
+                  Provide your details above to pull current assembly,
+                  inspection, and dispatch metrics.
                 </p>
               </motion.div>
             )}
@@ -467,8 +482,10 @@ export default function TrackOrderPage() {
 
                     {/* Stepper items */}
                     {mappedOrder.steps.map((step, idx) => {
-                      const isActive = getStatusIndex(mappedOrder.status) === idx;
-                      const isCompleted = getStatusIndex(mappedOrder.status) >= idx;
+                      const isActive =
+                        getStatusIndex(mappedOrder.status) === idx;
+                      const isCompleted =
+                        getStatusIndex(mappedOrder.status) >= idx;
 
                       return (
                         <div

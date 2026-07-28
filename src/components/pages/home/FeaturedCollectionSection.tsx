@@ -5,7 +5,14 @@
 import { motion, useInView } from "framer-motion";
 import React, { useRef, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { ArrowRight, Sparkles, Eye, ShoppingBag, Award, AlertCircle } from "lucide-react";
+import {
+  ArrowRight,
+  Sparkles,
+  Eye,
+  ShoppingBag,
+  Award,
+  AlertCircle,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { useGetFeaturedProductsQuery } from "@/redux/features/product/productApi";
 import ProductCard from "@/components/ui/ProductCard/ProductCard";
@@ -13,7 +20,12 @@ import ProductCard from "@/components/ui/ProductCard/ProductCard";
 const TABS = [
   { id: "all", label: "All Premium", icon: Sparkles, typeFilter: null },
   { id: "aviator", label: "Aviator", icon: Eye, typeFilter: "Aviator" },
-  { id: "wayfarer", label: "Wayfarer", icon: ShoppingBag, typeFilter: "Wayfarer" },
+  {
+    id: "wayfarer",
+    label: "Wayfarer",
+    icon: ShoppingBag,
+    typeFilter: "Wayfarer",
+  },
   { id: "luxury", label: "Limited", icon: Award, typeFilter: "luxury" },
 ] as const;
 
@@ -61,11 +73,15 @@ export default function FeaturedCollectionSection() {
       border: isDark ? "border-white/10" : "border-neutral-200",
       orb: isDark ? "bg-primary/15" : "bg-primary/8",
     }),
-    [isDark]
+    [isDark],
   );
 
-  const { data: featuredProductsData, isLoading: queryLoading } = useGetFeaturedProductsQuery(20);
-  const featuredProducts = useMemo(() => (featuredProductsData as any)?.data || [], [featuredProductsData]);
+  const { data: featuredProductsData, isLoading: queryLoading } =
+    useGetFeaturedProductsQuery(20);
+  const featuredProducts = useMemo(
+    () => (featuredProductsData as any)?.data || [],
+    [featuredProductsData],
+  );
 
   const filteredProducts = useMemo(() => {
     const tab = TABS.find((t) => t.id === activeTab);
@@ -74,11 +90,13 @@ export default function FeaturedCollectionSection() {
       return featuredProducts.filter(
         (p: any) =>
           p.types?.some((t: string) => t.toLowerCase().includes("luxury")) ||
-          (p.averageRating || 0) >= 4.5
+          (p.averageRating || 0) >= 4.5,
       );
     }
     return featuredProducts.filter((p: any) =>
-      p.types?.some((t: string) => t.toLowerCase() === tab.typeFilter!.toLowerCase())
+      p.types?.some(
+        (t: string) => t.toLowerCase() === tab.typeFilter!.toLowerCase(),
+      ),
     );
   }, [featuredProducts, activeTab]);
 
@@ -90,26 +108,32 @@ export default function FeaturedCollectionSection() {
 
   const currentLabel = useMemo(
     () => TABS.find((t) => t.id === activeTab)?.label || "All Premium",
-    [activeTab]
+    [activeTab],
   );
-  
+
   const isLoading = queryLoading || tabLoading;
 
   return (
     <section
       ref={sectionRef}
       className={`relative py-16 sm:py-24 lg:py-28 overflow-hidden bg-gradient-to-b ${
-        isDark ? "from-black via-gray-950 to-black" : "from-neutral-50 via-white to-neutral-50"
+        isDark
+          ? "from-black via-gray-950 to-black"
+          : "from-neutral-50 via-white to-neutral-50"
       }`}
       aria-label="Featured Premium Sunglasses Collection"
     >
       {/* Background Orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className={`absolute top-[-20%] -right-20 w-[clamp(300px,45vw,600px)] h-[clamp(300px,45vw,600px)] rounded-full blur-[90px] sm:blur-[140px] ${styles.orb}`} />
-        <div className={`absolute bottom-[-20%] -left-20 w-[clamp(250px,40vw,500px)] h-[clamp(250px,40vw,500px)] rounded-full blur-[80px] sm:blur-[120px] ${styles.orb}`} />
+        <div
+          className={`absolute top-[-20%] -right-20 w-[clamp(300px,45vw,600px)] h-[clamp(300px,45vw,600px)] rounded-full blur-[90px] sm:blur-[140px] ${styles.orb}`}
+        />
+        <div
+          className={`absolute bottom-[-20%] -left-20 w-[clamp(250px,40vw,500px)] h-[clamp(250px,40vw,500px)] rounded-full blur-[80px] sm:blur-[120px] ${styles.orb}`}
+        />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20">
+      <div className="relative z-10 container">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -125,7 +149,9 @@ export default function FeaturedCollectionSection() {
               </span>
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
-              <span className={isDark ? "text-white" : "text-neutral-900"}>Featured </span>
+              <span className={isDark ? "text-white" : "text-neutral-900"}>
+                Featured{" "}
+              </span>
               <span className="text-primary">Premium</span>
             </h2>
           </div>
@@ -181,7 +207,9 @@ export default function FeaturedCollectionSection() {
         {/* Content */}
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} />)}
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} />
+            ))}
           </div>
         ) : filteredProducts.length > 0 ? (
           <>
@@ -220,10 +248,14 @@ export default function FeaturedCollectionSection() {
           </>
         ) : (
           <div className="text-center py-16 sm:py-20">
-            <div className={`inline-flex items-center justify-center w-14 h-14 rounded-full ${isDark ? 'bg-white/5' : 'bg-black/5'} mb-4`}>
+            <div
+              className={`inline-flex items-center justify-center w-14 h-14 rounded-full ${isDark ? "bg-white/5" : "bg-black/5"} mb-4`}
+            >
               <AlertCircle className={`w-6 h-6 ${styles.textMuted}`} />
             </div>
-            <p className={`${styles.textMuted} text-xs sm:text-sm font-semibold`}>
+            <p
+              className={`${styles.textMuted} text-xs sm:text-sm font-semibold`}
+            >
               No products found in &ldquo;{currentLabel}&rdquo;
             </p>
           </div>

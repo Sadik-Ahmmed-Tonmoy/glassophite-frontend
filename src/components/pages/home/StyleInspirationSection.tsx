@@ -3,22 +3,22 @@
 import { useGetAllProductsQuery } from "@/redux/features/product/productApi";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
-    ArrowRight,
-    Camera,
-    Coffee,
-    Eye,
-    Feather,
-    Heart,
-    Moon,
-    Mountain,
-    Palette,
-    PartyPopper,
-    Share2,
-    Sparkles,
-    Sun,
-    TrendingUp,
-    Umbrella,
-    Users
+  ArrowRight,
+  Camera,
+  Coffee,
+  Eye,
+  Feather,
+  Heart,
+  Moon,
+  Mountain,
+  Palette,
+  PartyPopper,
+  Share2,
+  Sparkles,
+  Sun,
+  TrendingUp,
+  Umbrella,
+  Users,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
@@ -36,7 +36,11 @@ export default function StyleInspirationSection() {
   const isInView = useInView(containerRef, { once: true, amount: 0.2 });
 
   const { data: allProductsData } = useGetAllProductsQuery(undefined);
-  const products = (Array.isArray(allProductsData) ? allProductsData : allProductsData?.data || []).slice(0, 9);
+  const products = (
+    Array.isArray(allProductsData)
+      ? allProductsData
+      : allProductsData?.data || []
+  ).slice(0, 9);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -70,8 +74,10 @@ export default function StyleInspirationSection() {
       likes: 234,
       saves: 89,
       products: [products[0], products[2], products[4]],
-      image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=800&auto=format&fit=crop",
-      modelImage: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=800&auto=format&fit=crop",
+      modelImage:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop",
       colors: ["#232323", "#1d81c8", "#d4af37"],
     },
     {
@@ -84,8 +90,10 @@ export default function StyleInspirationSection() {
       likes: 567,
       saves: 123,
       products: [products[1], products[3], products[5]],
-      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop",
-      modelImage: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&auto=format&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop",
+      modelImage:
+        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&auto=format&fit=crop",
       colors: ["#c0c0c0", "#b0b0b0", "#000000"],
     },
     {
@@ -98,8 +106,10 @@ export default function StyleInspirationSection() {
       likes: 892,
       saves: 345,
       products: [products[4], products[0], products[7]],
-      image: "https://images.unsplash.com/photo-1509630777415-8f002921b7c3?w=800&auto=format&fit=crop",
-      modelImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1509630777415-8f002921b7c3?w=800&auto=format&fit=crop",
+      modelImage:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop",
       colors: ["#d4af37", "#232323", "#c0c0c0"],
     },
     {
@@ -112,8 +122,10 @@ export default function StyleInspirationSection() {
       likes: 445,
       saves: 167,
       products: [products[5], products[2], products[8]],
-      image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop",
-      modelImage: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop",
+      modelImage:
+        "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop",
       colors: ["#000000", "#e0241b", "#232323"],
     },
     {
@@ -126,8 +138,10 @@ export default function StyleInspirationSection() {
       likes: 678,
       saves: 234,
       products: [products[6], products[1], products[3]],
-      image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop",
-      modelImage: "https://images.unsplash.com/photo-1494790108777-466fd103a773?w=400&auto=format&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop",
+      modelImage:
+        "https://images.unsplash.com/photo-1494790108777-466fd103a773?w=400&auto=format&fit=crop",
       colors: ["#f4f4f4", "#c0c0c0", "#b0b0b0"],
     },
   ];
@@ -141,15 +155,16 @@ export default function StyleInspirationSection() {
   }, [styleLooks.length]);
 
   // Filter looks based on category
-  const filteredLooks = activeCategory === "all" 
-    ? styleLooks 
-    : styleLooks.filter(look => look.category === activeCategory);
+  const filteredLooks =
+    activeCategory === "all"
+      ? styleLooks
+      : styleLooks.filter((look) => look.category === activeCategory);
 
   const toggleLike = (lookId: string) => {
-    setLikedLooks(prev => 
-      prev.includes(lookId) 
-        ? prev.filter(id => id !== lookId)
-        : [...prev, lookId]
+    setLikedLooks((prev) =>
+      prev.includes(lookId)
+        ? prev.filter((id) => id !== lookId)
+        : [...prev, lookId],
     );
   };
 
@@ -253,7 +268,7 @@ export default function StyleInspirationSection() {
         <Palette className="w-32 h-32 text-[#3C55A5]" />
       </motion.div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 container">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -290,7 +305,8 @@ export default function StyleInspirationSection() {
             className={`text-sm sm:text-base md:text-lg ${styles.textMuted} max-w-2xl mx-auto px-4`}
             data-translate="inspiration.description"
           >
-            Discover curated looks and get inspired by how others style their Glassophite sunglasses
+            Discover curated looks and get inspired by how others style their
+            Glassophite sunglasses
           </p>
         </motion.div>
 
@@ -331,7 +347,9 @@ export default function StyleInspirationSection() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mb-12 lg:mb-16"
         >
-          <div className={`relative rounded-2xl overflow-hidden backdrop-blur-sm border-2 ${styles.borderGlow}`}>
+          <div
+            className={`relative rounded-2xl overflow-hidden backdrop-blur-sm border-2 ${styles.borderGlow}`}
+          >
             <div className="grid lg:grid-cols-2">
               {/* Look Image */}
               <motion.div
@@ -349,10 +367,10 @@ export default function StyleInspirationSection() {
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   priority
                 />
-                
+
                 {/* Overlay with tags */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                
+
                 {/* Time of day indicator */}
                 <div className="absolute top-4 left-4">
                   <span className="px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1">
@@ -411,7 +429,9 @@ export default function StyleInspirationSection() {
                 <div className="h-full flex flex-col">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className={`text-xl sm:text-2xl lg:text-3xl font-bold ${styles.text} mb-2`}>
+                      <h3
+                        className={`text-xl sm:text-2xl lg:text-3xl font-bold ${styles.text} mb-2`}
+                      >
                         {styleLooks[activeLook].title}
                       </h3>
                       <p className={`text-sm sm:text-base ${styles.textMuted}`}>
@@ -431,10 +451,14 @@ export default function StyleInspirationSection() {
                       />
                     </div>
                     <div>
-                      <p className={`text-xs sm:text-sm font-medium ${styles.text}`}>
+                      <p
+                        className={`text-xs sm:text-sm font-medium ${styles.text}`}
+                      >
                         Sarah Johnson
                       </p>
-                      <p className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`}>
+                      <p
+                        className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`}
+                      >
                         Style Influencer
                       </p>
                     </div>
@@ -442,7 +466,10 @@ export default function StyleInspirationSection() {
 
                   {/* Featured products in this look */}
                   <div className="mb-6">
-                    <h4 className={`text-xs sm:text-sm font-semibold ${styles.text} mb-3 uppercase tracking-wider`} data-translate="inspiration.featured">
+                    <h4
+                      className={`text-xs sm:text-sm font-semibold ${styles.text} mb-3 uppercase tracking-wider`}
+                      data-translate="inspiration.featured"
+                    >
                       Featured in this look
                     </h4>
                     <div className="space-y-3">
@@ -454,17 +481,23 @@ export default function StyleInspirationSection() {
                           >
                             <div className="relative w-12 h-12 rounded-lg overflow-hidden">
                               <Image
-                                src={product.variants[0].imgList[0]?.image || ""}
+                                src={
+                                  product.variants[0].imgList[0]?.image || ""
+                                }
                                 alt={product.title}
                                 fill
                                 className="object-cover"
                               />
                             </div>
                             <div className="flex-1">
-                              <p className={`text-xs sm:text-sm font-medium ${styles.text} group-hover:text-[#007C74] transition-colors`}>
+                              <p
+                                className={`text-xs sm:text-sm font-medium ${styles.text} group-hover:text-[#007C74] transition-colors`}
+                              >
                                 {product.variants[0].title}
                               </p>
-                              <p className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`}>
+                              <p
+                                className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`}
+                              >
                                 ৳{product.variants[0].priceAfterDiscount}
                               </p>
                             </div>
@@ -522,7 +555,10 @@ export default function StyleInspirationSection() {
           transition={{ duration: 0.5, delay: 0.6 }}
         >
           <div className="flex items-center justify-between mb-6">
-            <h3 className={`text-lg sm:text-xl font-semibold ${styles.text}`} data-translate="inspiration.more">
+            <h3
+              className={`text-lg sm:text-xl font-semibold ${styles.text}`}
+              data-translate="inspiration.more"
+            >
               More Style Inspiration
             </h3>
             <Link href="/style-inspiration">
@@ -554,10 +590,10 @@ export default function StyleInspirationSection() {
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   />
-                  
+
                   {/* Overlay on hover */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  
+
                   {/* Quick view button */}
                   <button className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-white text-black text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
                     Quick View
@@ -571,12 +607,16 @@ export default function StyleInspirationSection() {
                   </div>
                 </div>
 
-                <h4 className={`text-xs sm:text-sm font-medium ${styles.text} line-clamp-1`}>
+                <h4
+                  className={`text-xs sm:text-sm font-medium ${styles.text} line-clamp-1`}
+                >
                   {look.title}
                 </h4>
                 <div className="flex items-center gap-2 mt-1">
                   <Heart className="w-3 h-3 text-[#007C74]" />
-                  <span className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`}>
+                  <span
+                    className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`}
+                  >
                     {look.likes}
                   </span>
                 </div>
@@ -594,11 +634,14 @@ export default function StyleInspirationSection() {
         >
           <div className="flex items-center justify-center gap-2 mb-4">
             <TrendingUp className="w-4 h-4 text-[#007C74]" />
-            <span className={`text-sm ${styles.textMuted}`} data-translate="inspiration.trending">
+            <span
+              className={`text-sm ${styles.textMuted}`}
+              data-translate="inspiration.trending"
+            >
               Trending Now
             </span>
           </div>
-          
+
           <div className="flex flex-wrap items-center justify-center gap-2">
             {[
               "#GlassophiteStyle",

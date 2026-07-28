@@ -23,7 +23,8 @@ import VariantSelector from "./VariantSelector";
 
 const getYoutubeEmbedUrl = (url?: string) => {
   if (!url) return null;
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+  const regExp =
+    /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
   const match = url.match(regExp);
   if (match && match[2].length === 11) {
     return `https://www.youtube.com/embed/${match[2]}`;
@@ -52,7 +53,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   const selectedItemFromCart = items.find((item) => item.id == product.id);
 
   const [selectedVariantId, setSelectedVariantId] = useState<string>(
-    product.variants[0]?.id || ""
+    product.variants[0]?.id || "",
   );
   const [quantity, setQuantity] = useState(1);
 
@@ -113,7 +114,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             starFilled: "text-yellow-500 fill-yellow-500",
             starEmpty: "text-neutral-300",
           },
-    [isDark]
+    [isDark],
   );
 
   useEffect(() => {
@@ -170,7 +171,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-8 sm:space-y-12 mt-2 sm:mt-6 px-3 sm:px-6 max-w-7xl mx-auto"
+      className="space-y-8 sm:space-y-12 mt-2 sm:mt-6 container"
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
         {/* Image Slider */}
@@ -196,7 +197,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           {/* Title and Stock Badge */}
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <h1 className={`text-xl sm:text-3xl font-extrabold tracking-tight ${styles.text}`}>
+              <h1
+                className={`text-xl sm:text-3xl font-extrabold tracking-tight ${styles.text}`}
+              >
                 {selectedVariant.title}
               </h1>
               {!selectedVariant.inStock ? (
@@ -220,7 +223,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 </div>
               )}
             </div>
-            <p className={`text-xs sm:text-sm ${styles.textMuted} mt-2 leading-relaxed`}>
+            <p
+              className={`text-xs sm:text-sm ${styles.textMuted} mt-2 leading-relaxed`}
+            >
               {selectedVariant.shortDescription}
             </p>
 
@@ -238,12 +243,16 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                       }`}
                     />
                   ))}
-                  <span className={`ml-1.5 text-xs sm:text-sm ${styles.textMutedLighter}`}>
+                  <span
+                    className={`ml-1.5 text-xs sm:text-sm ${styles.textMutedLighter}`}
+                  >
                     ({product.averageRating} reviews)
                   </span>
                 </div>
               )}
-              <span className={`text-xs sm:text-sm ${styles.textMutedLighter} font-mono`}>
+              <span
+                className={`text-xs sm:text-sm ${styles.textMutedLighter} font-mono`}
+              >
                 SKU: {selectedVariant.productCode}
               </span>
             </div>
@@ -256,7 +265,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 <span className="text-2xl sm:text-3xl font-black text-[#007C74] dark:text-[#00A693]">
                   ৳{(selectedVariant.priceAfterDiscount + lensPrice).toFixed(2)}
                 </span>
-                <span className={`text-sm sm:text-lg line-through ${styles.textMutedLighter}`}>
+                <span
+                  className={`text-sm sm:text-lg line-through ${styles.textMutedLighter}`}
+                >
                   ৳{(selectedVariant.mainPrice + lensPrice).toFixed(2)}
                 </span>
                 {selectedVariant.discountPercent && (
@@ -292,10 +303,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 <div className="flex items-center space-x-3">
                   <span className="text-xl sm:text-2xl">👓</span>
                   <div>
-                    <h3 className={`font-bold text-xs sm:text-base ${styles.text}`}>
+                    <h3
+                      className={`font-bold text-xs sm:text-base ${styles.text}`}
+                    >
                       Custom Prescription Lenses
                     </h3>
-                    <p className={`text-[11px] sm:text-xs ${styles.textMutedLighter}`}>
+                    <p
+                      className={`text-[11px] sm:text-xs ${styles.textMutedLighter}`}
+                    >
                       Configure custom power glass for your optical frames
                     </p>
                   </div>
@@ -355,8 +370,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                                   : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/50"
                               }`}
                             >
-                              <span className="text-sm sm:text-base mb-1">🔍</span>
-                              <span className={`text-xs font-bold ${styles.text}`}>
+                              <span className="text-sm sm:text-base mb-1">
+                                🔍
+                              </span>
+                              <span
+                                className={`text-xs font-bold ${styles.text}`}
+                              >
                                 {opt.name}
                               </span>
                               {opt.description && (
@@ -440,7 +459,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 className={cn(
                   "flex items-center justify-between border rounded-full px-1 py-0.5 w-full xs:w-auto self-start xs:self-auto",
                   selectedVariant.inStock ? "flex" : "hidden",
-                  styles.border
+                  styles.border,
                 )}
               >
                 <MyButton
@@ -448,11 +467,16 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   size="icon"
                   onClick={decreaseQuantity}
                   disabled={!selectedVariant.inStock || quantity <= 1}
-                  className={cn("h-8 w-8 sm:h-9 sm:w-9 rounded-full", styles.text)}
+                  className={cn(
+                    "h-8 w-8 sm:h-9 sm:w-9 rounded-full",
+                    styles.text,
+                  )}
                 >
                   -
                 </MyButton>
-                <span className={`w-8 sm:w-10 text-center font-bold text-xs sm:text-sm ${styles.text}`}>
+                <span
+                  className={`w-8 sm:w-10 text-center font-bold text-xs sm:text-sm ${styles.text}`}
+                >
                   {quantity}
                 </span>
                 <MyButton
@@ -463,7 +487,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     !selectedVariant.inStock ||
                     quantity >= selectedVariant.quantity
                   }
-                  className={cn("h-8 w-8 sm:h-9 sm:w-9 rounded-full", styles.text)}
+                  className={cn(
+                    "h-8 w-8 sm:h-9 sm:w-9 rounded-full",
+                    styles.text,
+                  )}
                 >
                   +
                 </MyButton>
@@ -503,7 +530,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                           }
                         : null
                     }
-                    lensId={addPowerGlass && selectedLens ? selectedLens.id : null}
+                    lensId={
+                      addPowerGlass && selectedLens ? selectedLens.id : null
+                    }
                   />
                   <WishlistButton
                     productId={product.id}
@@ -557,7 +586,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             </TabsList>
 
             <TabsContent value="description" className="mt-4">
-              <p className={`text-xs sm:text-sm ${styles.textMuted} leading-relaxed`}>
+              <p
+                className={`text-xs sm:text-sm ${styles.textMuted} leading-relaxed`}
+              >
                 {product.longDescription}
               </p>
             </TabsContent>
@@ -590,7 +621,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     >
                       Dimensions:
                     </span>{" "}
-                    <span className={styles.textMuted}>{product.dimensions}</span>
+                    <span className={styles.textMuted}>
+                      {product.dimensions}
+                    </span>
                   </div>
                   <div>
                     <span
@@ -608,7 +641,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     >
                       Frame Type:
                     </span>{" "}
-                    <span className={styles.textMuted}>{product.frameType}</span>
+                    <span className={styles.textMuted}>
+                      {product.frameType}
+                    </span>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -637,7 +672,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     >
                       Country of Origin:
                     </span>{" "}
-                    <span className={styles.textMuted}>{product.countryOfOrigin}</span>
+                    <span className={styles.textMuted}>
+                      {product.countryOfOrigin}
+                    </span>
                   </div>
                   <div>
                     <span
@@ -646,7 +683,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     >
                       Target Audience:
                     </span>{" "}
-                    <span className={styles.textMuted}>{product.targetAudience}</span>
+                    <span className={styles.textMuted}>
+                      {product.targetAudience}
+                    </span>
                   </div>
                   <div>
                     <span
@@ -655,7 +694,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     >
                       Shipping:
                     </span>{" "}
-                    <span className={styles.textMuted}>{product.shippingInfo}</span>
+                    <span className={styles.textMuted}>
+                      {product.shippingInfo}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -666,7 +707,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 >
                   Care Instructions:
                 </span>{" "}
-                <span className={styles.textMuted}>{product.careInstructions}</span>
+                <span className={styles.textMuted}>
+                  {product.careInstructions}
+                </span>
               </div>
             </TabsContent>
 

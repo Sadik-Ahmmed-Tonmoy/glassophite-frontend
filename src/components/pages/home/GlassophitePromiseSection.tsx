@@ -284,9 +284,10 @@ export default function GlassophitePromiseSection() {
             border: "border-neutral-200",
             borderGlow: "border-[#007C74]/40",
             categoryActive: "bg-[#007C74] text-white shadow-sm",
-            categoryInactive: "bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200/60",
+            categoryInactive:
+              "bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200/60",
           },
-    [isDark]
+    [isDark],
   );
 
   const currentPromise = PROMISES[activePromise];
@@ -338,7 +339,7 @@ export default function GlassophitePromiseSection() {
         <Award className="w-32 h-32 text-[#3C55A5]" />
       </motion.div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 container">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -396,7 +397,9 @@ export default function GlassophitePromiseSection() {
                   : styles.categoryInactive
               }`}
               onClick={() => {
-                const idx = PROMISES.findIndex((p) => p.category === category.id);
+                const idx = PROMISES.findIndex(
+                  (p) => p.category === category.id,
+                );
                 if (idx !== -1) setActivePromise(idx);
               }}
             >
@@ -415,7 +418,9 @@ export default function GlassophitePromiseSection() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="mb-12 lg:mb-16"
         >
-          <div className={`relative rounded-3xl overflow-hidden backdrop-blur-sm border-2 ${styles.borderGlow}`}>
+          <div
+            className={`relative rounded-3xl overflow-hidden backdrop-blur-sm border-2 ${styles.borderGlow}`}
+          >
             <div className="grid grid-cols-1 lg:grid-cols-2">
               {/* Promise Image */}
               <motion.div
@@ -465,15 +470,21 @@ export default function GlassophitePromiseSection() {
                 className={`p-6 sm:p-8 lg:p-10 ${styles.card} flex flex-col justify-between`}
               >
                 <div>
-                  <h3 className={`text-xl sm:text-2xl lg:text-3xl font-extrabold ${styles.text} mb-3`}>
+                  <h3
+                    className={`text-xl sm:text-2xl lg:text-3xl font-extrabold ${styles.text} mb-3`}
+                  >
                     {currentPromise.title}
                   </h3>
 
-                  <p className={`text-xs sm:text-sm md:text-base ${styles.textMuted} mb-3 leading-relaxed`}>
+                  <p
+                    className={`text-xs sm:text-sm md:text-base ${styles.textMuted} mb-3 leading-relaxed`}
+                  >
                     {currentPromise.description}
                   </p>
 
-                  <p className={`text-xs sm:text-sm ${styles.textMutedLighter} mb-6 leading-relaxed`}>
+                  <p
+                    className={`text-xs sm:text-sm ${styles.textMutedLighter} mb-6 leading-relaxed`}
+                  >
                     {currentPromise.longDescription}
                   </p>
 
@@ -489,7 +500,9 @@ export default function GlassophitePromiseSection() {
                       {currentPromise.features.map((feature, index) => (
                         <div key={index} className="flex items-center gap-2">
                           <CheckCircle className="w-3.5 h-3.5 text-[#007C74] shrink-0" />
-                          <span className={`text-xs font-semibold ${styles.textMuted}`}>
+                          <span
+                            className={`text-xs font-semibold ${styles.textMuted}`}
+                          >
                             {feature}
                           </span>
                         </div>
@@ -577,10 +590,16 @@ export default function GlassophitePromiseSection() {
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Standards */}
-            <div className={`p-6 sm:p-8 rounded-3xl backdrop-blur-sm border ${styles.card}`}>
-              <h3 className={`text-base sm:text-lg font-bold ${styles.text} mb-4 flex items-center gap-2`}>
+            <div
+              className={`p-6 sm:p-8 rounded-3xl backdrop-blur-sm border ${styles.card}`}
+            >
+              <h3
+                className={`text-base sm:text-lg font-bold ${styles.text} mb-4 flex items-center gap-2`}
+              >
                 <Medal className="w-5 h-5 text-[#007C74]" />
-                <span data-translate="promise.standards">Quality Standards</span>
+                <span data-translate="promise.standards">
+                  Quality Standards
+                </span>
               </h3>
 
               <div className="space-y-4">
@@ -591,14 +610,18 @@ export default function GlassophitePromiseSection() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <h4 className={`text-xs sm:text-sm font-bold ${styles.text} truncate`}>
+                        <h4
+                          className={`text-xs sm:text-sm font-bold ${styles.text} truncate`}
+                        >
                           {standard.title}
                         </h4>
                         <span className="text-[10px] sm:text-xs font-extrabold text-[#007C74] shrink-0">
                           {standard.value}
                         </span>
                       </div>
-                      <p className={`text-[10px] sm:text-xs ${styles.textMutedLighter} mt-0.5`}>
+                      <p
+                        className={`text-[10px] sm:text-xs ${styles.textMutedLighter} mt-0.5`}
+                      >
                         {standard.description}
                       </p>
                     </div>
@@ -608,10 +631,16 @@ export default function GlassophitePromiseSection() {
             </div>
 
             {/* Certifications */}
-            <div className={`p-6 sm:p-8 rounded-3xl backdrop-blur-sm border ${styles.card}`}>
-              <h3 className={`text-base sm:text-lg font-bold ${styles.text} mb-4 flex items-center gap-2`}>
+            <div
+              className={`p-6 sm:p-8 rounded-3xl backdrop-blur-sm border ${styles.card}`}
+            >
+              <h3
+                className={`text-base sm:text-lg font-bold ${styles.text} mb-4 flex items-center gap-2`}
+              >
                 <Award className="w-5 h-5 text-[#007C74]" />
-                <span data-translate="promise.certifications">Certifications</span>
+                <span data-translate="promise.certifications">
+                  Certifications
+                </span>
               </h3>
 
               <div className="space-y-3.5">
@@ -622,10 +651,14 @@ export default function GlassophitePromiseSection() {
                   >
                     <cert.icon className="w-4 h-4 text-[#007C74] shrink-0" />
                     <div>
-                      <h4 className={`text-xs sm:text-sm font-bold ${styles.text}`}>
+                      <h4
+                        className={`text-xs sm:text-sm font-bold ${styles.text}`}
+                      >
                         {cert.name}
                       </h4>
-                      <p className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`}>
+                      <p
+                        className={`text-[10px] sm:text-xs ${styles.textMutedLighter}`}
+                      >
                         {cert.description}
                       </p>
                     </div>

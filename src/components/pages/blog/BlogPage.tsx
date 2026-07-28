@@ -18,7 +18,11 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" as const } },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { duration: 0.5, ease: "easeOut" as const },
+  },
 };
 
 export default function BlogPage() {
@@ -39,19 +43,19 @@ export default function BlogPage() {
       .filter(
         (post: any) =>
           !categoryFilter ||
-          post.category?.toLowerCase() === categoryFilter.toLowerCase()
+          post.category?.toLowerCase() === categoryFilter.toLowerCase(),
       )
       .sort(
         (a: any, b: any) =>
           Number(b.featured) - Number(a.featured) ||
-          new Date(b.date).getTime() - new Date(a.date).getTime()
+          new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
   }, [blogData, categoryFilter]);
 
   const featuredPost = publishedPosts[0];
   const standardPosts = useMemo(
     () => publishedPosts.filter((post: any) => post.id !== featuredPost?.id),
-    [publishedPosts, featuredPost]
+    [publishedPosts, featuredPost],
   );
 
   if (isLoading) {
@@ -66,7 +70,7 @@ export default function BlogPage() {
     <div className="w-full min-h-screen bg-neutral-50 dark:bg-[#090909] text-neutral-900 dark:text-neutral-100 transition-colors duration-500 py-10 sm:py-14 lg:py-16">
       {/* Header Section */}
       <section className="px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 pb-8 sm:pb-12 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black">
-        <div className="max-w-7xl mx-auto">
+        <div className="container">
           <motion.div
             initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -81,8 +85,8 @@ export default function BlogPage() {
               Blog & Stories
             </h1>
             <p className="text-xs sm:text-sm md:text-base lg:text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl leading-relaxed">
-              Discover the latest trends in premium eyewear, style guides, expert
-              tips, and brand stories.
+              Discover the latest trends in premium eyewear, style guides,
+              expert tips, and brand stories.
             </p>
           </motion.div>
         </div>
@@ -95,7 +99,7 @@ export default function BlogPage() {
         animate="visible"
         className="px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 py-12 sm:py-16"
       >
-        <div className="max-w-7xl mx-auto space-y-10 sm:space-y-12">
+        <div className="container space-y-10 sm:space-y-12">
           {featuredPost && (
             <motion.article variants={itemVariants} className="group">
               <Link href={`/blogs/${featuredPost.slug || featuredPost.id}`}>
@@ -121,11 +125,14 @@ export default function BlogPage() {
                       </span>
                       <span>•</span>
                       <span>
-                        {new Date(featuredPost.date).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
+                        {new Date(featuredPost.date).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          },
+                        )}
                       </span>
                       <span className="px-2 py-0.5 rounded-full bg-[#007C74]/10 text-[#007C74] text-[10px] font-extrabold uppercase">
                         {featuredPost.readTime}
@@ -155,7 +162,10 @@ export default function BlogPage() {
                 variants={itemVariants}
                 className="group cursor-pointer bg-white dark:bg-black rounded-2xl overflow-hidden border border-neutral-200/80 dark:border-neutral-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
               >
-                <Link href={`/blogs/${post.slug || post.id}`} className="flex flex-col justify-between h-full">
+                <Link
+                  href={`/blogs/${post.slug || post.id}`}
+                  className="flex flex-col justify-between h-full"
+                >
                   <div className="relative aspect-[16/10] overflow-hidden">
                     <Image
                       src={post.imageUrl || "/placeholder.svg"}

@@ -97,7 +97,7 @@ const itemVariants = {
 export default function AboutPage() {
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-[#0a0a0a] dark:via-neutral-900 dark:to-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-500 py-10 sm:py-14 lg:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 space-y-16 sm:space-y-20 lg:space-y-24">
+      <div className="container space-y-16 sm:space-y-20 lg:space-y-24">
         {/* Hero Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -106,15 +106,17 @@ export default function AboutPage() {
           className="text-center max-w-3xl mx-auto space-y-4 sm:space-y-6 pt-4 sm:pt-8"
         >
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-[#007C74] via-[#00A693] to-[#3C55A5] bg-clip-text text-transparent">
-            <span data-translate="about.hero_title">Elegance in Every Frame</span>
+            <span data-translate="about.hero_title">
+              Elegance in Every Frame
+            </span>
           </h1>
           <p
             className="text-sm sm:text-base md:text-lg lg:text-xl text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed max-w-2xl mx-auto"
             data-translate="about.hero_subtitle"
           >
             Glassophite stands at the intersection of premium craftsmanship,
-            state-of-the-art optical technology, and contemporary style. Designed
-            specifically for those who choose to lead.
+            state-of-the-art optical technology, and contemporary style.
+            Designed specifically for those who choose to lead.
           </p>
         </motion.div>
 
@@ -126,7 +128,10 @@ export default function AboutPage() {
           variants={containerVariants}
           className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center"
         >
-          <motion.div variants={itemVariants} className="space-y-4 sm:space-y-6">
+          <motion.div
+            variants={itemVariants}
+            className="space-y-4 sm:space-y-6"
+          >
             <h2
               className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#007C74] dark:text-white"
               data-translate="about.story_title"
@@ -138,15 +143,15 @@ export default function AboutPage() {
                 Born out of a desire to redefine luxury eyewear for the modern
                 Bangladeshi tastemaker, Glassophite was established in 2026. We
                 noticed a void in the market: the lack of premium, thoughtfully
-                designed sunglasses that offer both extreme protection and distinct
-                style.
+                designed sunglasses that offer both extreme protection and
+                distinct style.
               </p>
               <p data-translate="about.story_p2">
                 Our design studio collaborates with master artisans globally,
-                importing high-end materials and combining them with Swiss precision
-                lens cutting. Every curve of a Glassophite frame is micro-adjusted to
-                suit varied facial structures, offering ergonomic comfort alongside
-                high-fashion aesthetics.
+                importing high-end materials and combining them with Swiss
+                precision lens cutting. Every curve of a Glassophite frame is
+                micro-adjusted to suit varied facial structures, offering
+                ergonomic comfort alongside high-fashion aesthetics.
               </p>
               <p data-translate="about.story_p3">
                 Whether walking through Dhaka&apos;s bustling premium avenues or
@@ -251,8 +256,8 @@ export default function AboutPage() {
               className="text-neutral-500 dark:text-neutral-400 text-xs sm:text-sm"
               data-translate="about.materials_subtitle"
             >
-              Sourcing the best components globally to create the ultimate premium
-              sunglasses.
+              Sourcing the best components globally to create the ultimate
+              premium sunglasses.
             </p>
           </div>
 
@@ -325,7 +330,9 @@ export default function AboutPage() {
             <div className="pt-2">
               <Link href="/product-filter">
                 <button className="px-6 sm:px-8 py-3 bg-[#007C74] hover:bg-[#006059] text-white font-bold text-xs sm:text-sm rounded-full shadow-md hover:shadow-lg hover:shadow-[#007c74]/20 transition-all duration-300 inline-flex items-center gap-2 group cursor-pointer">
-                  <span data-translate="about.cta_btn">Explore Collections</span>
+                  <span data-translate="about.cta_btn">
+                    Explore Collections
+                  </span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </Link>

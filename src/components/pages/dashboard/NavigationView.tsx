@@ -24,6 +24,7 @@ import {
 
 type ChildMenu = {
   chieldMenuTitle: string;
+  isActive?: boolean;
 };
 
 type SubMenu = {
@@ -31,6 +32,7 @@ type SubMenu = {
   imageUrl: string;
   descriptions?: string;
   chieldMenu: ChildMenu[];
+  isActive?: boolean;
 };
 
 type TNavbarMenu = {
@@ -177,12 +179,23 @@ export default function NavigationView() {
     setHref(m.href || "");
     setOrder(m.order);
     setIsActive(m.isActive ?? true);
-    setSubMenu(m.subMenu ? JSON.parse(JSON.stringify(m.subMenu)) : []);
+    const rawSubMenu = m.subMenu ? JSON.parse(JSON.stringify(m.subMenu)) : [];
+    const normalizedSubMenu = rawSubMenu.map((sub: any) => ({
+      ...sub,
+      isActive: sub.isActive ?? true,
+      chieldMenu: Array.isArray(sub.chieldMenu)
+        ? sub.chieldMenu.map((child: any) => ({
+            ...child,
+            isActive: child.isActive ?? true,
+          }))
+        : [],
+    }));
+    setSubMenu(normalizedSubMenu);
     setIsModalOpen(true);
   };
 
   const handleAddSubMenu = () => {
-    setSubMenu([...subMenu, { subMenuTitle: "", imageUrl: "", descriptions: "", chieldMenu: [] }]);
+    setSubMenu([...subMenu, { subMenuTitle: "", imageUrl: "", descriptions: "", chieldMenu: [], isActive: true }]);
   };
 
   const handleRemoveSubMenu = (index: number) => {
@@ -197,7 +210,7 @@ export default function NavigationView() {
 
   const handleAddChildMenu = (subMenuIndex: number) => {
     const updated = [...subMenu];
-    updated[subMenuIndex].chieldMenu = [...updated[subMenuIndex].chieldMenu, { chieldMenuTitle: "" }];
+    updated[subMenuIndex].chieldMenu = [...updated[subMenuIndex].chieldMenu, { chieldMenuTitle: "", isActive: true }];
     setSubMenu(updated);
   };
 
@@ -210,6 +223,16 @@ export default function NavigationView() {
   const handleChildMenuChange = (subMenuIndex: number, childIndex: number, value: string) => {
     const updated = [...subMenu];
     updated[subMenuIndex].chieldMenu[childIndex].chieldMenuTitle = value;
+    setSubMenu(updated);
+  };
+
+  const handleChildMenuToggleStatus = (subMenuIndex: number, childIndex: number) => {
+    const updated = [...subMenu];
+    const currentChild = updated[subMenuIndex].chieldMenu[childIndex];
+    updated[subMenuIndex].chieldMenu[childIndex] = {
+      ...currentChild,
+      isActive: !(currentChild.isActive ?? true),
+    };
     setSubMenu(updated);
   };
 
@@ -377,9 +400,14 @@ export default function NavigationView() {
                     </td>
                     <td className="py-4 text-neutral-500">
                       {item.subMenu?.length > 0 ? (
-                        <span className="text-[#007C74] font-bold">
-                          {item.subMenu.length} sections
-                        </span>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-[#007C74] font-bold">
+                            {item.subMenu.filter((s: any) => s.isActive !== false).length} / {item.subMenu.length} sections active
+                          </span>
+                          <span className="text-[10px] text-neutral-400">
+                            {item.subMenu.reduce((acc: number, s: any) => acc + (s.chieldMenu?.filter((c: any) => c.isActive !== false).length || 0), 0)} active links
+                          </span>
+                        </div>
                       ) : (
                         <span className="text-neutral-400">Direct Link</span>
                       )}
@@ -573,15 +601,45 @@ export default function NavigationView() {
                     {subMenu.map((sub, sIdx) => (
                       <div 
                         key={sIdx} 
-                        className="p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200/50 dark:border-neutral-800 rounded-xl space-y-4 relative group"
+                        className={`p-4 border rounded-xl space-y-4 relative group transition-colors ${
+                          sub.isActive !== false 
+                            ? "bg-neutral-50 dark:bg-neutral-950 border-neutral-200/50 dark:border-neutral-800" 
+                            : "bg-neutral-100/50 dark:bg-neutral-900/40 border-amber-500/30 opacity-80"
+                        }`}
                       >
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveSubMenu(sIdx)}
-                          className="absolute top-4 right-4 p-1 hover:bg-red-500/10 text-neutral-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] uppercase tracking-wider font-extrabold text-neutral-400">
+                              Section #{sIdx + 1} Status:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleSubMenuChange(sIdx, "isActive", !(sub.isActive ?? true))}
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer border ${
+                                sub.isActive !== false
+                                  ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20 dark:text-emerald-400"
+                                  : "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20 dark:text-amber-400"
+                              }`}
+                              title="Toggle Sub-Menu Category Active / Inactive status"
+                            >
+                              <span
+                                className={`w-2 h-2 rounded-full ${
+                                  sub.isActive !== false ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+                                }`}
+                              />
+                              <span>{sub.isActive !== false ? "Active Section" : "Inactive Section"}</span>
+                            </button>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSubMenu(sIdx)}
+                            className="p-1 hover:bg-red-500/10 text-neutral-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer"
+                            title="Delete Sub-Menu Section"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-1.5">
@@ -640,24 +698,49 @@ export default function NavigationView() {
                             </button>
                           </div>
 
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                             {sub.chieldMenu?.map((child, cIdx) => (
-                              <div key={cIdx} className="flex items-center gap-1.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 pl-2.5 pr-1 py-1 rounded-lg">
+                              <div 
+                                key={cIdx} 
+                                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 border p-2 rounded-xl transition-all ${
+                                  child.isActive !== false 
+                                    ? "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800" 
+                                    : "bg-amber-500/5 dark:bg-amber-950/25 border-amber-500/30 opacity-80"
+                                }`}
+                              >
                                 <input
                                   type="text"
                                   required
                                   placeholder="e.g. Sports"
                                   value={child.chieldMenuTitle}
                                   onChange={(e) => handleChildMenuChange(sIdx, cIdx, e.target.value)}
-                                  className="w-full bg-transparent focus:outline-none text-[10px] font-bold text-neutral-800 dark:text-neutral-250"
+                                  className="w-full bg-transparent focus:outline-none text-[10px] font-bold text-neutral-800 dark:text-neutral-250 border-b border-neutral-100 dark:border-neutral-800 pb-1 sm:border-0 sm:pb-0"
                                 />
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveChildMenu(sIdx, cIdx)}
-                                  className="p-1 hover:bg-red-500/10 text-neutral-400 hover:text-red-500 rounded transition-colors cursor-pointer"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
+                                
+                                <div className="flex items-center justify-between gap-1.5 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleChildMenuToggleStatus(sIdx, cIdx)}
+                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[8px] font-black transition-all cursor-pointer border ${
+                                      child.isActive !== false
+                                        ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20 dark:text-emerald-400"
+                                        : "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20 dark:text-amber-400"
+                                    }`}
+                                    title={child.isActive !== false ? "Click to Deactivate Link" : "Click to Activate Link"}
+                                  >
+                                    <span className={`w-1.5 h-1.5 rounded-full ${child.isActive !== false ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
+                                    <span>{child.isActive !== false ? "Active" : "Inactive"}</span>
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveChildMenu(sIdx, cIdx)}
+                                    className="p-1 hover:bg-red-500/10 text-neutral-400 hover:text-red-500 rounded transition-colors cursor-pointer"
+                                    title="Delete Link"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
                               </div>
                             ))}
                           </div>

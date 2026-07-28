@@ -779,8 +779,12 @@ const DropDownMenus = () => {
             );
           }
 
-          const hasSubmenu =
-            menuItem.subMenu && (menuItem.subMenu as any[]).length > 0;
+          const activeSubMenu = menuItem.subMenu
+            ? (menuItem.subMenu as any[]).filter(
+                (item: any) => item.isActive !== false,
+              )
+            : [];
+          const hasSubmenu = activeSubMenu.length > 0;
           const categoryHref =
             menuItem.href ||
             `/product-filter?category=${encodeURIComponent(menuItem.menu)}`;
@@ -806,70 +810,70 @@ const DropDownMenus = () => {
               href={categoryHref}
               className={translateClass}
             >
-              {hasSubmenu && (
+              {hasSubmenu ? (
                 <div className="max-h-[calc(100vh-170px)] overflow-hidden overflow-y-auto slim-scroll text-sm grid grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-10 p-4">
-                  {(menuItem.subMenu as any[]).map(
-                    (item: any, index: number) => {
-                      const subHref =
-                        item.href ||
-                        `/product-filter?category=${encodeURIComponent(hrefCategorySlug)}&subCategory=${encodeURIComponent(item.subMenuTitle)}`;
-                      return (
-                        <div
-                          key={index}
-                          className="flex flex-col md:flex-row items-start gap-1 md:gap-4"
-                        >
-                          {item.imageUrl && (
-                            <div>
-                              <Link
-                                href={subHref}
-                                onClick={() => setActive(null)}
-                              >
-                                <div className="sm:h-20 sm:w-20 md:h-24 md:w-24 lg:h-36 lg:w-36">
-                                  <Image
-                                    src={item.imageUrl}
-                                    className="rounded-md cursor-pointer h-full w-full"
-                                    height={150}
-                                    width={150}
-                                    alt=""
-                                  />
-                                </div>
-                              </Link>
-                            </div>
-                          )}
-                          <div className="flex flex-col lg:gap-1 whitespace-nowrap">
+                  {activeSubMenu.map((item: any, index: number) => {
+                    const subHref =
+                      item.href ||
+                      `/product-filter?category=${encodeURIComponent(hrefCategorySlug)}&subCategory=${encodeURIComponent(item.subMenuTitle)}`;
+                    const activeChildren = item.chieldMenu
+                      ? item.chieldMenu.filter(
+                          (chieldItem: any) => chieldItem.isActive !== false,
+                        )
+                      : [];
+                    return (
+                      <div
+                        key={index}
+                        className="flex flex-col md:flex-row items-start gap-1 md:gap-4"
+                      >
+                        {item.imageUrl && (
+                          <div>
                             <Link
                               href={subHref}
                               onClick={() => setActive(null)}
                             >
-                              <h3 className="hover:text-[#00a76b] text-xl w-min font-bold relative group cursor-pointer">
-                                {item.subMenuTitle}
-                                <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-                              </h3>
+                              <div className="sm:h-20 sm:w-20 md:h-24 md:w-24 lg:h-36 lg:w-36">
+                                <Image
+                                  src={item.imageUrl}
+                                  className="rounded-md cursor-pointer h-full w-full"
+                                  height={150}
+                                  width={150}
+                                  alt=""
+                                />
+                              </div>
                             </Link>
-                            {item.chieldMenu?.map(
-                              (chieldItem: any, idx: number) => {
-                                const childHref =
-                                  chieldItem.href ||
-                                  `/product-filter?category=${encodeURIComponent(hrefCategorySlug)}&subCategory=${encodeURIComponent(item.subMenuTitle)}&type=${encodeURIComponent(chieldItem.chieldMenuTitle)}`;
-                                return chieldItem.chieldMenuTitle ? (
-                                  <Link
-                                    key={idx}
-                                    href={childHref}
-                                    onClick={() => setActive(null)}
-                                  >
-                                    <p className="hover:text-[#00a76b] w-min text-base font-medium relative group cursor-pointer">
-                                      {chieldItem.chieldMenuTitle}
-                                      <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-                                    </p>
-                                  </Link>
-                                ) : null;
-                              },
-                            )}
                           </div>
+                        )}
+                        <div className="flex flex-col lg:gap-1 whitespace-nowrap">
+                          <Link href={subHref} onClick={() => setActive(null)}>
+                            <h3 className="hover:text-[#00a76b] text-xl w-min font-bold relative group cursor-pointer">
+                              {item.subMenuTitle}
+                              <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+                            </h3>
+                          </Link>
+                          {activeChildren.map(
+                            (chieldItem: any, idx: number) => {
+                              const childHref =
+                                chieldItem.href ||
+                                `/product-filter?category=${encodeURIComponent(hrefCategorySlug)}&subCategory=${encodeURIComponent(item.subMenuTitle)}&type=${encodeURIComponent(chieldItem.chieldMenuTitle)}`;
+                              return chieldItem.chieldMenuTitle ? (
+                                <Link
+                                  key={idx}
+                                  href={childHref}
+                                  onClick={() => setActive(null)}
+                                >
+                                  <p className="hover:text-[#00a76b] w-min text-base font-medium relative group cursor-pointer">
+                                    {chieldItem.chieldMenuTitle}
+                                    <span className="absolute left-0 bottom-0 h-0.5 w-full bg-[#00a76b] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+                                  </p>
+                                </Link>
+                              ) : null;
+                            },
+                          )}
                         </div>
-                      );
-                    },
-                  )}
+                      </div>
+                    );
+                  })}
                   {/* View All Dynamic Card */}
                   <div className="flex flex-col md:flex-row items-start md:gap-4 p-4 bg-[#007C74]/5 rounded-xl border border-[#007C74]/15 hover:bg-[#007C74]/10 transition-colors h-full min-h-[144px]">
                     <div className="flex flex-col justify-between h-full whitespace-nowrap">
@@ -885,7 +889,7 @@ const DropDownMenus = () => {
                       <Link
                         href={categoryHref}
                         onClick={() => setActive(null)}
-                        className="text-xs font-bold text-[#00a76b] flex items-center gap-1 group mt-4"
+                        className="text-xs font-bold text-[#00a76b] flex items-center gap-1 group mt-4 cursor-pointer"
                       >
                         <span>View All Collection</span>
                         <span className="group-hover:translate-x-1 transition-transform">
@@ -895,7 +899,7 @@ const DropDownMenus = () => {
                     </div>
                   </div>
                 </div>
-              )}
+              ) : null}
             </MenuItem>
           );
         })}

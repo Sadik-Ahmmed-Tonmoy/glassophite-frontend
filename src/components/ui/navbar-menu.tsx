@@ -30,7 +30,7 @@ export const MenuItem = ({
   href?: string;
   className?: string;
 }) => {
-  const hasChildren = !!children;
+  const hasChildren = React.Children.toArray(children).filter(Boolean).length > 0;
 
   const labelContent = (
     <span

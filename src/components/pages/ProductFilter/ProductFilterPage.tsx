@@ -653,7 +653,7 @@ export default function ProductFilterPage() {
             />
           )}
         </AnimatePresence>
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 relative z-10 lg:mt-28 pb-16">
+        <main className="container relative z-10 lg:mt-28 pb-16">
           <div
             className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6 pt-10"
             style={{

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -206,7 +207,10 @@ export default function MobileNavBar() {
 
           {/* Dynamic Categories Accordion */}
           {navbarMenus.map((item) => {
-            const hasSubMenu = Array.isArray(item.subMenu) && item.subMenu.length > 0;
+            const activeSubMenu = Array.isArray(item.subMenu)
+              ? item.subMenu.filter((sub) => (sub as any).isActive !== false)
+              : [];
+            const hasSubMenu = activeSubMenu.length > 0;
             const isExpanded = expandedMenu === item.menu;
             const menuHref = getMenuHref(item);
             const isSale = item.menu.toLowerCase().includes("sale");
@@ -253,12 +257,16 @@ export default function MobileNavBar() {
                 {/* Sub-menu accordion */}
                 {hasSubMenu && isExpanded && (
                   <div className="ml-5 pl-3 border-l-2 border-[#007C74]/40 flex flex-col gap-2 py-2 my-1">
-                    {item.subMenu?.map((sub, sIdx) => {
+                    {activeSubMenu.map((sub, sIdx) => {
                       const subHref =
                         sub.href ||
                         `/product-filter?category=${encodeURIComponent(
                           item.menu
                         )}&subCategory=${encodeURIComponent(sub.subMenuTitle)}`;
+
+                      const activeChildren = sub.chieldMenu
+                        ? sub.chieldMenu.filter((c: any) => c.isActive !== false)
+                        : [];
 
                       return (
                         <div key={sIdx} className="flex flex-col gap-1">
@@ -271,9 +279,9 @@ export default function MobileNavBar() {
                           </Link>
 
                           {/* Children options */}
-                          {sub.chieldMenu && sub.chieldMenu.length > 0 && (
+                          {activeChildren.length > 0 && (
                             <div className="ml-2 flex flex-wrap gap-1.5 py-0.5">
-                              {sub.chieldMenu.map(
+                              {activeChildren.map(
                                 (child, cIdx) =>
                                   child.chieldMenuTitle && (
                                     <Link

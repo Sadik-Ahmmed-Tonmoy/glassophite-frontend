@@ -3,22 +3,33 @@
 import type React from "react"
 import { useState, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Camera, Upload, Trash2, ImageIcon } from "lucide-react"
+import { Camera, Upload, Trash2, ImageIcon, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { useGetMeQuery, useUpdateMeMutation } from "@/redux/features/user/userApi"
 import { toast } from "sonner"
 import { useProfileTheme } from "@/hooks/useProfileTheme"
 import { fadeInUp } from "@/lib/profileAnimations"
+import { uploadImageToImgBB } from "@/lib/uploadImageToImgBB"
 
 export default function ProfilePicture() {
   const { theme: styles } = useProfileTheme()
+  // RTK Query — always reflects the latest server value after invalidation
   const { data: meData } = useGetMeQuery(undefined)
   const [updateMe] = useUpdateMeMutation()
   const user = meData?.data || meData
-  const [profileImage, setProfileImage] = useState<string | null>(user?.profileImage || null)
+
+  // Optimistic local state — only used to immediately reflect the new image
+  // while the mutation & cache invalidation are in flight.
+  // Falls back to server value when null (normal idle state).
+  const [optimisticImage, setOptimisticImage] = useState<string | null>(null)
+
+  // The image we actually display: optimistic override first, then server value
+  const profileImage = optimisticImage ?? user?.profileImage ?? null
+
   const [isHovering, setIsHovering] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const { isDark } = useProfileTheme()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -31,24 +42,39 @@ export default function ProfilePicture() {
       toast.error("Please upload an image file")
       return
     }
-    const reader = new FileReader()
-    reader.onloadend = async () => {
-      const base64 = reader.result as string
-      try {
-        await updateMe({ profileImage: base64 }).unwrap()
-        setProfileImage(base64)
-        toast.success("Profile picture updated")
-      } catch (err) {
-        const error = err as { data?: { message?: string } };
-        toast.error(error?.data?.message || "Failed to upload image")
-      }
+
+    setIsUploading(true)
+    const toastId = toast.loading("Uploading profile picture...")
+
+    try {
+      // 1. Upload to ImgBB CDN → get permanent URL
+      const imageUrl = await uploadImageToImgBB(file)
+
+      // 2. Optimistically show the new image immediately
+      setOptimisticImage(imageUrl)
+
+      // 3. Persist the URL to the backend; RTK invalidates ["user"] tag
+      //    so useGetMeQuery refetches and server value becomes the source of truth
+      await updateMe({ profileImage: imageUrl }).unwrap()
+
+      toast.success("Profile picture updated", { id: toastId })
+    } catch (err) {
+      // Revert optimistic update on failure
+      setOptimisticImage(null)
+      const error = err as { data?: { message?: string }; message?: string }
+      toast.error(error?.data?.message || error?.message || "Failed to upload image", { id: toastId })
+    } finally {
+      setIsUploading(false)
+      // Clear optimistic override — server data is now authoritative
+      setOptimisticImage(null)
     }
-    reader.readAsDataURL(file)
   }, [updateMe])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) processFile(file)
+    // Reset input so same file can be re-selected
+    e.target.value = ""
   }
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -70,13 +96,17 @@ export default function ProfilePicture() {
 
   const handleRemoveImage = async () => {
     try {
+      // Optimistically clear the image
+      setOptimisticImage("")
       await updateMe({ profileImage: null }).unwrap()
-      setProfileImage(null)
       toast.success("Profile picture removed")
       if (fileInputRef.current) fileInputRef.current.value = ""
     } catch (err) {
-      const error = err as { data?: { message?: string } };
+      const error = err as { data?: { message?: string } }
       toast.error(error?.data?.message || "Failed to remove image")
+    } finally {
+      // Server data is now authoritative again
+      setOptimisticImage(null)
     }
   }
 
@@ -125,8 +155,24 @@ export default function ProfilePicture() {
               </div>
             )}
 
+            {/* Uploading overlay */}
             <AnimatePresence>
-              {(isHovering || isDragOver) && (
+              {isUploading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/70 backdrop-blur-sm"
+                >
+                  <Loader2 size={28} className="text-white animate-spin" />
+                  <span className="text-white text-xs font-semibold">Uploading…</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Hover overlay (only when not uploading) */}
+            <AnimatePresence>
+              {!isUploading && (isHovering || isDragOver) && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -139,6 +185,7 @@ export default function ProfilePicture() {
                     className="p-2.5 bg-white/90 rounded-full text-gray-900 hover:bg-white transition-all shadow-lg"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
+                    type="button"
                   >
                     <Camera size={20} />
                   </motion.button>
@@ -148,6 +195,7 @@ export default function ProfilePicture() {
                       className="p-2.5 bg-white/90 rounded-full text-red-500 hover:bg-white transition-all shadow-lg"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
+                      type="button"
                     >
                       <Trash2 size={20} />
                     </motion.button>
@@ -176,20 +224,35 @@ export default function ProfilePicture() {
 
         <div className="flex flex-col items-center gap-2">
           <motion.button
-            onClick={() => fileInputRef.current?.click()}
-            className={cn("inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all", styles.buttonPrimary)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            onClick={() => !isUploading && fileInputRef.current?.click()}
+            disabled={isUploading}
+            className={cn(
+              "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed",
+              styles.buttonPrimary
+            )}
+            whileHover={isUploading ? {} : { scale: 1.02 }}
+            whileTap={isUploading ? {} : { scale: 0.98 }}
+            type="button"
           >
-            <Upload size={16} />
-            {profileImage ? "Change Picture" : "Upload Picture"}
+            {isUploading ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Uploading…
+              </>
+            ) : (
+              <>
+                <Upload size={16} />
+                {profileImage ? "Change Picture" : "Upload Picture"}
+              </>
+            )}
           </motion.button>
 
-          {profileImage && (
+          {profileImage && !isUploading && (
             <motion.button
               onClick={handleRemoveImage}
               className="text-xs text-red-400/70 hover:text-red-400 transition-colors"
               whileHover={{ scale: 1.05 }}
+              type="button"
             >
               Remove Picture
             </motion.button>
@@ -199,7 +262,8 @@ export default function ProfilePicture() {
         <div className={cn("flex items-center gap-2 px-4 py-2.5 rounded-xl w-full border border-dashed", isDark ? "border-white/[0.06] bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
           <ImageIcon size={14} className="text-neutral-500 shrink-0" />
           <p className={cn("text-xs", styles.textMutedLighter)}>
-            Drop an image here or click to browse. Square, min 300x300px, max 5MB.
+            Drop an image here or click to browse. Square, min 300×300px, max 5MB.
+            Uploaded via ImgBB CDN.
           </p>
         </div>
       </div>

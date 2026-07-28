@@ -34,6 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let productRoutes: MetadataRoute.Sitemap = [];
   let categoryRoutes: MetadataRoute.Sitemap = [];
+  let blogRoutes: MetadataRoute.Sitemap = [];
 
   try {
     const resProducts = await fetch(`${apiBaseUrl}products?limit=250`, { 
@@ -54,6 +55,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
+    const resBlogs = await fetch(`${apiBaseUrl}blogs?limit=100`, {
+      next: { revalidate: 3600 }
+    });
+    if (resBlogs.ok) {
+      const blogsData = await resBlogs.json();
+      const posts = blogsData?.data || [];
+      blogRoutes = posts.map((post: any) => ({
+        url: `${baseUrl}/blogs/${post.slug || post.id}`,
+        lastModified: new Date(post.updatedAt || post.date || post.createdAt || new Date()),
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      }));
+    }
+  } catch (error) {
+    console.warn("Sitemap: Failed to retrieve dynamic blogs:", error);
+  }
+
+  try {
     const resNavbar = await fetch(`${apiBaseUrl}navbar-menus`, { 
       next: { revalidate: 3600 } 
     });
@@ -71,5 +90,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn("Sitemap: Failed to retrieve dynamic navbar categories:", error);
   }
 
-  return [...staticRoutes, ...categoryRoutes, ...productRoutes];
+  return [...staticRoutes, ...categoryRoutes, ...productRoutes, ...blogRoutes];
 }

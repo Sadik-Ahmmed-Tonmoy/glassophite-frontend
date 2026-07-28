@@ -14,7 +14,7 @@ const pageTitles: Record<string, string> = {
   "/my-profile": "My Profile",
   "/my-profile/account-settings": "Account Settings",
   "/my-profile/order-history": "Order History",
-  "/my-profile/notifications": "Notifications",
+  // "/my-profile/notifications": "Notifications",
 }
 
 export default function Navbar() {

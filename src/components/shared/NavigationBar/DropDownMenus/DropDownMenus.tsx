@@ -711,7 +711,7 @@ const DropDownMenus = () => {
                       {item.imageUrl && (
                         <div className="relative shrink-0 sm:h-20 sm:w-20 md:h-24 md:w-24 lg:h-28 lg:w-28 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-950">
                           <Link
-                            href={`/blogs/${item?.slug}`}
+                            href={`/blogs/${item?.slug || item?.id || ""}`}
                             onClick={() => setActive(null)}
                           >
                             <Image
@@ -726,7 +726,7 @@ const DropDownMenus = () => {
                       )}
                       <div className="flex flex-col gap-1 whitespace-normal flex-1">
                         <Link
-                          href={`/blogs/${item?.slug}`}
+                          href={`/blogs/${item?.slug || item?.id || ""}`}
                           onClick={() => setActive(null)}
                         >
                           <h3 className="hover:text-[#00a76b] text-base lg:text-lg font-bold text-neutral-900 dark:text-white transition-colors line-clamp-1">
@@ -739,7 +739,7 @@ const DropDownMenus = () => {
                             "Explore our latest editorial stories and styling tips."}
                         </p>
                         <Link
-                          href={`/blogs/${item?.slug}`}
+                          href={`/blogs/${item?.slug || item?.id || ""}`}
                           onClick={() => setActive(null)}
                           className="text-xs font-bold text-[#00a76b] hover:underline inline-flex items-center gap-1 mt-2"
                         >

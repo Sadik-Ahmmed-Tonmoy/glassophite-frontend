@@ -251,7 +251,7 @@ export default function NewArrivalsSection() {
             </h2>
           </div>
           <Link
-            href="/new-arrivals"
+            href="/product-filter?category=new%20arrivals"
             className="group flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#007C74] hover:text-[#00A693] transition-colors"
           >
             <span>View All</span>
@@ -313,7 +313,7 @@ export default function NewArrivalsSection() {
                 ))}
               </div>
               <Link
-                href="/new-arrivals"
+                href="/product-filter?category=new%20arrivals"
                 className="group hidden lg:inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#007C74] to-[#00A693] text-white text-xs font-bold rounded-full shadow-md hover:shadow-lg hover:shadow-[#007C74]/20 transition-all duration-300 cursor-pointer"
               >
                 <span>Explore New Collection</span>
@@ -344,7 +344,7 @@ export default function NewArrivalsSection() {
 
             <div className="mt-10 text-center lg:hidden">
               <Link
-                href="/new-arrivals"
+                href="/product-filter?category=new%20arrivals"
                 className="group inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#007C74] to-[#00A693] text-white text-xs font-bold rounded-full shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
               >
                 <span>View All New Arrivals</span>

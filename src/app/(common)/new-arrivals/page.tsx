@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "New Arrivals | Glassophite Luxury Eyewear",
     description: "Discover the latest additions to Glassophite's premium sunglasses and eyewear collection.",
-    url: "https://www.glassophite.com/new-arrivals",
+    url: "https://www.glassophite.com/product-filter?category=new%20arrivals",
     siteName: "Glassophite",
     images: [
       {
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     images: ["https://www.glassophite.com/images/twitter-image.jpg"],
   },
   alternates: {
-    canonical: "https://www.glassophite.com/new-arrivals",
+    canonical: "https://www.glassophite.com/product-filter?category=new%20arrivals",
   },
 };
 

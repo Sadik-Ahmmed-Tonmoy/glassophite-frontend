@@ -17,6 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import Link from "next/link";
 import { useRef, useState, useMemo } from "react";
 
 // Deterministic floating particles to avoid SSR/CSR hydration mismatches
@@ -444,14 +445,16 @@ export default function WhyChooseGlassophiteSection() {
           transition={{ duration: 0.5, delay: 0.7 }}
           className="text-center mt-12 sm:mt-16 lg:mt-20"
         >
+          <Link href={"/product-filter"}>
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             className="group px-7 sm:px-8 py-3.5 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white font-bold inline-flex items-center gap-2.5 text-xs sm:text-sm shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
-          >
+            >
             <span data-translate="why.cta">Experience the Difference</span>
             <Eye className="w-4 h-4 group-hover:scale-110 transition-transform" />
           </motion.button>
+            </Link>
         </motion.div>
       </div>
 

@@ -2,25 +2,25 @@
 
 import { FloatButton } from "@/components/ui/FloatButton/FloatButton";
 import BestSellerCarouselSection from "./BestSellerCarouselSection";
-import CollectionSpotlightSection from "./CollectionSpotlightSection";
-import NewArrivalsSection from "./NewArrivalsSection";
 import GlassophitePromiseSection from "./GlassophitePromiseSection";
 import HeroCinematicSection from "./HeroCinematicSection";
+import NewArrivalsSection from "./NewArrivalsSection";
 import SEOContentSection from "./SEOContentSection";
 import ScrollAnimationEffect from "./ScrollAnimationEffect";
 import Testimonials from "./TestimonialsSection";
 import WhyChooseGlassophiteSection from "./WhyChooseGlassophiteSection";
-import HeroParallaxDemo from "./hero-parallax-demo";
+import MoreProductsShowcaseSection from "./MoreProductsShowcaseSection";
 
 const HomeComponent = () => {
   return (
     <div id="top" className="w-full relative">
       <HeroCinematicSection />
-      <WhyChooseGlassophiteSection />
-      <CollectionSpotlightSection />
       <BestSellerCarouselSection />
+      <WhyChooseGlassophiteSection />
+      {/* <CollectionSpotlightSection /> */}
       <NewArrivalsSection />
-      <HeroParallaxDemo />
+      <MoreProductsShowcaseSection />
+      {/* <StyleLookbookShowcaseSection /> */}
       <ScrollAnimationEffect />
       <Testimonials />
       <GlassophitePromiseSection />

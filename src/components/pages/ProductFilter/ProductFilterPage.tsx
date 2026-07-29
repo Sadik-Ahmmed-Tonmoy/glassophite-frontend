@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { toast } from "sonner";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import Script from "next/script";
@@ -29,6 +30,23 @@ const getInitialCategoriesFromParams = (searchParams: Pick<URLSearchParams, "get
   const raw = searchParams.get("category")?.split(",").filter(Boolean) || [];
   return raw.map(normalizeCategoryForDB);
 };
+
+function ToastCountdown({ durationSeconds = 4 }: { durationSeconds?: number }) {
+  const [seconds, setSeconds] = useState(durationSeconds);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSeconds((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <span className="text-[11px] opacity-70 mt-1 block">
+      Closing in {seconds}s
+    </span>
+  );
+}
 
 export default function ProductFilterPage() {
   const searchParams = useSearchParams();
@@ -66,6 +84,9 @@ export default function ProductFilterPage() {
   const [productsPerPage, setProductsPerPage] = useState(
     Number.parseInt(searchParams.get("limit") || "12")
   );
+  const isFirstRender = useRef(true);
+  const prevPageRef = useRef(currentPage);
+  const prevLimitRef = useRef(productsPerPage);
 
   // Special boolean categories check
   const isNewArrivalSelected = filters.categories.some(
@@ -103,16 +124,16 @@ export default function ProductFilterPage() {
       sortOption === "featured"
         ? "featured"
         : sortOption === "popularity"
-        ? "popularity"
-        : sortOption === "price-low"
-        ? "price_asc"
-        : sortOption === "price-high"
-        ? "price_desc"
-        : sortOption === "newest"
-        ? "newest"
-        : sortOption === "rating"
-        ? "rating"
-        : undefined,
+          ? "popularity"
+          : sortOption === "price-low"
+            ? "price_asc"
+            : sortOption === "price-high"
+              ? "price_desc"
+              : sortOption === "newest"
+                ? "newest"
+                : sortOption === "rating"
+                  ? "rating"
+                  : undefined,
     categories: categoriesQueryParam,
     subCategories:
       filters.subCategories.length > 0 ? filters.subCategories.join(",") : undefined,
@@ -195,20 +216,23 @@ export default function ProductFilterPage() {
     return [...fromBackend, ...fromFilters];
   }, [backendFilterOptions, filters.lensTypes]);
 
-  const allColors: { color: string; title: string }[] = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          products.flatMap(
-            (p: any) =>
-              p.variants?.map((v: any) =>
-                JSON.stringify({ color: v.color, title: v.title.split(" ")[0] })
-              ) || []
-          )
-        )
-      ).map((item: any) => JSON.parse(item)),
-    [products]
-  );
+  const allColors: { color: string; title: string }[] = useMemo(() => {
+    const colorMap = new Map<string, { color: string; title: string }>();
+    products.forEach((p: any) => {
+      p.variants?.forEach((v: any) => {
+        if (v.color) {
+          const normalized = v.color.toLowerCase().trim();
+          if (!colorMap.has(normalized)) {
+            colorMap.set(normalized, {
+              color: v.color.trim(),
+              title: v.title?.split(" ")[0] || v.color.trim(),
+            });
+          }
+        }
+      });
+    });
+    return Array.from(colorMap.values());
+  }, [products]);
 
   const minPrice = useMemo(() => {
     const prices = products.flatMap(
@@ -337,8 +361,8 @@ export default function ProductFilterPage() {
       searchParams.get("inStock") === "true"
         ? true
         : searchParams.get("inStock") === "false"
-        ? false
-        : null;
+          ? false
+          : null;
     const search = searchParams.get("search") || searchParams.get("q") || "";
 
     setFilters((prev) => {
@@ -420,6 +444,38 @@ export default function ProductFilterPage() {
       router.replace(`${pathname}?${newSearch}`, { scroll: false });
     }
   }, [filters, sortOption, currentPage, pathname, router, productsPerPage]);
+
+  useEffect(() => {
+    if (isLoading || isFetching) return;
+
+    const pageChanged = prevPageRef.current !== currentPage || prevLimitRef.current !== productsPerPage;
+    prevPageRef.current = currentPage;
+    prevLimitRef.current = productsPerPage;
+
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    if (pageChanged) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      toast.success(`${total} products found`, {
+        description: (
+          <div className="flex flex-col">
+            <span>Filters applied successfully.</span>
+            <ToastCountdown durationSeconds={4} />
+          </div>
+        ),
+        id: "filter-product-count",
+        duration: 4000,
+      });
+
+      if (total <= 5) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+  }, [filters, currentPage, sortOption, productsPerPage, total, isLoading, isFetching]);
 
   const handleFilterChange = (filterType: keyof FilterState, value: any) => {
     setFilters((prev) => {
@@ -508,7 +564,9 @@ export default function ProductFilterPage() {
     setCurrentPage(1);
   };
 
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
 
   const hasActiveFilters = () =>
     filters.brands.length > 0 ||
@@ -585,29 +643,29 @@ export default function ProductFilterPage() {
     () =>
       isDark
         ? {
-            bg: "bg-black",
-            card: "bg-white/5 border-white/10",
-            cardHover: "hover:bg-white/10",
-            text: "text-white",
-            textMuted: "text-neutral-300",
-            textMutedLighter: "text-neutral-400",
-            border: "border-white/10",
-            gradient: "from-[#007C74] to-[#3C55A5]",
-            button: "bg-white/10 hover:bg-white/20 text-white",
-            activeFilter: "bg-[#007C74]/20 text-[#007C74] border-[#007C74]/30",
-          }
+          bg: "bg-black",
+          card: "bg-white/5 border-white/10",
+          cardHover: "hover:bg-white/10",
+          text: "text-white",
+          textMuted: "text-neutral-300",
+          textMutedLighter: "text-neutral-400",
+          border: "border-white/10",
+          gradient: "from-[#007C74] to-[#3C55A5]",
+          button: "bg-white/10 hover:bg-white/20 text-white",
+          activeFilter: "bg-[#007C74]/20 text-[#007C74] border-[#007C74]/30",
+        }
         : {
-            bg: "bg-neutral-50",
-            card: "bg-white border-neutral-200",
-            cardHover: "hover:bg-neutral-50",
-            text: "text-neutral-900",
-            textMuted: "text-neutral-600",
-            textMutedLighter: "text-neutral-500",
-            border: "border-neutral-200",
-            gradient: "from-[#007C74] to-[#3C55A5]",
-            button: "bg-neutral-200 hover:bg-neutral-300 text-neutral-900",
-            activeFilter: "bg-[#007C74]/10 text-[#007C74] border-[#007C74]/30",
-          },
+          bg: "bg-neutral-50",
+          card: "bg-white border-neutral-200",
+          cardHover: "hover:bg-neutral-50",
+          text: "text-neutral-900",
+          textMuted: "text-neutral-600",
+          textMutedLighter: "text-neutral-500",
+          border: "border-neutral-200",
+          gradient: "from-[#007C74] to-[#3C55A5]",
+          button: "bg-neutral-200 hover:bg-neutral-300 text-neutral-900",
+          activeFilter: "bg-[#007C74]/10 text-[#007C74] border-[#007C74]/30",
+        },
     [isDark]
   );
 
@@ -627,9 +685,8 @@ export default function ProductFilterPage() {
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `radial-gradient(circle at 2px 2px, ${
-                isDark ? "#007C74" : "#007C74"
-              } 1px, transparent 0)`,
+              backgroundImage: `radial-gradient(circle at 2px 2px, ${isDark ? "#007C74" : "#007C74"
+                } 1px, transparent 0)`,
               backgroundSize: "40px 40px",
             }}
           />
@@ -714,22 +771,22 @@ export default function ProductFilterPage() {
                 </ActiveFilterBtn>
               )}
               {filters.brands.map((b) => (
-                <ActiveFilterBtn key={b} onClick={() => removeFilter("brands", b)} s={s}>
+                <ActiveFilterBtn key={`brand-${b}`} onClick={() => removeFilter("brands", b)} s={s}>
                   {b}
                 </ActiveFilterBtn>
               ))}
               {filters.categories.map((c) => (
-                <ActiveFilterBtn key={c} onClick={() => removeFilter("categories", c)} s={s}>
+                <ActiveFilterBtn key={`category-${c}`} onClick={() => removeFilter("categories", c)} s={s}>
                   {normalizeCategoryForUI(c)}
                 </ActiveFilterBtn>
               ))}
               {filters.subCategories.map((sc) => (
-                <ActiveFilterBtn key={sc} onClick={() => removeFilter("subCategories", sc)} s={s}>
+                <ActiveFilterBtn key={`subcategory-${sc}`} onClick={() => removeFilter("subCategories", sc)} s={s}>
                   {sc}
                 </ActiveFilterBtn>
               ))}
               {filters.types.map((t) => (
-                <ActiveFilterBtn key={t} onClick={() => removeFilter("types", t)} s={s}>
+                <ActiveFilterBtn key={`type-${t}`} onClick={() => removeFilter("types", t)} s={s}>
                   {t}
                 </ActiveFilterBtn>
               ))}
@@ -739,12 +796,12 @@ export default function ProductFilterPage() {
                 </ActiveFilterBtn>
               )}
               {filters.frameTypes.map((t) => (
-                <ActiveFilterBtn key={t} onClick={() => removeFilter("frameTypes", t)} s={s}>
+                <ActiveFilterBtn key={`frame-${t}`} onClick={() => removeFilter("frameTypes", t)} s={s}>
                   {t}
                 </ActiveFilterBtn>
               ))}
               {filters.lensTypes.map((t) => (
-                <ActiveFilterBtn key={t} onClick={() => removeFilter("lensTypes", t)} s={s}>
+                <ActiveFilterBtn key={`lens-${t}`} onClick={() => removeFilter("lensTypes", t)} s={s}>
                   {t}
                 </ActiveFilterBtn>
               ))}
@@ -752,7 +809,7 @@ export default function ProductFilterPage() {
                 const co = allColors.find((c: any) => c.color === clr);
                 return (
                   <button
-                    key={clr}
+                    key={`color-${clr}`}
                     onClick={() => removeFilter("colors", clr)}
                     className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${s.activeFilter}`}
                   >
@@ -763,7 +820,7 @@ export default function ProductFilterPage() {
                 );
               })}
               {filters.ratings.map((r) => (
-                <ActiveFilterBtn key={r} onClick={() => removeFilter("ratings", r)} s={s}>
+                <ActiveFilterBtn key={`rating-${r}`} onClick={() => removeFilter("ratings", r)} s={s}>
                   {r}★
                 </ActiveFilterBtn>
               ))}

@@ -150,11 +150,11 @@ export default function FilterSection({
         </AnimatePresence>
 
         {/* Filter sidebar */}
-          <FilterSidebar
-            filters={filters}
-            collectionOptions={collectionOptions}
-            optionCounts={optionCounts}
-            allBrands={allBrands}
+        <FilterSidebar
+          filters={filters}
+          collectionOptions={collectionOptions}
+          optionCounts={optionCounts}
+          allBrands={allBrands}
           allSubCategories={allSubCategories}
           // allTypes={allTypes}
           allFrameTypes={allFrameTypes}

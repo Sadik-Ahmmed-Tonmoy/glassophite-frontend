@@ -73,7 +73,7 @@ export default function RootLayout({
             <ReduxStoreProvider>
               <NextUiProvider>
                 <CartProvider>
-                  <Toaster />
+                  <Toaster closeButton />
                   {children}
                 </CartProvider>
               </NextUiProvider>

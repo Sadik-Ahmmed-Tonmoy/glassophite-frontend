@@ -235,6 +235,105 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
+  {/* ========== Rating ========== */}
+        <AccordionItem value="rating" className={styles.border}>
+          <AccordionTrigger
+            className={`text-sm font-medium ${styles.accordionTrigger}`}
+            data-translate="filter.rating"
+          >
+            Rating
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="pt-2 pb-4 space-y-4">
+              {[5, 4, 3, 2, 1].map((rating, index) => {
+                const id = `rating-${rating}`;
+                return (
+                  <motion.div
+                    key={rating}
+                    custom={index}
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    whileHover="hover"
+                    className="flex items-center"
+                  >
+                    <motion.input
+                      id={id}
+                      type="checkbox"
+                      checked={filters.ratings.includes(rating)}
+                      onChange={() => handleFilterChange("ratings", rating)}
+                      className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
+                      variants={contentVariants}
+                    />
+                    <motion.label
+                      htmlFor={id}
+                      className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm cursor-pointer`}
+                      variants={contentVariants}
+                    >
+                      {renderStars(rating)}
+                      <motion.span
+                        variants={ratingCountVariants}
+                        className={`text-xs ${styles.textMutedLighter}`}
+                      >
+                        ({optionCounts.ratings[rating] || 0})
+                      </motion.span>
+                    </motion.label>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* ========== Availability ========== */}
+        <AccordionItem value="availability" className={styles.border}>
+          <AccordionTrigger
+            className={`text-sm font-medium ${styles.accordionTrigger}`}
+            data-translate="filter.availability"
+          >
+            Availability
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="pt-2 pb-4">
+              <motion.div
+                className="flex items-center"
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                custom={0}
+                whileHover="hover"
+              >
+                <motion.input
+                  id="in-stock"
+                  type="checkbox"
+                  checked={filters.inStock === true}
+                  onChange={() =>
+                    handleFilterChange(
+                      "inStock",
+                      filters.inStock === true ? null : true
+                    )
+                  }
+                  className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
+                  variants={contentVariants}
+                />
+                <label
+                  htmlFor="in-stock"
+                  className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm ${styles.label} cursor-pointer`}
+                  data-translate="filter.inStock"
+                >
+                  <motion.span variants={contentVariants}>In Stock</motion.span>
+                  <motion.span
+                    variants={countVariants}
+                    className={`text-xs ${styles.textMutedLighter}`}
+                  >
+                    ({optionCounts.inStock})
+                  </motion.span>
+                </label>
+              </motion.div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+        
         {/* ========== Collection ========== */}
         <AccordionItem value="collection" className={styles.border}>
           <AccordionTrigger
@@ -453,104 +552,7 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        {/* ========== Rating ========== */}
-        <AccordionItem value="rating" className={styles.border}>
-          <AccordionTrigger
-            className={`text-sm font-medium ${styles.accordionTrigger}`}
-            data-translate="filter.rating"
-          >
-            Rating
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="pt-2 pb-4 space-y-4">
-              {[5, 4, 3, 2, 1].map((rating, index) => {
-                const id = `rating-${rating}`;
-                return (
-                  <motion.div
-                    key={rating}
-                    custom={index}
-                    variants={itemVariants}
-                    initial="hidden"
-                    animate="visible"
-                    whileHover="hover"
-                    className="flex items-center"
-                  >
-                    <motion.input
-                      id={id}
-                      type="checkbox"
-                      checked={filters.ratings.includes(rating)}
-                      onChange={() => handleFilterChange("ratings", rating)}
-                      className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
-                      variants={contentVariants}
-                    />
-                    <motion.label
-                      htmlFor={id}
-                      className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm cursor-pointer`}
-                      variants={contentVariants}
-                    >
-                      {renderStars(rating)}
-                      <motion.span
-                        variants={ratingCountVariants}
-                        className={`text-xs ${styles.textMutedLighter}`}
-                      >
-                        ({optionCounts.ratings[rating] || 0})
-                      </motion.span>
-                    </motion.label>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        {/* ========== Availability ========== */}
-        <AccordionItem value="availability" className={styles.border}>
-          <AccordionTrigger
-            className={`text-sm font-medium ${styles.accordionTrigger}`}
-            data-translate="filter.availability"
-          >
-            Availability
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="pt-2 pb-4">
-              <motion.div
-                className="flex items-center"
-                variants={itemVariants}
-                initial="hidden"
-                animate="visible"
-                custom={0}
-                whileHover="hover"
-              >
-                <motion.input
-                  id="in-stock"
-                  type="checkbox"
-                  checked={filters.inStock === true}
-                  onChange={() =>
-                    handleFilterChange(
-                      "inStock",
-                      filters.inStock === true ? null : true
-                    )
-                  }
-                  className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
-                  variants={contentVariants}
-                />
-                <label
-                  htmlFor="in-stock"
-                  className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm ${styles.label} cursor-pointer`}
-                  data-translate="filter.inStock"
-                >
-                  <motion.span variants={contentVariants}>In Stock</motion.span>
-                  <motion.span
-                    variants={countVariants}
-                    className={`text-xs ${styles.textMutedLighter}`}
-                  >
-                    ({optionCounts.inStock})
-                  </motion.span>
-                </label>
-              </motion.div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+      
       </Accordion>
     </motion.div>
   );

@@ -353,7 +353,7 @@ function ProductCard({ product }: ProductCardProps) {
           </div>
 
           {/* Description */}
-          <p className={`text-xs ${styles.textMuted} mt-1 line-clamp-1`}>
+          <p className={`text-xs ${styles.textMuted} mt-1 line-clamp-1 hidden xs:block`}>
             {selectedVariant.shortDescription}
           </p>
 

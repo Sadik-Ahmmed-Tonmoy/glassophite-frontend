@@ -1,14 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import Script from "next/script";
 import { useTheme } from "next-themes";
 import { SlidersHorizontal, X } from "lucide-react";
-import MobileFilterDrawer from "./mobile-filter-drawer";
+import dynamic from "next/dynamic";
+
+const MobileFilterDrawer = dynamic(() => import("./mobile-filter-drawer"), {
+  ssr: false,
+});
 import type { FilterOptionCounts, FilterState, SortOption } from "@/types/filter-types";
 import {
   useGetAllProductsQuery,
@@ -477,7 +481,7 @@ export default function ProductFilterPage() {
     }
   }, [filters, currentPage, sortOption, productsPerPage, total, isLoading, isFetching]);
 
-  const handleFilterChange = (filterType: keyof FilterState, value: any) => {
+  const handleFilterChange = useCallback((filterType: keyof FilterState, value: any) => {
     setFilters((prev) => {
       const newFilters = { ...prev };
       if (filterType === "priceRange") newFilters.priceRange = value;
@@ -499,10 +503,10 @@ export default function ProductFilterPage() {
       }
       return newFilters;
     });
-    if (currentPage !== 1) setCurrentPage(1);
-  };
+    setCurrentPage(1);
+  }, []);
 
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     setFilters({
       priceRange: [0, 5000],
       categories: [],
@@ -542,9 +546,9 @@ export default function ProductFilterPage() {
     managedKeys.forEach((key) => params.delete(key));
     const newSearch = params.toString();
     router.push(newSearch ? `${pathname}?${newSearch}` : pathname, { scroll: false });
-  };
+  }, [searchParams, pathname, router]);
 
-  const removeFilter = (filterType: keyof FilterState, value: any) => {
+  const removeFilter = useCallback((filterType: keyof FilterState, value: any) => {
     setFilters((prev) => {
       const n = { ...prev };
       if (filterType === "priceRange") n.priceRange = [0, 5000];
@@ -557,33 +561,36 @@ export default function ProductFilterPage() {
       }
       return n;
     });
-  };
+  }, []);
 
-  const handleProductsPerPageChange = (limit: number) => {
+  const handleProductsPerPageChange = useCallback((limit: number) => {
     setProductsPerPage(limit);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const paginate = (pageNumber: number) => {
+  const paginate = useCallback((pageNumber: number) => {
     setCurrentPage(pageNumber);
-  };
+  }, []);
 
-  const hasActiveFilters = () =>
-    filters.brands.length > 0 ||
-    filters.categories.length > 0 ||
-    filters.subCategories.length > 0 ||
-    filters.types.length > 0 ||
-    filters.saleOnly ||
-    filters.frameTypes.length > 0 ||
-    filters.lensTypes.length > 0 ||
-    filters.colors.length > 0 ||
-    filters.ratings.length > 0 ||
-    filters.inStock !== null ||
-    filters.priceRange[0] > 0 ||
-    filters.priceRange[1] < 5000 ||
-    !!filters.search;
+  const hasActiveFilters = useMemo(() => {
+    return (
+      filters.brands.length > 0 ||
+      filters.categories.length > 0 ||
+      filters.subCategories.length > 0 ||
+      filters.types.length > 0 ||
+      filters.saleOnly ||
+      filters.frameTypes.length > 0 ||
+      filters.lensTypes.length > 0 ||
+      filters.colors.length > 0 ||
+      filters.ratings.length > 0 ||
+      filters.inStock !== null ||
+      filters.priceRange[0] > 0 ||
+      filters.priceRange[1] < 5000 ||
+      !!filters.search
+    );
+  }, [filters]);
 
-  const getActiveFilterCount = () => {
+  const activeFilterCount = useMemo(() => {
     let c = 0;
     c +=
       filters.brands.length +
@@ -599,7 +606,7 @@ export default function ProductFilterPage() {
     if (filters.priceRange[0] > 0 || filters.priceRange[1] < 5000) c++;
     if (filters.search) c++;
     return c;
-  };
+  }, [filters]);
 
   const getMetaTitle = () => {
     let title = "Eyewear Collection";
@@ -740,9 +747,9 @@ export default function ProductFilterPage() {
               <span className="text-sm" data-translate="filter.filter">
                 Filters
               </span>
-              {getActiveFilterCount() > 0 && (
+              {activeFilterCount > 0 && (
                 <span className="px-2 py-0.5 text-xs bg-[#007C74] text-white rounded-full">
-                  {getActiveFilterCount()}
+                  {activeFilterCount}
                 </span>
               )}
             </motion.button>
@@ -755,7 +762,7 @@ export default function ProductFilterPage() {
           >
             <Breadcrumb filters={filters} />
           </motion.div>
-          {hasActiveFilters() && (
+          {hasActiveFilters && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -869,7 +876,7 @@ export default function ProductFilterPage() {
                   handleFilterChange={handleFilterChange}
                   removeFilter={removeFilter}
                   clearAllFilters={clearAllFilters}
-                  hasActiveFilters={hasActiveFilters()}
+                  hasActiveFilters={hasActiveFilters}
                 />
               </motion.div>
               <motion.div
@@ -893,7 +900,7 @@ export default function ProductFilterPage() {
                   productsPerPage={productsPerPage}
                   onProductsPerPageChange={handleProductsPerPageChange}
                   clearAllFilters={clearAllFilters}
-                  getActiveFilterCount={getActiveFilterCount()}
+                  getActiveFilterCount={activeFilterCount}
                   setMobileFiltersOpen={setMobileFiltersOpen}
                 />
               </motion.div>

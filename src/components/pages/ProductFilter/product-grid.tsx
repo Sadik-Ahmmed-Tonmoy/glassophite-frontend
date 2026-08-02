@@ -1,11 +1,11 @@
-"use client"
-
-import { useState } from "react"
+import React, { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "next-themes"
 import { TProduct } from "@/types/types"
-import QuickViewModal from "./quick-view-modal"
 import ProductCard from "@/components/ui/ProductCard/ProductCard"
+import dynamic from "next/dynamic"
+
+const QuickViewModal = dynamic(() => import("./quick-view-modal"), { ssr: false })
 
 interface ProductGridProps {
   products: TProduct[]
@@ -13,7 +13,7 @@ interface ProductGridProps {
   clearAllFilters: () => void
 }
 
-export default function ProductGrid({ products, isLoading, clearAllFilters }: ProductGridProps) {
+const ProductGrid = React.memo(function ProductGrid({ products, isLoading, clearAllFilters }: ProductGridProps) {
   const { theme } = useTheme()
   const isDark = theme === "dark"
   const [quickViewProduct, setQuickViewProduct] = useState<TProduct | null>(null)
@@ -127,4 +127,6 @@ export default function ProductGrid({ products, isLoading, clearAllFilters }: Pr
       </AnimatePresence>
     </>
   )
-}
+})
+
+export default ProductGrid

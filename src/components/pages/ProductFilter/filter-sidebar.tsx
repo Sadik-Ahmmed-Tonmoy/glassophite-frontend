@@ -244,6 +244,7 @@ export default function FilterSidebar({
             </div>
           </AccordionContent>
         </AccordionItem>
+
         {/* ========== Availability ========== */}
         <AccordionItem value="availability" className={styles.border}>
           <AccordionTrigger
@@ -292,6 +293,7 @@ export default function FilterSidebar({
             </div>
           </AccordionContent>
         </AccordionItem>
+        
         {/* ========== Rating ========== */}
         <AccordionItem value="rating" className={styles.border}>
           <AccordionTrigger

@@ -3,8 +3,9 @@
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Star } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Badge } from "@nextui-org/react";
+import dynamic from "next/dynamic";
 
 import AddToCartButton from "@/components/ui/buttons/AddToCartButton/AddToCartButton";
 import { MyButton } from "@/components/ui/buttons/MyButton/MyButton";
@@ -17,9 +18,10 @@ import { cn } from "@/lib/utils";
 import { TProduct } from "@/types/types";
 import ImageSlider from "./ImageSlider";
 import { useGetPrescriptionLensesQuery } from "@/redux/features/lens/lensApi";
-import ProductReview from "./ProductReview";
-import SimilarProducts from "./SimilarProducts/SimilarProducts";
 import VariantSelector from "./VariantSelector";
+
+const ProductReview = dynamic(() => import("./ProductReview"), { ssr: false });
+const SimilarProducts = dynamic(() => import("./SimilarProducts/SimilarProducts"), { ssr: false });
 
 const getYoutubeEmbedUrl = (url?: string) => {
   if (!url) return null;
@@ -125,33 +127,39 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     }
   }, [selectedItemFromCart]);
 
-  const selectedVariant =
-    product.variants.find((variant) => variant.id === selectedVariantId) ||
-    product.variants[0];
+  const selectedVariant = useMemo(() => {
+    return (
+      product.variants.find((variant) => variant.id === selectedVariantId) ||
+      product.variants[0]
+    );
+  }, [product.variants, selectedVariantId]);
 
-  const activeVideoUrl =
-    selectedVariant?.videoUrl ||
-    product.variants?.find((v) => v.videoUrl)?.videoUrl;
+  const activeVideoUrl = useMemo(() => {
+    return (
+      selectedVariant?.videoUrl ||
+      product.variants?.find((v) => v.videoUrl)?.videoUrl
+    );
+  }, [selectedVariant, product.variants]);
 
   useEffect(() => {
     setQuantity(1);
   }, [selectedVariantId]);
 
-  const handleVariantChange = (variantId: string) => {
+  const handleVariantChange = useCallback((variantId: string) => {
     setSelectedVariantId(variantId);
-  };
+  }, []);
 
-  const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
-    }
-  };
+  const decreaseQuantity = useCallback(() => {
+    setQuantity((prev) => (prev > 1 ? prev - 1 : prev));
+  }, []);
 
-  const increaseQuantity = () => {
-    if (selectedVariant && quantity < selectedVariant.quantity) {
-      setQuantity(quantity + 1);
+  const increaseQuantity = useCallback(() => {
+    if (selectedVariant) {
+      setQuantity((prev) =>
+        prev < selectedVariant.quantity ? prev + 1 : prev
+      );
     }
-  };
+  }, [selectedVariant]);
 
   if (!product || !selectedVariant) {
     return (

@@ -113,18 +113,27 @@ export default function FilterSidebar({
   // Move the main content (checkbox + label text) right by 5px on hover
   const contentVariants = {
     rest: { x: 0 },
-    hover: { x: 5, transition: { type: "spring" as const, stiffness: 300, damping: 20 } },
+    hover: {
+      x: 5,
+      transition: { type: "spring" as const, stiffness: 300, damping: 20 },
+    },
   };
 
   // Move the count span left by 5px on hover (to cancel the right shift)
   const countVariants = {
     rest: { x: 0 },
-    hover: { x: -5, transition: { type: "spring" as const, stiffness: 300, damping: 20 } },
+    hover: {
+      x: -5,
+      transition: { type: "spring" as const, stiffness: 300, damping: 20 },
+    },
   };
- 
+
   const ratingCountVariants = {
     rest: { x: 0 },
-    hover: { x: -10, transition: { type: "spring" as const, stiffness: 300, damping: 20 } },
+    hover: {
+      x: -10,
+      transition: { type: "spring" as const, stiffness: 300, damping: 20 },
+    },
   };
 
   // Helper to map over filter options and render a consistent row
@@ -219,7 +228,8 @@ export default function FilterSidebar({
               ].map((option, index) => {
                 const dbValue = normalizeCategoryForDB(option.value);
                 const checked = filters.categories.includes(dbValue);
-                const onChange = () => handleFilterChange("categories", option.value);
+                const onChange = () =>
+                  handleFilterChange("categories", option.value);
                 const count = optionCounts.collections[option.value] || 0;
                 return renderFilterRow({
                   id: `highlights-${option.value}`,
@@ -234,8 +244,55 @@ export default function FilterSidebar({
             </div>
           </AccordionContent>
         </AccordionItem>
-
-  {/* ========== Rating ========== */}
+        {/* ========== Availability ========== */}
+        <AccordionItem value="availability" className={styles.border}>
+          <AccordionTrigger
+            className={`text-sm font-medium ${styles.accordionTrigger}`}
+            data-translate="filter.availability"
+          >
+            Availability
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="pt-2 pb-4">
+              <motion.div
+                className="flex items-center"
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                custom={0}
+                whileHover="hover"
+              >
+                <motion.input
+                  id="in-stock"
+                  type="checkbox"
+                  checked={filters.inStock === true}
+                  onChange={() =>
+                    handleFilterChange(
+                      "inStock",
+                      filters.inStock === true ? null : true,
+                    )
+                  }
+                  className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
+                  variants={contentVariants}
+                />
+                <label
+                  htmlFor="in-stock"
+                  className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm ${styles.label} cursor-pointer`}
+                  data-translate="filter.inStock"
+                >
+                  <motion.span variants={contentVariants}>In Stock</motion.span>
+                  <motion.span
+                    variants={countVariants}
+                    className={`text-xs ${styles.textMutedLighter}`}
+                  >
+                    ({optionCounts.inStock})
+                  </motion.span>
+                </label>
+              </motion.div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+        {/* ========== Rating ========== */}
         <AccordionItem value="rating" className={styles.border}>
           <AccordionTrigger
             className={`text-sm font-medium ${styles.accordionTrigger}`}
@@ -285,55 +342,6 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        {/* ========== Availability ========== */}
-        <AccordionItem value="availability" className={styles.border}>
-          <AccordionTrigger
-            className={`text-sm font-medium ${styles.accordionTrigger}`}
-            data-translate="filter.availability"
-          >
-            Availability
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="pt-2 pb-4">
-              <motion.div
-                className="flex items-center"
-                variants={itemVariants}
-                initial="hidden"
-                animate="visible"
-                custom={0}
-                whileHover="hover"
-              >
-                <motion.input
-                  id="in-stock"
-                  type="checkbox"
-                  checked={filters.inStock === true}
-                  onChange={() =>
-                    handleFilterChange(
-                      "inStock",
-                      filters.inStock === true ? null : true
-                    )
-                  }
-                  className={`h-4 w-4 rounded ${styles.checkbox} focus:ring-[#007C74] cursor-pointer transition-colors`}
-                  variants={contentVariants}
-                />
-                <label
-                  htmlFor="in-stock"
-                  className={`ml-3 flex flex-1 items-center justify-between gap-3 text-sm ${styles.label} cursor-pointer`}
-                  data-translate="filter.inStock"
-                >
-                  <motion.span variants={contentVariants}>In Stock</motion.span>
-                  <motion.span
-                    variants={countVariants}
-                    className={`text-xs ${styles.textMutedLighter}`}
-                  >
-                    ({optionCounts.inStock})
-                  </motion.span>
-                </label>
-              </motion.div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-        
         {/* ========== Collection ========== */}
         <AccordionItem value="collection" className={styles.border}>
           <AccordionTrigger
@@ -344,11 +352,18 @@ export default function FilterSidebar({
           <AccordionContent>
             <div className="pt-2 pb-4 space-y-4">
               {collectionOptions
-                .filter((o) => o.value.toLowerCase() !== "new arrivals" && o.value.toLowerCase() !== "blogs" && o.value.toLowerCase() !== "brands")
+                .filter(
+                  (o) =>
+                    o.value.toLowerCase() !== "new arrivals" &&
+                    o.value.toLowerCase() !== "blogs" &&
+                    o.value.toLowerCase() !== "brands",
+                )
                 .map((option, index) => {
                   const isSale = option.type === "sale";
                   const dbValue = normalizeCategoryForDB(option.value);
-                  const checked = isSale ? filters.saleOnly : filters.categories.includes(dbValue);
+                  const checked = isSale
+                    ? filters.saleOnly
+                    : filters.categories.includes(dbValue);
                   const onChange = () =>
                     isSale
                       ? handleFilterChange("saleOnly", !filters.saleOnly)
@@ -387,7 +402,7 @@ export default function FilterSidebar({
                     count: optionCounts.subCategories[subCat] || 0,
                     key: subCat,
                     index,
-                  })
+                  }),
                 )}
               </div>
             </AccordionContent>
@@ -462,7 +477,7 @@ export default function FilterSidebar({
                   count: optionCounts.brands[brand] || 0,
                   key: brand,
                   index,
-                })
+                }),
               )}
             </div>
           </AccordionContent>
@@ -487,7 +502,7 @@ export default function FilterSidebar({
                   count: optionCounts.frameTypes[frameType] || 0,
                   key: frameType,
                   index,
-                })
+                }),
               )}
             </div>
           </AccordionContent>
@@ -512,7 +527,7 @@ export default function FilterSidebar({
                   count: optionCounts.lensTypes[lensType] || 0,
                   key: lensType,
                   index,
-                })
+                }),
               )}
             </div>
           </AccordionContent>
@@ -551,8 +566,6 @@ export default function FilterSidebar({
             </div>
           </AccordionContent>
         </AccordionItem>
-
-      
       </Accordion>
     </motion.div>
   );

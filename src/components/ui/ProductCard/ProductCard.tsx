@@ -63,6 +63,8 @@ function ProductCard({ product }: ProductCardProps) {
   const isDark = theme === "dark";
   const styles = getThemeStyles(isDark);
 
+  const responsiveBtnClass = "max-sm:[&_.IconContainer]:!hidden max-sm:[&_.text]:!transform-none max-sm:[&_.text]:!translate-x-0";
+
   const [selectedVariant, setSelectedVariant] = useState<TVariant>(
     product?.variants[0],
   );
@@ -83,6 +85,7 @@ function ProductCard({ product }: ProductCardProps) {
   }, [wishlistData, product.id]);
 
   const [isHovered, setIsHovered] = useState(false);
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
 
   const handleColorButtonClick = (variant: TVariant) => {
     setSelectedVariant(variant);
@@ -172,9 +175,10 @@ function ProductCard({ product }: ProductCardProps) {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             className={cn(
-              `absolute top-3 right-3 z-30 p-2 rounded-full backdrop-blur-sm transition-colors duration-300 ${isDark
-                ? "bg-black/50 hover:bg-black/70"
-                : "bg-white/50 hover:bg-white/70"
+              `absolute top-3 right-3 z-30 p-2 rounded-full backdrop-blur-sm transition-colors duration-300 ${
+                isDark
+                  ? "bg-black/50 hover:bg-black/70"
+                  : "bg-white/50 hover:bg-white/70"
               }`,
               // isHovered && "top-6"
             )}
@@ -188,12 +192,13 @@ function ProductCard({ product }: ProductCardProps) {
               <Loader2 className="w-5 h-5 animate-spin text-[#007C74]" />
             ) : (
               <Heart
-                className={`w-5 h-5 transition-all duration-300 ${isWishlisted
+                className={`w-5 h-5 transition-all duration-300 ${
+                  isWishlisted
                     ? "fill-red-500 text-red-500"
                     : isDark
                       ? "text-white"
                       : "text-gray-700"
-                  }`}
+                }`}
               />
             )}
           </motion.button>
@@ -239,25 +244,40 @@ function ProductCard({ product }: ProductCardProps) {
                 slidesPerView={1}
                 className="h-full w-full"
               >
-                {images.map((img, idx) => (
-                  <SwiperSlide
-                    key={`${selectedVariant.id}-${idx}`}
-                    className="relative h-full w-full"
-                  >
-                    <Image
-                      src={img.image || "/placeholder.svg"}
-                      alt={
-                        selectedVariant?.title ||
-                        product?.title ||
-                        "Product image"
-                      }
-                      fill
-                      priority={idx === 0}
-                      quality={90}
-                      className="object-cover"
-                    />
-                  </SwiperSlide>
-                ))}
+                {images.map((img, idx) => {
+                  const imageSrc = img.image || "/placeholder.svg";
+                  const isImageLoaded = loadedImages[imageSrc];
+                  return (
+                    <SwiperSlide
+                      key={`${selectedVariant.id}-${idx}`}
+                      className="relative h-full w-full"
+                    >
+                      {!isImageLoaded && (
+                        <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 flex items-center justify-center z-10">
+                          <Loader2 className="w-8 h-8 animate-spin text-[#007C74]" />
+                        </div>
+                      )}
+                      <Image
+                        src={imageSrc}
+                        alt={
+                          selectedVariant?.title ||
+                          product?.title ||
+                          "Product image"
+                        }
+                        fill
+                        priority={idx === 0}
+                        quality={90}
+                        className="object-cover"
+                        onLoad={() => {
+                          setLoadedImages((prev) => ({
+                            ...prev,
+                            [imageSrc]: true,
+                          }));
+                        }}
+                      />
+                    </SwiperSlide>
+                  );
+                })}
               </Swiper>
 
               {/* Custom Navigation Buttons (visible on hover) */}
@@ -331,12 +351,13 @@ function ProductCard({ product }: ProductCardProps) {
             </motion.h3>
 
             <motion.span
-              className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${!selectedVariant.inStock
+              className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${
+                !selectedVariant.inStock
                   ? styles.stockOut
                   : selectedVariant.quantity <= 5
                     ? "bg-yellow-500/10 text-yellow-500"
                     : styles.stockIn
-                }`}
+              }`}
               animate={!selectedVariant.inStock ? { opacity: [1, 0.7, 1] } : {}}
               transition={{ duration: 1.5, repeat: Infinity }}
             >
@@ -353,7 +374,9 @@ function ProductCard({ product }: ProductCardProps) {
           </div>
 
           {/* Description */}
-          <p className={`text-xs ${styles.textMuted} mt-1 line-clamp-1 hidden xs:block`}>
+          <p
+            className={`text-xs ${styles.textMuted} mt-1 line-clamp-1 hidden xs:block`}
+          >
             {selectedVariant.shortDescription}
           </p>
 
@@ -401,10 +424,11 @@ function ProductCard({ product }: ProductCardProps) {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleColorButtonClick(variant)}
-                  className={`relative w-8 h-8 rounded-full border-2 transition-all ${selectedVariant.color === variant.color
+                  className={`relative w-8 h-8 rounded-full border-2 transition-all ${
+                    selectedVariant.color === variant.color
                       ? styles.colorButton.active
                       : styles.colorButton.inactive
-                    } ${!variant.inStock ? "opacity-50" : ""}`}
+                  } ${!variant.inStock ? "opacity-50" : ""}`}
                   title={
                     variant.inStock
                       ? `Available: ${variant.quantity}`
@@ -445,13 +469,14 @@ function ProductCard({ product }: ProductCardProps) {
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-2 mt-4">
             <Link href={`/product/${product.id}`} className="w-full flex">
-              <ViewDetailsButton />
+              <ViewDetailsButton className={responsiveBtnClass} />
             </Link>
 
             {!selectedVariant.inStock ? (
               <RequestStockButton
                 productId={product.id}
                 variantId={selectedVariant.id}
+                className={responsiveBtnClass}
               />
             ) : (
               <AddToCartButton
@@ -469,7 +494,7 @@ function ProductCard({ product }: ProductCardProps) {
                   img: selectedVariant?.imgList?.[0]?.image,
                 }}
                 productId={product.id}
-                className="flex-1"
+                className={cn("flex-1", responsiveBtnClass)}
               />
             )}
           </div>
@@ -487,7 +512,7 @@ function ProductCard({ product }: ProductCardProps) {
               quality={90}
               className="hidden object-cover"
             />
-          ))
+          )),
         )}
       </div>
     </motion.div>

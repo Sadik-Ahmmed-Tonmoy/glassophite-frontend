@@ -196,32 +196,13 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         >
           {/* Title and Stock Badge */}
           <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ">
               <h1
                 className={`text-xl sm:text-3xl font-extrabold tracking-tight ${styles.text}`}
               >
                 {selectedVariant.title}
               </h1>
-              {!selectedVariant.inStock ? (
-                <Badge
-                  className="text-xs sm:text-sm border border-red-500 bg-red-50 dark:bg-red-950/20 text-red-500 font-bold self-start sm:self-auto"
-                  data-translate="product.outOfStock"
-                >
-                  Out of Stock
-                </Badge>
-              ) : (
-                <div
-                  className={`text-xs sm:text-sm px-2.5 py-0.5 rounded-full border self-start sm:self-auto ${
-                    selectedVariant.quantity < 7
-                      ? "border-red-500 bg-red-50 dark:bg-red-950/20 text-red-500 font-bold"
-                      : styles.badgeSuccess
-                  }`}
-                >
-                  {selectedVariant.quantity < 7
-                    ? `Only ${selectedVariant.quantity} left!`
-                    : `In Stock: ${selectedVariant.quantity}`}
-                </div>
-              )}
+            
             </div>
             <p
               className={`text-xs sm:text-sm ${styles.textMuted} mt-2 leading-relaxed`}
@@ -275,6 +256,28 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     {selectedVariant.discountPercent}% OFF
                   </Badge>
                 )}
+<div className="flex items-center">
+                  {!selectedVariant.inStock ? (
+                <Badge
+                  className="text-xs sm:text-sm border border-red-500 bg-red-50 dark:bg-red-950/20 text-red-500 font-bold self-start sm:self-auto"
+                  data-translate="product.outOfStock"
+                >
+                  Out of Stock
+                </Badge>
+              ) : (
+                <div
+                  className={`text-xs sm:text-sm px-2.5 py-0.5 rounded-full border self-start sm:self-auto ${
+                    selectedVariant.quantity < 7
+                      ? "border-red-500 bg-red-50 dark:bg-red-950/20 text-red-500 font-bold "
+                      : styles.badgeSuccess
+                  }`}
+                >
+                  {selectedVariant.quantity < 7
+                    ? `Only ${selectedVariant.quantity} left!`
+                    : `In Stock: ${selectedVariant.quantity}`}
+                </div>
+              )}
+</div>
               </>
             ) : (
               <span className={`text-xl sm:text-2xl font-bold ${styles.text}`}>

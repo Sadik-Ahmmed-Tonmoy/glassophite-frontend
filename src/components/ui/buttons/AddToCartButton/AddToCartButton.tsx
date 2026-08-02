@@ -132,13 +132,27 @@ const AddToCartButton = ({
         )}
       </span>
       <p className="text text-white">
-        {isAdding
-          ? "Adding..."
-          : isOutOfStock
-            ? "Out of Stock"
-            : isAdded
-              ? "Added!"
-              : "Add to Cart"}
+        {isAdding ? (
+          <>
+            <span className="max-sm:hidden">Adding...</span>
+            <span className="sm:hidden">Adding</span>
+          </>
+        ) : isOutOfStock ? (
+          <>
+            <span className="max-sm:hidden">Out of Stock</span>
+            <span className="sm:hidden">Out</span>
+          </>
+        ) : isAdded ? (
+          <>
+            <span className="max-sm:hidden">Added!</span>
+            <span className="sm:hidden">Added</span>
+          </>
+        ) : (
+          <>
+            <span className="max-sm:hidden">Add to Cart</span>
+            <span className="sm:hidden">Add</span>
+          </>
+        )}
       </p>
     </button>
   );

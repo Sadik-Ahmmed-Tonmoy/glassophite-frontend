@@ -13,9 +13,10 @@ import { Heart, Loader2 } from "lucide-react";
 interface WishlistButtonProps {
   productId?: string;
   productName?: string;
+  className?: string;
 }
 
-const WishlistButton = ({ productId, productName }: WishlistButtonProps) => {
+const WishlistButton = ({ productId, productName, className }: WishlistButtonProps) => {
   const token = useAppSelector((state) => state.auth.access_token);
   const { data: wishlistData, isFetching } = useGetWishlistQuery(undefined, { skip: !token });
   const [addToWishlist, { isLoading: isAdding }] = useAddToWishlistMutation();
@@ -67,20 +68,31 @@ const WishlistButton = ({ productId, productName }: WishlistButtonProps) => {
         isWishlisted 
           ? "bg-red-500 hover:bg-red-650 border-red-500 text-white" 
           : "bg-transparent text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800 border-neutral-300 dark:border-neutral-700"
-      }`}
+      } ${className || ""}`}
     >
       <span className="flex items-center justify-center gap-2">
         {isPending || isFetching ? (
-          <Loader2 className="w-4 h-4 animate-spin text-current" />
+          <Loader2 className="w-4 h-4 animate-spin text-current max-sm:hidden" />
         ) : (
-          <Heart className={`w-4 h-4 ${isWishlisted ? "fill-white text-white" : "text-red-500"}`} />
+          <Heart className={`w-4 h-4 max-sm:hidden ${isWishlisted ? "fill-white text-white" : "text-red-500"}`} />
         )}
         <p className="font-semibold text-sm">
-          {isPending || isFetching 
-            ? "Updating Wishlist..."
-            : isWishlisted 
-              ? "Remove from Wishlist" 
-              : "Add to Wishlist"}
+          {isPending || isFetching ? (
+            <>
+              <span className="max-sm:hidden">Updating Wishlist...</span>
+              <span className="sm:hidden">Updating</span>
+            </>
+          ) : isWishlisted ? (
+            <>
+              <span className="max-sm:hidden">Remove from Wishlist</span>
+              <span className="sm:hidden">Remove</span>
+            </>
+          ) : (
+            <>
+              <span className="max-sm:hidden">Add to Wishlist</span>
+              <span className="sm:hidden">Wishlist</span>
+            </>
+          )}
         </p>
       </span>
     </button>

@@ -13,11 +13,13 @@ import { cn } from "@/lib/utils";
 interface RequestStockButtonProps {
   productId?: string;
   variantId?: string;
+  className?: string;
 }
 
 const RequestStockButton = ({
   productId,
   variantId,
+  className,
 }: RequestStockButtonProps) => {
   const token = useAppSelector((state) => state.auth.access_token);
   const { data: myRequestsData } = useGetMyStockRequestsQuery(undefined, {
@@ -73,6 +75,7 @@ const RequestStockButton = ({
         isAlreadyRequested
           ? "bg-emerald-600 dark:bg-emerald-700 text-white disabled:opacity-100"
           : "bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800 hover:from-gray-700 hover:via-gray-800 hover:to-gray-900 text-white disabled:opacity-75",
+        className
       )}
     >
       <span className="IconContainer">
@@ -101,11 +104,22 @@ const RequestStockButton = ({
         )}
       </span>
       <p className="text text-white">
-        {isLoading
-          ? "Requesting..."
-          : isAlreadyRequested
-            ? "Already Requested"
-            : "Request Stock"}
+        {isLoading ? (
+          <>
+            <span className="max-sm:hidden">Requesting...</span>
+            <span className="sm:hidden">Requesting</span>
+          </>
+        ) : isAlreadyRequested ? (
+          <>
+            <span className="max-sm:hidden">Already Requested</span>
+            <span className="sm:hidden">Requested</span>
+          </>
+        ) : (
+          <>
+            <span className="max-sm:hidden">Request Stock</span>
+            <span className="sm:hidden">Request</span>
+          </>
+        )}
       </p>
     </button>
   );

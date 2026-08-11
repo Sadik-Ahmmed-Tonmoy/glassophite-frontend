@@ -1,6 +1,8 @@
 import PressPage from "@/components/pages/press/PressPage";
 import type { Metadata } from "next";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Press Room | Glassophite - Premium Eyewear Label",
   description:

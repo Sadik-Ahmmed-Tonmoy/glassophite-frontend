@@ -1,6 +1,8 @@
 import AboutPage from "@/components/pages/about/AboutPage";
 import type { Metadata } from "next";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "About Us | Glassophite - Premium Eyewear Brand",
   description:

@@ -1,6 +1,8 @@
 import CareersPage from "@/components/pages/careers/CareersPage";
 import type { Metadata } from "next";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Careers | Glassophite - Join the Eyewear Revolution",
   description:

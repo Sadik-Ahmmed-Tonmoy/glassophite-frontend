@@ -1,6 +1,8 @@
 import ContactPage from "@/components/pages/contact/ContactPage";
 import type { Metadata } from "next";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Contact Us | Glassophite - Premium Eyewear Support",
   description:

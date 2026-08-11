@@ -1,6 +1,8 @@
 import ShippingReturnsPage from "@/components/pages/shipping-returns/ShippingReturnsPage";
 import type { Metadata } from "next";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Shipping & Returns Policy | Glassophite",
   description:

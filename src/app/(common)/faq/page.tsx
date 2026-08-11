@@ -1,14 +1,14 @@
 import FaqPage from "@/components/pages/faq/FaqPage";
 import type { Metadata } from "next";
 
-export const revalidate = 3600;
+export const dynamic = "force-static";
 
 const API_BASE = process.env.NEXT_PUBLIC_BASE_URL || "https://glassophite-backend.vercel.app/api/v1";
 
 async function getActiveFAQs() {
   try {
     const res = await fetch(`${API_BASE}/faqs?status=Active&limit=100`, {
-      next: { revalidate: 3600 },
+      cache: "force-cache",
     });
     if (!res.ok) return [];
     const json = await res.json();

@@ -1,6 +1,8 @@
 import TermsPage from "@/components/pages/terms/TermsPage";
 import type { Metadata } from "next";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Terms of Service | Glassophite - Premium Eyewear Label",
   description:

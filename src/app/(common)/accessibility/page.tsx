@@ -1,6 +1,8 @@
 import AccessibilityPage from "@/components/pages/accessibility/AccessibilityPage";
 import type { Metadata } from "next";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Accessibility Statement | Glassophite - Premium Eyewear Label",
   description:

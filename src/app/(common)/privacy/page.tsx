@@ -1,6 +1,8 @@
 import PrivacyPage from "@/components/pages/privacy/PrivacyPage";
 import type { Metadata } from "next";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Privacy Policy | Glassophite - Premium Eyewear Label",
   description:

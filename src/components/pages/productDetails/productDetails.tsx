@@ -119,13 +119,15 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     [isDark],
   );
 
+  const cartQuantity = selectedItemFromCart?.quantity;
+
   useEffect(() => {
-    if (selectedItemFromCart) {
-      setQuantity(selectedItemFromCart.quantity);
+    if (cartQuantity !== undefined) {
+      setQuantity(cartQuantity);
     } else {
       setQuantity(1);
     }
-  }, [selectedItemFromCart]);
+  }, [cartQuantity]);
 
   const selectedVariant = useMemo(() => {
     return (

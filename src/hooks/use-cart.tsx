@@ -381,19 +381,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 
 
-  const addToRecentlyViewed = useCallback(
-    (item: CartItem) => {
-      if (recentlyViewed.some((i) => i.id === item.id)) {
-        return
+  const addToRecentlyViewed = useCallback((item: CartItem) => {
+    setRecentlyViewed((prev) => {
+      if (prev.some((i) => i.id === item.id)) {
+        return prev;
       }
-
-      setRecentlyViewed((prev) => {
-        const newItems = [item, ...prev.filter((i) => i.id !== item.id)].slice(0, 5)
-        return newItems
-      })
-    },
-    [recentlyViewed],
-  )
+      return [item, ...prev.filter((i) => i.id !== item.id)].slice(0, 5);
+    });
+  }, []);
 
   return (
     <CartContext.Provider

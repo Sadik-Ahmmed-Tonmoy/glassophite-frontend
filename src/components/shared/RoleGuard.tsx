@@ -18,6 +18,9 @@ export default function RoleGuard({ children, roles, fallback = "/" }: RoleGuard
   const [checked, setChecked] = useState(false)
   const [authorized, setAuthorized] = useState(false)
 
+  const rolesKey = roles.join(",");
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const role = (user as { role?: string } | null)?.role
     if (!role || !roles.includes(role)) {
@@ -26,7 +29,7 @@ export default function RoleGuard({ children, roles, fallback = "/" }: RoleGuard
       setAuthorized(true)
     }
     setChecked(true)
-  }, [user, roles, router, fallback])
+  }, [user, rolesKey, router, fallback])
 
   if (!checked || !authorized) {
     return (

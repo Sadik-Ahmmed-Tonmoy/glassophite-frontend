@@ -37,20 +37,6 @@ export default function CheckoutPageClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderData, setOrderData] = useState<any>(null);
-
-  const updateStepInUrl = useCallback(
-    (step: number, replace: boolean = false) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("step", step.toString());
-      if (replace) {
-        router.replace(`${pathname}?${params.toString()}`);
-      } else {
-        router.push(`${pathname}?${params.toString()}`);
-      }
-    },
-    [pathname, router, searchParams],
-  );
-
   const [shippingDetails, setShippingDetails] = useState({
     firstName: "",
     lastName: "",
@@ -90,40 +76,53 @@ export default function CheckoutPageClient() {
     if (currentStep < 2) {
       const next = currentStep + 1;
       setCurrentStep(next);
-      updateStepInUrl(next);
-      window.scrollTo(0, 0);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("step", next.toString());
+      router.push(`${pathname}?${params.toString()}`);
+      if (typeof window !== "undefined") window.scrollTo(0, 0);
     }
-  }, [currentStep, updateStepInUrl]);
+  }, [currentStep, pathname, router, searchParams]);
 
   const prevStep = useCallback(() => {
     if (currentStep > 1) {
       const prev = currentStep - 1;
       setCurrentStep(prev);
-      updateStepInUrl(prev);
-      window.scrollTo(0, 0);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("step", prev.toString());
+      router.push(`${pathname}?${params.toString()}`);
+      if (typeof window !== "undefined") window.scrollTo(0, 0);
     }
-  }, [currentStep, updateStepInUrl]);
+  }, [currentStep, pathname, router, searchParams]);
 
-  // Synchronize state when query parameters change
+  // Synchronize URL and current step safely without re-render loops
   useEffect(() => {
-    const step = stepParam ? parseInt(stepParam, 10) : 1;
-    if (step !== currentStep) {
-      setCurrentStep(step);
-    }
-  }, [stepParam, currentStep]);
+    const rawStep = searchParams.get("step");
+    let targetStep = rawStep ? parseInt(rawStep, 10) : 1;
 
-  useEffect(() => {
-    if (!searchParams.get("step")) {
-      updateStepInUrl(1, true);
+    if (isNaN(targetStep) || targetStep < 1) {
+      targetStep = 1;
+    } else if (targetStep > 2) {
+      targetStep = 2;
     }
-  }, [searchParams, updateStepInUrl]);
 
-  useEffect(() => {
-    if (currentStep === 2 && !shippingDetails.address) {
-      setCurrentStep(1);
-      updateStepInUrl(1, true);
+    // Require shipping address before proceeding to step 2
+    if (targetStep === 2 && !shippingDetails.address) {
+      targetStep = 1;
     }
-  }, [currentStep, shippingDetails.address, updateStepInUrl]);
+
+    if (currentStep !== targetStep) {
+      setCurrentStep(targetStep);
+    }
+
+    const currentUrlStep = rawStep;
+    const targetUrlStep = targetStep.toString();
+
+    if (currentUrlStep !== targetUrlStep) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("step", targetUrlStep);
+      router.replace(`${pathname}?${params.toString()}`);
+    }
+  }, [searchParams, pathname, router, shippingDetails.address, currentStep]);
 
   const handleShippingSubmit = (data: any) => {
     setShippingDetails((prev) => ({

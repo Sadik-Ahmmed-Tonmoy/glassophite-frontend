@@ -10,7 +10,7 @@ const API_BASE =
 async function getProduct(productId: string) {
   try {
     const res = await fetch(`${API_BASE}/products/${productId}`, {
-      cache: "no-store",
+      next: { revalidate: 3600 },
     });
     if (!res.ok) return null;
     const json = await res.json();

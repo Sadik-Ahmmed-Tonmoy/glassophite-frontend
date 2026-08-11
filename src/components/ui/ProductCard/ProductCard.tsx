@@ -269,10 +269,13 @@ function ProductCard({ product }: ProductCardProps) {
                         quality={90}
                         className="object-cover"
                         onLoad={() => {
-                          setLoadedImages((prev) => ({
-                            ...prev,
-                            [imageSrc]: true,
-                          }));
+                          setLoadedImages((prev) => {
+                            if (prev[imageSrc]) return prev;
+                            return {
+                              ...prev,
+                              [imageSrc]: true,
+                            };
+                          });
                         }}
                       />
                     </SwiperSlide>
@@ -343,12 +346,16 @@ function ProductCard({ product }: ProductCardProps) {
         >
           {/* Title and Stock Status */}
           <div className="flex justify-between items-start gap-2">
+            <Link href={`/product/${product.id}`} className="cursor-pointer">
             <motion.h3
               className="font-semibold text-lg line-clamp-1"
               whileHover={{ x: 2 }}
-            >
-              {selectedVariant.title}
+              >
+              {selectedVariant.title?.length > 30
+                ? selectedVariant.title.slice(0, 30) + "..."
+                : selectedVariant.title}
             </motion.h3>
+                </Link>
 
             <motion.span
               className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${

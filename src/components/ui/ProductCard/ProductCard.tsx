@@ -377,7 +377,9 @@ function ProductCard({ product }: ProductCardProps) {
           <p
             className={`text-xs ${styles.textMuted} mt-1 line-clamp-1 hidden xs:block`}
           >
-            {selectedVariant.shortDescription}
+            {(selectedVariant.shortDescription?.length ?? 0) > 50
+              ? selectedVariant.shortDescription?.slice(0, 50) + "..."
+              : selectedVariant.shortDescription}
           </p>
 
           {/* Price Section */}
@@ -394,7 +396,8 @@ function ProductCard({ product }: ProductCardProps) {
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            {
+              selectedVariant.discountPercent > 0 && <div className="flex items-center gap-2">
               <span className={`text-sm line-through ${styles.priceSecondary}`}>
                 ৳{selectedVariant.mainPrice}
               </span>
@@ -406,6 +409,7 @@ function ProductCard({ product }: ProductCardProps) {
                 <span data-translate="product.off">off</span>
               </motion.span>
             </div>
+            }
           </div>
 
           {/* Variant Selector */}

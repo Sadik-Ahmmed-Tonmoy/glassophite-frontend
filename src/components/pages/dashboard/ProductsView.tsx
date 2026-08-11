@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useState, useRef, useMemo } from "react";
 import {
   Pagination,
   PaginationContent,
@@ -10,46 +9,46 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
-import { motion, AnimatePresence } from "framer-motion";
+} from "@/components/ui/pagination";
+import { uploadImageToImgBB } from "@/lib/uploadImageToImgBB";
+import { useGetAllNavbarMenusQuery } from "@/redux/features/navbar/navbarApi";
 import {
-  Plus,
-  Search,
-  Trash2,
-  Pencil,
-  X,
-  Sparkles,
+  useAddVariantMutation,
+  useCreateProductMutation,
+  useDeleteProductMutation,
+  useDeleteVariantMutation,
+  useGetAllProductsForDashboardQuery,
+  useLazyGenerateSKUQuery,
+  useUpdateProductMutation,
+  useUpdateVariantMutation,
+} from "@/redux/features/product/productApi";
+import { TProduct, TVariant } from "@/types/types";
+import { Select } from "antd";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Check,
   ChevronDown,
   ChevronUp,
-  Upload,
-  Check,
-  Package,
   Loader2,
+  Package,
+  Pencil,
+  Plus,
+  Search,
+  Sparkles,
+  Trash2,
+  Upload,
   Video,
+  X,
 } from "lucide-react";
+import Image from "next/image";
+import React, { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import Image from "next/image";
-import { TProduct, TVariant } from "@/types/types";
-import {
-  useGetAllProductsQuery,
-  useCreateProductMutation,
-  useUpdateProductMutation,
-  useDeleteProductMutation,
-  useAddVariantMutation,
-  useUpdateVariantMutation,
-  useDeleteVariantMutation,
-  useLazyGenerateSKUQuery,
-} from "@/redux/features/product/productApi";
-import { useGetAllNavbarMenusQuery } from "@/redux/features/navbar/navbarApi";
-import { Select } from "antd";
-import { MultiSelect } from "@/components/ui/multi-select";
-import { uploadImageToImgBB } from "@/lib/uploadImageToImgBB";
 
 export default function ProductsView() {
   const [currentPage, setCurrentPage] = useState(1);
   const limit = 20;
-  const { data, isLoading, isFetching } = useGetAllProductsQuery({ page: currentPage, limit });
+  const { data, isLoading, isFetching } = useGetAllProductsForDashboardQuery({ page: currentPage, limit, status: 'ALL' });
   const products: TProduct[] = (data?.data || []) as TProduct[];
   const totalItems = data?.meta?.total || 0;
   const totalPages = Math.ceil(totalItems / limit);
@@ -61,6 +60,25 @@ export default function ProductsView() {
   const [updateVariant] = useUpdateVariantMutation();
   const [deleteVariant] = useDeleteVariantMutation();
   const [triggerGenerateSKU, { isFetching: isGeneratingSKU }] = useLazyGenerateSKUQuery();
+
+  // Map of productId → toggling state for status
+  const [togglingStatus, setTogglingStatus] = useState<Record<string, boolean>>({});
+
+  const handleToggleStatus = async (p: TProduct) => {
+    const newStatus = p.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    setTogglingStatus((prev) => ({ ...prev, [p.id]: true }));
+    try {
+      await updateProduct({ id: p.id, status: newStatus }).unwrap();
+      toast.success(
+        newStatus === 'ACTIVE' ? 'Product Activated' : 'Product Deactivated',
+        { description: `"${p.title}" is now ${newStatus.toLowerCase()}.` }
+      );
+    } catch {
+      toast.error('Failed to update status');
+    } finally {
+      setTogglingStatus((prev) => ({ ...prev, [p.id]: false }));
+    }
+  };
 
   // Fetch a DB-verified unique SKU from the backend
   const fetchSKUFromBackend = async (categoryHint?: string): Promise<string> => {
@@ -378,11 +396,11 @@ export default function ProductsView() {
       varImgList.length > 0
         ? varImgList
         : [
-            {
-              id: `${varProductCode}-img-default`,
-              image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
-            },
-          ];
+          {
+            id: `${varProductCode}-img-default`,
+            image: "https://i.ibb.co.com/jkktXJFP/Chat-GPT-Image-Apr-4-2025-03-18-44-PM.png",
+          },
+        ];
 
     const targetVariant: TVariant = {
       id: editingVariantId || `VAR-${Math.floor(100 + Math.random() * 900)}`,
@@ -676,19 +694,20 @@ export default function ProductsView() {
               <th className="p-4">Category</th>
               <th className="p-4">Total Stock</th>
               <th className="p-4">Starting Price</th>
+              <th className="p-4 text-center">Status</th>
               <th className="p-4 text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {isLoading || isFetching ? (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                <td colSpan={8} className="p-8 text-center text-muted-foreground">
                   <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                 </td>
               </tr>
             ) : filteredProducts.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-muted-foreground bg-card/25">
+                <td colSpan={8} className="p-8 text-center text-muted-foreground bg-card/25">
                   {searchTerm ? `No products found matching "${searchTerm}".` : 'No products yet. Click "Add Eyewear" to get started.'}
                 </td>
               </tr>
@@ -736,6 +755,33 @@ export default function ProductsView() {
                         {totalStock > 0 ? (<span className="text-green-600 dark:text-green-400 font-bold bg-green-500/10 px-2 py-0.5 rounded-md">{totalStock} units</span>) : (<span className="text-red-500 font-bold bg-red-500/10 px-2 py-0.5 rounded-md">Out of Stock</span>)}
                       </td>
                       <td className="p-4 font-extrabold text-primary">৳{displayPrice?.toLocaleString()}</td>
+                      <td className="p-4">
+                        <div className="flex flex-col items-center gap-1">
+                          <button
+                            role="switch"
+                            aria-checked={p.status === 'ACTIVE'}
+                            onClick={() => handleToggleStatus(p)}
+                            disabled={!!togglingStatus[p.id]}
+                            title={p.status === 'ACTIVE' ? 'Active – click to deactivate' : 'Inactive – click to activate'}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none cursor-pointer disabled:cursor-wait ${p.status === 'ACTIVE' ? 'bg-green-500' : 'bg-muted-foreground/30'
+                              }`}
+                          >
+                            {togglingStatus[p.id] ? (
+                              <span className="absolute inset-0 flex items-center justify-center">
+                                <Loader2 className="w-3 h-3 animate-spin text-white" />
+                              </span>
+                            ) : (
+                              <span
+                                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${p.status === 'ACTIVE' ? 'translate-x-[18px]' : 'translate-x-[3px]'
+                                  }`}
+                              />
+                            )}
+                          </button>
+                          <span className={`text-[9px] font-bold ${p.status === 'ACTIVE' ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
+                            {p.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                      </td>
                       <td className="p-4 flex justify-center gap-1.5 mt-2">
                         <button onClick={() => handleOpenEdit(p)} className="p-1.5 bg-muted hover:bg-muted/80 text-foreground rounded-lg border border-border transition-colors cursor-pointer" title="Edit product"><Pencil className="w-3.5 h-3.5" /></button>
                         <button onClick={() => triggerDeleteProduct(p.id, p.title)} className="p-1.5 bg-muted hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded-lg border border-border transition-colors cursor-pointer" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
@@ -743,7 +789,7 @@ export default function ProductsView() {
                     </tr>
                     {isExpanded && (
                       <tr>
-                        <td colSpan={7} className="bg-muted/10 p-4 border-l-2 border-primary">
+                        <td colSpan={8} className="bg-muted/10 p-4 border-l-2 border-primary">
                           <div className="space-y-3">
                             <div className="flex items-center gap-1 text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
                               <Package className="w-3.5 h-3.5" />
@@ -828,6 +874,31 @@ export default function ProductsView() {
                         : <span className="px-2 py-0.5 bg-red-500/10 text-red-500 rounded text-[10px] font-bold">Out of Stock</span>
                       }
                       <span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-extrabold">৳{displayPrice?.toLocaleString()}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          role="switch"
+                          aria-checked={p.status === 'ACTIVE'}
+                          onClick={() => handleToggleStatus(p)}
+                          disabled={!!togglingStatus[p.id]}
+                          title={p.status === 'ACTIVE' ? 'Active – tap to deactivate' : 'Inactive – tap to activate'}
+                          className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors duration-200 cursor-pointer disabled:cursor-wait ${p.status === 'ACTIVE' ? 'bg-green-500' : 'bg-muted-foreground/30'
+                            }`}
+                        >
+                          {togglingStatus[p.id] ? (
+                            <span className="absolute inset-0 flex items-center justify-center">
+                              <Loader2 className="w-3 h-3 animate-spin text-white" />
+                            </span>
+                          ) : (
+                            <span
+                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${p.status === 'ACTIVE' ? 'translate-x-[18px]' : 'translate-x-[3px]'
+                                }`}
+                            />
+                          )}
+                        </button>
+                        <span className={`text-[10px] font-bold ${p.status === 'ACTIVE' ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
+                          {p.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1051,7 +1122,7 @@ export default function ProductsView() {
                           Best Seller
                         </label>
                       </div>
-                       <div className="flex items-center h-9 gap-2">
+                      <div className="flex items-center h-9 gap-2">
                         <input
                           id="prod_trending"
                           type="checkbox"

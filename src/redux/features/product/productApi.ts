@@ -15,6 +15,14 @@ const productApi = baseApi.injectEndpoints({
       }),
       providesTags: ["products"],
     }),
+    getAllProductsForDashboard: builder.query({
+      query: (filters = {}) => ({
+        url: "products/dashboard",
+        method: "GET",
+        params: filters,
+      }),
+      providesTags: ["products"],
+    }),
     getFeaturedProducts: builder.query({
       query: (limit = 8) => ({ url: `products/featured`, params: { limit } }),
       providesTags: ["products"],
@@ -87,6 +95,7 @@ const productApi = baseApi.injectEndpoints({
 export const {
   useGetFilterOptionsQuery,
   useGetAllProductsQuery,
+  useGetAllProductsForDashboardQuery,
   useGetFeaturedProductsQuery,
   useGetBestSellersQuery,
   useGetNewArrivalsQuery,

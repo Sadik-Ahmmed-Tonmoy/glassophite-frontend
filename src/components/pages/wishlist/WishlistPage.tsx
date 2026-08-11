@@ -1,29 +1,53 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import { Heart, Trash2, ShoppingBag, ArrowRight, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useAppSelector } from "@/redux/hooks";
 import {
   useGetWishlistQuery,
   useRemoveFromWishlistMutation,
 } from "@/redux/features/wishlist/wishlistApi";
+import { useCart } from "@/hooks/use-cart";
 
 export default function WishlistPage() {
-  const { data: wishlistData } = useGetWishlistQuery(undefined);
-  const [removeFromWishlist] = useRemoveFromWishlistMutation();
-  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  const token = useAppSelector((state) => state.auth.access_token);
+  const {
+    data: wishlistData,
+    isLoading,
+    isFetching,
+  } = useGetWishlistQuery(undefined, {
+    skip: !token,
+    refetchOnMountOrArgChange: true,
+  });
 
-  useEffect(() => {
-    if (wishlistData?.data?.items) {
-      const items = wishlistData.data.items.map(
-        (item: any) => item.product || item,
-      );
-      setWishlistItems(items);
-    }
+  const [removeFromWishlist] = useRemoveFromWishlistMutation();
+  const { addItem } = useCart();
+
+  const wishlistItems = useMemo(() => {
+    const rawItems =
+      wishlistData?.data?.items ||
+      wishlistData?.items ||
+      (Array.isArray(wishlistData?.data) ? wishlistData.data : []);
+
+    if (!Array.isArray(rawItems)) return [];
+
+    return rawItems
+      .map((item: any) => {
+        if (!item) return null;
+        if (item.product) {
+          return {
+            ...item.product,
+            wishlistItemId: item.id || item.productId || item.product.id,
+          };
+        }
+        return item;
+      })
+      .filter(Boolean);
   }, [wishlistData]);
 
   const handleRemoveItem = async (id: string, name: string) => {
@@ -39,10 +63,34 @@ export default function WishlistPage() {
     }
   };
 
-  const handleMoveToBag = (name: string) => {
-    toast.success("Added to Bag", {
-      description: `${name} has been moved to your shopping bag.`,
-    });
+  const handleMoveToBag = async (product: any, variant: any) => {
+    try {
+      addItem({
+        id: `${product.id}-${variant?.id || "default"}`,
+        productId: product.id,
+        variantId: variant?.id,
+        name: variant?.title || product.title,
+        brand: product.brand || "Glassophite",
+        size: "Standard",
+        price: variant?.priceAfterDiscount || variant?.mainPrice || 0,
+        discountPrice:
+          variant?.discountPercent > 0 ? variant?.priceAfterDiscount : undefined,
+        image: variant?.imgList?.[0]?.image || product.img || "/placeholder.svg",
+        quantity: 1,
+        maxQuantity: variant?.quantity || 10,
+        color: variant?.color,
+      });
+
+      await removeFromWishlist(product.id).unwrap();
+
+      toast.success("Added to Bag", {
+        description: `${variant?.title || product.title} has been moved to your shopping bag.`,
+      });
+    } catch (err: any) {
+      toast.error("Failed to move item", {
+        description: err?.message || "Could not move item to bag.",
+      });
+    }
   };
 
   return (
@@ -71,7 +119,14 @@ export default function WishlistPage() {
         {/* Wishlist Items Grid */}
         <div className="max-w-4xl mx-auto">
           <AnimatePresence mode="popLayout">
-            {wishlistItems.length > 0 ? (
+            {(isLoading || isFetching) && wishlistItems.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 space-y-3">
+                <Loader2 className="w-8 h-8 text-[#007C74] animate-spin" />
+                <p className="text-xs sm:text-sm text-neutral-500 font-medium">
+                  Loading your saved items...
+                </p>
+              </div>
+            ) : wishlistItems.length > 0 ? (
               <motion.div
                 layout
                 className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6"
@@ -142,7 +197,7 @@ export default function WishlistPage() {
                         {/* CTA button items */}
                         <div className="flex items-center gap-2 pt-2 border-t border-neutral-200/50 dark:border-neutral-800/50 mt-2">
                           <button
-                            onClick={() => handleMoveToBag(variant.title)}
+                            onClick={() => handleMoveToBag(product, variant)}
                             disabled={!variant.inStock}
                             className="flex-1 py-2 bg-[#007C74] hover:bg-[#006059] disabled:bg-neutral-300 dark:disabled:bg-neutral-800 text-white font-bold rounded-full text-[11px] sm:text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                           >

@@ -7,6 +7,9 @@ import { Toaster } from "sonner";
 import MyContextProvider from "@/lib/MyContextProvider";
 import { NextUiProvider } from "@/lib/NextUiProvider";
 import { CartProvider } from "@/hooks/use-cart";
+import dynamic from "next/dynamic";
+
+const FacebookPixel = dynamic(() => import("@/components/pixel/facebookPixel"));
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -68,6 +71,7 @@ export default function RootLayout({
         suppressHydrationWarning={true}
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <FacebookPixel />
         <MyContextProvider>
           <SessionProviderForNextAuth>
             <ReduxStoreProvider>

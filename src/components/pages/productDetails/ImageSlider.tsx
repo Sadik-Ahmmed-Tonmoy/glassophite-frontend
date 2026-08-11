@@ -195,7 +195,7 @@ export default function ImageSlider({
                 fill
                 loading="eager"
                 priority={currentIndex === 0}
-                quality={85}
+                quality={95}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
                 onLoad={() => setIsMainImageLoading(false)}
                 className={cn(

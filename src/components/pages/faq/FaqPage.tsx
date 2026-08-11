@@ -60,11 +60,17 @@ const getCategoryIcon = (category: string) => {
   return HelpCircle;
 };
 
-export default function FaqPage() {
+export default function FaqPage({ initialFAQs = [] }: { initialFAQs?: any[] }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: dbFAQsData, isLoading } = useGetFAQsQuery({ status: "Active" });
+  const { data: dbFAQsData, isLoading } = useGetFAQsQuery(
+    { status: "Active" },
+    { skip: initialFAQs.length > 0 },
+  );
 
-  const rawFAQs = useMemo(() => dbFAQsData?.data || [], [dbFAQsData]);
+  const rawFAQs = useMemo(
+    () => dbFAQsData?.data || initialFAQs || [],
+    [dbFAQsData, initialFAQs],
+  );
 
   // Group FAQs by category dynamically
   const faqCategories = useMemo(() => {

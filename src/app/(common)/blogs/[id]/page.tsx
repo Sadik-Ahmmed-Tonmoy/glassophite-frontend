@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import BlogDetailPage from "@/components/pages/blog/BlogDetailPage";
 import type { Metadata } from "next";
 import Script from "next/script";
@@ -8,16 +9,40 @@ type Props = {
 
 const API_BASE = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5016/api/v1";
 
+export const dynamic = "force-static";
+
 async function getBlogPost(idOrSlug: string) {
   try {
     const res = await fetch(`${API_BASE}/blogs/${idOrSlug}`, {
-      cache: "no-store",
+      cache: "force-cache",
     });
     if (!res.ok) return null;
     const json = await res.json();
     return json.data || json || null;
   } catch {
     return null;
+  }
+}
+
+export async function generateStaticParams() {
+  try {
+    const res = await fetch(`${API_BASE}/blogs?limit=100`, {
+      cache: "force-cache",
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const posts = json?.data || [];
+
+    const paramsSet = new Set<string>();
+    posts.forEach((post: any) => {
+      if (post.slug) paramsSet.add(post.slug);
+      if (post.id) paramsSet.add(String(post.id));
+    });
+
+    return Array.from(paramsSet).map((id) => ({ id }));
+  } catch (error) {
+    console.warn("generateStaticParams failed for /blogs/[id]:", error);
+    return [];
   }
 }
 

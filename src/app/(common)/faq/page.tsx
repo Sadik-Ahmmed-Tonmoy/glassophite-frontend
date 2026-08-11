@@ -1,6 +1,24 @@
 import FaqPage from "@/components/pages/faq/FaqPage";
 import type { Metadata } from "next";
 
+export const revalidate = 3600;
+
+const API_BASE = process.env.NEXT_PUBLIC_BASE_URL || "https://glassophite-backend.vercel.app/api/v1";
+
+async function getActiveFAQs() {
+  try {
+    const res = await fetch(`${API_BASE}/faqs?status=Active&limit=100`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const faqs = Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : [];
+    return faqs;
+  } catch {
+    return [];
+  }
+}
+
 export const metadata: Metadata = {
   title: "FAQs & Help Center | Glassophite - Premium Eyewear Support",
   description:
@@ -33,6 +51,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function FAQ() {
-  return <FaqPage />;
+export default async function FAQ() {
+  const initialFAQs = await getActiveFAQs();
+  return <FaqPage initialFAQs={initialFAQs} />;
 }

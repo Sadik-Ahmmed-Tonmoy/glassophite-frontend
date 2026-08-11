@@ -1,6 +1,23 @@
 import BlogPage from "@/components/pages/blog/BlogPage";
 import type { Metadata } from "next";
 
+const API_BASE = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5016/api/v1";
+
+export const dynamic = "force-static";
+
+async function getAllBlogs() {
+  try {
+    const res = await fetch(`${API_BASE}/blogs?limit=100`, {
+      cache: "force-cache",
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data || [];
+  } catch {
+    return [];
+  }
+}
+
 export const metadata: Metadata = {
   title: "Blogs & Editorial | Glassophite - Premium Eyewear Insights",
   description:
@@ -19,6 +36,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Blogs() {
-  return <BlogPage />;
+export default async function Blogs() {
+  const initialBlogs = await getAllBlogs();
+  return <BlogPage initialBlogs={initialBlogs} />;
 }

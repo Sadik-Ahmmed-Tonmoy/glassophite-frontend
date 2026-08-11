@@ -25,7 +25,11 @@ const itemVariants = {
   },
 };
 
-export default function BlogPage() {
+interface BlogPageProps {
+  initialBlogs?: any[];
+}
+
+export default function BlogPage({ initialBlogs }: BlogPageProps = {}) {
   const { data: blogData, isLoading } = useGetAllPostsQuery({});
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
@@ -37,7 +41,7 @@ export default function BlogPage() {
   }, []);
 
   const publishedPosts = useMemo(() => {
-    const blogPosts = blogData?.data || [];
+    const blogPosts = blogData?.data || initialBlogs || [];
     return blogPosts
       .filter((post: any) => post.status === "Published")
       .filter(
@@ -50,7 +54,7 @@ export default function BlogPage() {
           Number(b.featured) - Number(a.featured) ||
           new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
-  }, [blogData, categoryFilter]);
+  }, [blogData, categoryFilter, initialBlogs]);
 
   const featuredPost = publishedPosts[0];
   const standardPosts = useMemo(

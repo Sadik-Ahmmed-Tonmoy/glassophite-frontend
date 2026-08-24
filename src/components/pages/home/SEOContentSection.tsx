@@ -247,14 +247,14 @@ const ARTICLES = [
     excerpt:
       "From beach days to business meetings, learn how to choose the perfect sunglasses for every event.",
     image:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop",
+      "https://i.ibb.co.com/ymDfhv4g/Gemini-Generated-Image-k0vlzrk0vlzrk0vl.webp",
     date: "March 10, 2024",
     readTime: "4 min",
     author: "Maya Rahman",
     category: "Styling",
     likes: 189,
     comments: 32,
-  },
+  }, 
   {
     id: "article-3",
     title: "The Science Behind Polarized Lenses",

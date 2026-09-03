@@ -263,7 +263,7 @@ export default function NewArrivalsSection() {
       <div className="relative z-10 container">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           {/* LEFT: Editorial */}
-          <div className="lg:col-span-4">
+          <div className="hidden md:block lg:col-span-4">
             <motion.div
               initial={{ opacity: 0, x: -24 }}
               whileInView={{ opacity: 1, x: 0 }}

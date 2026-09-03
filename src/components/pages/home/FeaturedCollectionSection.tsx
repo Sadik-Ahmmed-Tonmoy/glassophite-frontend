@@ -158,7 +158,7 @@ export default function FeaturedCollectionSection() {
 
           {!isLoading && filteredProducts.length > 0 && (
             <Link
-              href="/shop"
+              href="/product-filter"
               className="group hidden sm:inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-primary hover:text-primary/80 transition-colors"
             >
               <span>View All</span>
@@ -238,7 +238,7 @@ export default function FeaturedCollectionSection() {
               className="sm:hidden mt-10 text-center"
             >
               <Link
-                href="/shop"
+                href="/product-filter"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors shadow-md"
               >
                 <span>View Complete Collection</span>

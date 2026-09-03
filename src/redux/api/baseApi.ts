@@ -134,6 +134,8 @@ export const baseApi = createApi({
     "notifications",
     "supportTickets",
     "supportTicket",
+    "banners",
+    "banner",
   ],
   endpoints: () => ({}),
 });

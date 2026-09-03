@@ -1,12 +1,12 @@
 // app/components/ThemeSwitcher.tsx
 "use client";
 
-
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { IoMoonOutline, IoSunnyOutline } from "react-icons/io5";
+import { cn } from "@/lib/utils";
 
-export function ThemeSwitcher() {
+export function ThemeSwitcher({ className }: { className?: string }) {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
 
@@ -14,20 +14,31 @@ export function ThemeSwitcher() {
     setMounted(true);
   }, []);
 
-  // if(!mounted) return <Switch/>
-  if (!mounted) return <IoSunnyOutline size={25} className="cursor-pointer" />;
+  if (!mounted) {
+    return (
+      <div className={cn("w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-neutral-700 dark:text-neutral-300", className)}>
+        <IoSunnyOutline className="w-5 h-5" />
+      </div>
+    );
+  }
+
+  const isDark = theme === "dark";
 
   return (
-    <div>
-      {theme === "dark" ? (
-        <IoSunnyOutline size={25} onClick={() => setTheme("light")} className="cursor-pointer" />
-      ) : (
-        <IoMoonOutline size={20} onClick={() => setTheme("dark")} className="cursor-pointer" />
+    <button
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className={cn(
+        "w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 active:scale-95 transition-all cursor-pointer",
+        className
       )}
-
-      {/* <Switch isSelected={theme === "dark" ? true : false}
-      onValueChange={(e) => setTheme(theme === "dark" ? "light" : "dark")}
-      /> */}
-    </div>
+      aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+    >
+      {isDark ? (
+        <IoSunnyOutline className="w-5 h-5 text-amber-400 transition-transform duration-300 hover:rotate-45" />
+      ) : (
+        <IoMoonOutline className="w-5 h-5 text-neutral-700 dark:text-neutral-300 transition-transform duration-300 hover:-rotate-12" />
+      )}
+    </button>
   );
 }
+

@@ -1,7 +1,7 @@
 "use client";
 
 import { useGetAllProductsQuery } from "@/redux/features/product/productApi";
-import { useGetAllReviewsQuery } from "@/redux/features/review/reviewApi";
+import { useGetApprovedReviewsQuery } from "@/redux/features/review/reviewApi";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
   Award,
@@ -30,7 +30,7 @@ export default function SocialProofSection() {
   const [activeReview, setActiveReview] = useState(0);
   const { data: allProductsData } = useGetAllProductsQuery(undefined);
 
-  const { data: reviewsData } = useGetAllReviewsQuery(undefined);
+  const { data: reviewsData } = useGetApprovedReviewsQuery(undefined);
   const reviews = Array.isArray(reviewsData) ? reviewsData : reviewsData?.data || [];
   const allProducts = Array.isArray(allProductsData) ? allProductsData : allProductsData?.data || [];
 

@@ -26,8 +26,6 @@ import {
   Flame,
   BookOpen,
   ShieldCheck,
-  Truck,
-  RotateCcw,
   ArrowRight,
 } from "lucide-react";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
@@ -132,19 +130,20 @@ export default function MobileNavBar() {
     <Navbar
       onMenuOpenChange={setIsMenuOpen}
       isMenuOpen={isMenuOpen}
-      className="bg-white/85 dark:bg-neutral-950/85 backdrop-blur-xl border-b border-neutral-200/60 dark:border-neutral-800/60 px-2 sm:px-4"
+      className="bg-white/85 dark:bg-neutral-950/85 backdrop-blur-xl border-b border-neutral-200/60 dark:border-neutral-800/60 px-2 sm:px-4 h-14 sm:h-16"
+      maxWidth="full"
     >
       {/* Top Left: Hamburger Menu & Glassophite Logo */}
-      <NavbarContent justify="start" className="gap-2.5 sm:gap-3">
+      <NavbarContent justify="start" className="gap-2 sm:gap-3">
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="p-2 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-95"
+          className="w-9 h-9 sm:w-10 sm:h-10 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-95"
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
         >
-          {isMenuOpen ? <X className="h-5 w-5 text-[#007C74]" /> : <Menu className="h-5 w-5" />}
+          {isMenuOpen ? <X className="w-5 h-5 text-[#007C74]" /> : <Menu className="w-5 h-5" />}
         </button>
         <NavbarBrand>
-          <Link href="/" className="flex items-center gap-1 group">
+          <Link href="/" className="flex items-center gap-1.5 group">
             <span className="text-lg sm:text-xl font-black tracking-tight text-[#007C74] dark:text-white transition-colors">
               Glassophite
             </span>
@@ -154,30 +153,30 @@ export default function MobileNavBar() {
       </NavbarContent>
 
       {/* Top Right: Wishlist (with badge), Cart Drawer, Theme Switcher */}
-      <NavbarContent justify="end" className="gap-1 sm:gap-2">
+      <NavbarContent justify="end" className="gap-1 sm:gap-1.5">
         {/* Wishlist Link */}
         <Link
           href="/wishlist"
-          className="relative p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-all flex items-center justify-center active:scale-95"
+          className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-all flex items-center justify-center active:scale-95 text-neutral-700 dark:text-neutral-300"
           aria-label="Wishlist"
         >
-          <Heart className="h-5 w-5 text-neutral-700 dark:text-neutral-300" />
+          <Heart className="w-5 h-5" />
           {wishlistCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 rounded-full h-4 w-4 bg-[#007C74] text-white text-[10px] font-extrabold flex items-center justify-center shadow-md">
+            <span className="absolute -top-0.5 -right-0.5 rounded-full h-4 w-4 min-w-[16px] bg-[#007C74] text-white text-[10px] font-extrabold flex items-center justify-center shadow-sm">
               {wishlistCount}
             </span>
           )}
         </Link>
 
         {/* Shopping Bag / Cart Drawer Button */}
-        <CartButton onClick={() => setIsCartOpen(true)} />
+        <CartButton onClick={() => setIsCartOpen(true)} isMobile />
 
         {/* Theme Switcher */}
         <ThemeSwitcher />
       </NavbarContent>
 
       {/* Modern Slide-down Mobile Menu Drawer */}
-      <NavbarMenu className="bg-white/95 dark:bg-neutral-950/95 backdrop-blur-2xl pt-4 px-4 sm:px-6 flex flex-col gap-4 overflow-y-auto max-h-[90vh] slim-scroll">
+      <NavbarMenu className="bg-white/95 dark:bg-neutral-950/95 backdrop-blur-2xl pt-3 pb-6 px-3.5 sm:px-5 flex flex-col gap-3 overflow-y-auto max-h-[85vh] slim-scroll">
         {/* Search Bar Container */}
         <div className="w-full">
           <PlaceholdersAndVanishInput
@@ -242,7 +241,7 @@ export default function MobileNavBar() {
                   {hasSubMenu && (
                     <button
                       onClick={() => toggleExpand(item.menu)}
-                      className="p-2.5 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-xl transition-colors cursor-pointer ml-1"
+                      className="min-w-[40px] h-[40px] flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-xl transition-colors cursor-pointer ml-1 active:scale-90"
                       aria-label={`Toggle ${item.menu} subcategories`}
                     >
                       {isExpanded ? (
@@ -319,15 +318,15 @@ export default function MobileNavBar() {
         <div className="my-1 p-3 rounded-2xl bg-neutral-100/80 dark:bg-neutral-900/60 border border-neutral-200/50 dark:border-neutral-800/50 flex items-center justify-between text-[10px] font-medium text-neutral-600 dark:text-neutral-400">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-[#007C74]" />
-            <span>UV400 Protection</span>
+            <span data-translate>UV400 Protection</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Truck className="w-3.5 h-3.5 text-[#007C74]" />
-            <span>Free Shipping</span>
+            <Sparkles className="w-3.5 h-3.5 text-[#007C74]" />
+            <span data-translate>100% Authentic</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <RotateCcw className="w-3.5 h-3.5 text-[#007C74]" />
-            <span>7 Days Return</span>
+            <Tag className="w-3.5 h-3.5 text-[#007C74]" />
+            <span data-translate>Premium Quality</span>
           </div>
         </div>
 
@@ -349,14 +348,14 @@ export default function MobileNavBar() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className={`grid gap-2 ${isAdmin ? "grid-cols-2" : "grid-cols-1"}`}>
                 <Link
                   href="/my-profile"
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-bold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-all active:scale-98"
                 >
                   <User className="h-3.5 w-3.5 text-[#007C74]" />
-                  <span>Profile</span>
+                  <span data-translate>Profile</span>
                 </Link>
 
                 {isAdmin && (
@@ -366,7 +365,7 @@ export default function MobileNavBar() {
                     className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-bold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-all active:scale-98"
                   >
                     <LayoutDashboard className="h-3.5 w-3.5 text-[#007C74]" />
-                    <span>Dashboard</span>
+                    <span data-translate>Dashboard</span>
                   </Link>
                 )}
               </div>

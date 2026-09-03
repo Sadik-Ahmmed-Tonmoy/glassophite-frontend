@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Shop All Eyewear | Glassophite Luxury Collection",
     description: "Explore our complete range of luxury polarized sunglasses and designer frames.",
-    url: "https://www.glassophite.com/shop",
+    url: "https://www.glassophite.com/product-filter",
     siteName: "Glassophite",
     images: [
       {
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     images: ["https://www.glassophite.com/images/twitter-image.jpg"],
   },
   alternates: {
-    canonical: "https://www.glassophite.com/shop",
+    canonical: "https://www.glassophite.com/product-filter",
   },
 };
 

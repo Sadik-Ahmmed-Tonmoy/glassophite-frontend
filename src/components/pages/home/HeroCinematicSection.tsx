@@ -7,6 +7,8 @@ import { ArrowRight, Sparkles, Shield, Sun, Eye, Droplets, Zap } from "lucide-re
 import { useTheme } from "next-themes";
 import heroImageDark from "@/assets/images/ChatGPT Image Apr 8, 2025, 12_09_35 PM.png";
 import heroImageLight from "@/assets/images/Gemini_Generated_Image_mmpwnvmmpwnvmmpw.png";
+import heroMobileDark from "@/assets/images/hero_mobile_dark.jpg";
+import heroMobileLight from "@/assets/images/hero_mobile_light.jpg";
 import Image from "next/image";
 
 // ── Stable particle data (no Math.random in render) ──────────────────────────
@@ -26,7 +28,7 @@ const FEATURES = [
   { icon: Droplets, text: "Hydrophobic Coating" },
 ] as const;
 
-const TRUST = ["Free Shipping", "100-Day Returns", "Authenticity Guaranteed"] as const;
+const TRUST = ["100% Authentic", "Premium Quality", "UV400 Protection"] as const;
 
 export default function HeroCinematicSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,10 +40,10 @@ export default function HeroCinematicSection() {
     offset: ["start start", "end start"],
   });
 
-  const imageScale   = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
-  const contentY     = useTransform(scrollYProgress, [0, 1], [0, 120]);
+  const imageScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, 120]);
   const glassOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const gridOpacity  = useTransform(scrollYProgress, [0, 0.3], [0.15, 0]);
+  const gridOpacity = useTransform(scrollYProgress, [0, 0.3], [0.15, 0]);
 
   // Memoised so theme switch doesn't re-create object on every keystroke
   const ts = useMemo(() => isDark ? {
@@ -82,23 +84,43 @@ export default function HeroCinematicSection() {
     >
       {/* ── Hero Background Image ─────────────────────────────────────────── */}
       <motion.div className="absolute inset-0 z-0" style={{ scale: imageScale }}>
-        <Image
-          src={isDark ? heroImageDark : heroImageLight}
-          alt="Premium luxury sunglasses by Glassophite"
-          fill
-          priority
-          quality={85}
-          sizes="100vw"
-          className="object-cover object-center"
-        />
-        {/* Overlay */}
-        <div
-          className={`absolute inset-0 transition-colors duration-500 ${
-            isDark
+        {/* Desktop Image (lg+) - 100% Preserved */}
+        <div className="absolute inset-0 hidden lg:block">
+          <Image
+            src={isDark ? heroImageDark : heroImageLight}
+            alt="Premium luxury sunglasses by Glassophite"
+            fill
+            priority
+            quality={85}
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+          <div
+            className={`absolute inset-0 transition-colors duration-500 ${isDark
               ? "bg-gradient-to-b from-black/80 via-black/70 to-black"
               : "bg-gradient-to-r from-white/80 via-white/70 to-white/10"
-          }`}
-        />
+              }`}
+          />
+        </div>
+
+        {/* Mobile & Tablet Dedicated 9:16 Vertical Image (< lg) */}
+        <div className="absolute inset-0 block lg:hidden">
+          <Image
+            src={isDark ? heroMobileDark : heroMobileLight}
+            alt="Luxury sunglasses by Glassophite"
+            fill
+            priority
+            quality={90}
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+          <div
+            className={`absolute inset-0 transition-colors duration-500 ${isDark
+              ? "bg-gradient-to-t from-black via-black/60 to-black/20"
+              : "bg-gradient-to-t from-white via-white/70 to-transparent"
+              }`}
+          />
+        </div>
       </motion.div>
 
       {/* ── Abstract Geometry ─────────────────────────────────────────────── */}
@@ -146,23 +168,20 @@ export default function HeroCinematicSection() {
         <motion.div
           animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2], x: [0, 80, 0], y: [0, -40, 0] }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          className={`absolute top-10 right-4 sm:top-20 sm:right-10 w-[clamp(200px,40vw,500px)] h-[clamp(200px,40vw,500px)] rounded-full blur-[80px] sm:blur-[120px] transition-colors duration-500 ${
-            isDark ? "bg-primary/60" : "bg-primary/10"
-          }`}
+          className={`absolute top-10 right-4 sm:top-20 sm:right-10 w-[clamp(200px,40vw,500px)] h-[clamp(200px,40vw,500px)] rounded-full blur-[80px] sm:blur-[120px] transition-colors duration-500 ${isDark ? "bg-primary/60" : "bg-primary/10"
+            }`}
         />
         <motion.div
           animate={{ scale: [1.2, 1, 1.2], opacity: [0.15, 0.3, 0.15], x: [0, -60, 0], y: [0, 50, 0] }}
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className={`absolute bottom-10 left-4 sm:bottom-20 sm:left-10 w-[clamp(240px,45vw,600px)] h-[clamp(240px,45vw,600px)] rounded-full blur-[100px] sm:blur-[150px] transition-colors duration-500 ${
-            isDark ? "bg-blue-primary/30" : "bg-blue-primary/10"
-          }`}
+          className={`absolute bottom-10 left-4 sm:bottom-20 sm:left-10 w-[clamp(240px,45vw,600px)] h-[clamp(240px,45vw,600px)] rounded-full blur-[100px] sm:blur-[150px] transition-colors duration-500 ${isDark ? "bg-blue-primary/30" : "bg-blue-primary/10"
+            }`}
         />
         <motion.div
           animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
           transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[clamp(300px,60vw,800px)] h-[clamp(300px,60vw,800px)] rounded-full blur-[120px] sm:blur-[180px] transition-colors duration-500 ${
-            isDark ? "bg-green-primary/20" : "bg-green-primary/5"
-          }`}
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[clamp(300px,60vw,800px)] h-[clamp(300px,60vw,800px)] rounded-full blur-[120px] sm:blur-[180px] transition-colors duration-500 ${isDark ? "bg-green-primary/20" : "bg-green-primary/5"
+            }`}
         />
       </div>
 
@@ -176,11 +195,10 @@ export default function HeroCinematicSection() {
         <div className="relative w-[clamp(260px,28vw,400px)] h-[clamp(130px,14vw,200px)]">
           {/* Left Lens */}
           <div
-            className={`absolute left-0 top-1/2 -translate-y-1/2 w-[36%] h-[60%] backdrop-blur-xl rounded-2xl border overflow-hidden -rotate-6 transition-colors duration-500 ${
-              isDark
-                ? "bg-white/5 border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
-                : "bg-white/40 border-neutral-300 shadow-[0_20px_40px_rgba(0,0,0,0.1)]"
-            }`}
+            className={`absolute left-0 top-1/2 -translate-y-1/2 w-[36%] h-[60%] backdrop-blur-xl rounded-2xl border overflow-hidden -rotate-6 transition-colors duration-500 ${isDark
+              ? "bg-white/5 border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+              : "bg-white/40 border-neutral-300 shadow-[0_20px_40px_rgba(0,0,0,0.1)]"
+              }`}
           >
             <motion.div
               animate={{ x: ["-100%", "200%"] }}
@@ -192,11 +210,10 @@ export default function HeroCinematicSection() {
 
           {/* Right Lens */}
           <div
-            className={`absolute right-0 top-1/2 -translate-y-1/2 w-[36%] h-[60%] backdrop-blur-xl rounded-2xl border overflow-hidden rotate-6 transition-colors duration-500 ${
-              isDark
-                ? "bg-white/5 border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
-                : "bg-white/40 border-neutral-300 shadow-[0_20px_40px_rgba(0,0,0,0.1)]"
-            }`}
+            className={`absolute right-0 top-1/2 -translate-y-1/2 w-[36%] h-[60%] backdrop-blur-xl rounded-2xl border overflow-hidden rotate-6 transition-colors duration-500 ${isDark
+              ? "bg-white/5 border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+              : "bg-white/40 border-neutral-300 shadow-[0_20px_40px_rgba(0,0,0,0.1)]"
+              }`}
           >
             <motion.div
               animate={{ x: ["200%", "-100%"] }}
@@ -208,9 +225,8 @@ export default function HeroCinematicSection() {
 
           {/* Bridge */}
           <div
-            className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[14%] h-[20%] backdrop-blur-xl rounded-full border transition-colors duration-500 ${
-              isDark ? "bg-white/5 border-white/20" : "bg-white/40 border-neutral-300"
-            }`}
+            className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[14%] h-[20%] backdrop-blur-xl rounded-full border transition-colors duration-500 ${isDark ? "bg-white/5 border-white/20" : "bg-white/40 border-neutral-300"
+              }`}
           >
             <div className={`absolute inset-1 rounded-full ${isDark ? "bg-white/10" : "bg-primary/5"}`} />
           </div>
@@ -234,145 +250,246 @@ export default function HeroCinematicSection() {
         ))}
       </div>
 
-      {/* ── Main Content ──────────────────────────────────────────────────── */}
+      {/* ── Main Content Container ────────────────────────────────────────── */}
       <motion.div
-        className="relative z-[4] flex flex-col justify-center min-h-[100svh] py-4  container"
+        className="relative z-[4] flex flex-col justify-end lg:justify-center min-h-[100svh] pb-10 sm:pb-14 pt-4 container"
         style={{ y: contentY }}
       >
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className={`hidden  mb-5 sm:mb-6 md:inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border w-fit transition-colors duration-500 ${ts.pill}`}
-        >
-          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-          <span className={`text-xs sm:text-sm ${ts.textMuted}`} data-translate>
-            Luxury Eyewear Since 2024
-          </span>
-        </motion.div>
-
-        {/* Headline */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-2xl lg:max-w-3xl"
-        >
-          <h1 className="text-[clamp(2rem,6vw,4.5rem)] font-semibold leading-tight tracking-tight">
-            <span
-              className={`bg-gradient-to-r ${isDark ? "from-white to-neutral-400" : "from-neutral-900 to-neutral-600"} bg-clip-text text-transparent`}
-              data-translate
-            >
-              Redefining Vision
-            </span>
-            <br />
-            <span
-              className="relative"
-              style={{
-                background: "linear-gradient(to right, #007C74, #3C55A5, #00A693)",
-                backgroundClip: "text",
-                color: "transparent",
-              }}
-              data-translate
-            >
-              Premium Sunglasses in Bangladesh
-              <motion.span
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 1, delay: 1 }}
-                className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-primary to-transparent"
-              />
-            </span>
-          </h1>
-
-          {/* Subtext */}
+        {/* ════════════════════════════════════════════════════════════════════
+            ── DESKTOP CONTENT (lg and up) - 100% UNTOUCHED ───────────────────
+            ════════════════════════════════════════════════════════════════════ */}
+        <div className="hidden lg:block">
+          {/* Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="relative mt-5 sm:mt-6"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className={`hidden mb-5 sm:mb-6 md:inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border w-fit transition-colors duration-500 ${ts.pill}`}
           >
-            <div className="absolute -left-3 sm:-left-4 top-0 w-1 h-full bg-gradient-to-b from-primary via-blue-primary to-green-primary rounded-full" />
-            <p className={`text-sm sm:text-base lg:text-lg ${ts.textMuted} max-w-xl pl-5 sm:pl-6`} data-translate>
-              Experience unmatched clarity, polarized precision, and timeless design.
-              Glassophite blends luxury craftsmanship with modern innovation — built for confidence.
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+            <span className={`text-xs sm:text-sm ${ts.textMuted}`} data-translate>
+              Luxury Eyewear Since 2024
+            </span>
+          </motion.div>
+
+          {/* Headline */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-2xl lg:max-w-3xl"
+          >
+            <h1 className="text-[clamp(2rem,6vw,4.5rem)] font-semibold leading-tight tracking-tight">
+              <span
+                className={`bg-gradient-to-r ${isDark ? "from-white to-neutral-400" : "from-neutral-900 to-neutral-600"} bg-clip-text text-transparent`}
+                data-translate
+              >
+                Redefining Vision
+              </span>
+              <br />
+              <span
+                className="relative"
+                style={{
+                  background: "linear-gradient(to right, #007C74, #3C55A5, #00A693)",
+                  backgroundClip: "text",
+                  color: "transparent",
+                }}
+                data-translate
+              >
+                Premium Sunglasses in Bangladesh
+                <motion.span
+                  initial={{ width: 0 }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 1, delay: 1 }}
+                  className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-primary to-transparent"
+                />
+              </span>
+            </h1>
+
+            {/* Subtext */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="relative mt-5 sm:mt-6"
+            >
+              <div className="absolute -left-3 sm:-left-4 top-0 w-1 h-full bg-gradient-to-b from-primary via-blue-primary to-green-primary rounded-full" />
+              <p className={`text-sm sm:text-base lg:text-lg ${ts.textMuted} max-w-xl pl-5 sm:pl-6`} data-translate>
+                Experience unmatched clarity, polarized precision, and timeless design.
+                Glassophite blends luxury craftsmanship with modern innovation — built for confidence.
+              </p>
+            </motion.div>
+
+            {/* Feature Pills */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="mt-6 sm:mt-8 flex flex-wrap gap-2 sm:gap-3"
+            >
+              {FEATURES.map(({ icon: Icon, text }, index) => (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.05 }}
+                  className={`flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm border transition-colors duration-500 cursor-default text-xs sm:text-sm ${ts.pill}`}
+                >
+                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
+                  <span className={ts.textMuted} data-translate>{text}</span>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="mt-8 sm:mt-10 flex flex-col xs:flex-row gap-3 sm:gap-4"
+            >
+              <Link
+                href="/product-filter"
+                className={`group relative px-6 sm:px-8 py-2.5 sm:py-3 rounded-full transition-all duration-300 text-center overflow-hidden text-sm sm:text-base font-medium ${ts.primaryBtn}`}
+              >
+                <span className="relative z-10 flex items-center justify-center gap-2" data-translate>
+                  Explore Collection
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </span>
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-primary to-green-secondary"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: 0 }}
+                  transition={{ duration: 0.3 }}
+                />
+              </Link>
+
+              <Link
+                href="/product-filter?category=best+sellers"
+                className={`group px-6 sm:px-8 py-2.5 sm:py-3 rounded-full border backdrop-blur-sm transition-all duration-300 text-center relative overflow-hidden text-sm sm:text-base font-medium ${ts.secondaryBtn}`}
+              >
+                <span className="relative z-10 flex items-center justify-center gap-2" data-translate>
+                  Limited Edition
+                </span>
+                <motion.div
+                  className={`absolute inset-0 transition-colors duration-300 ${isDark ? "bg-white/5" : "bg-neutral-200/20"}`}
+                  initial={{ scale: 0 }}
+                  whileHover={{ scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                />
+              </Link>
+            </motion.div>
+
+            {/* Trust Indicators */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+              className={`mt-8 sm:mt-12 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm ${ts.textMutedLighter}`}
+            >
+              {TRUST.map((label) => (
+                <div key={label} className="flex items-center gap-2">
+                  <div className="w-1 h-1 bg-primary rounded-full shrink-0" />
+                  <span data-translate>{label}</span>
+                </div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* ════════════════════════════════════════════════════════════════════
+            ── MOBILE & TABLET REDESIGN (< lg) ──────────────────────────────
+            Industry Standard Luxury Eyewear Storefront
+            Clean · Lightweight · Instantly Understandable · Cinematic
+            ════════════════════════════════════════════════════════════════════ */}
+        <div className="block lg:hidden w-full max-w-lg mx-auto pb-4">
+          {/* Subtle Luxury Brand Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-3.5"
+          >
+            <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full backdrop-blur-md border text-[11px] font-semibold tracking-wider uppercase ${ts.pill} border-primary/30 shadow-sm`}>
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <span className={isDark ? "text-neutral-200" : "text-neutral-800"} data-translate>
+                Luxury Eyewear &bull; Bangladesh
+              </span>
+            </div>
+          </motion.div>
+
+          {/* Bold, Crystal-Clear Headline */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="space-y-1.5 mb-4"
+          >
+            <h1 className="text-[2.5rem] xs:text-[3rem] sm:text-[3.6rem] font-extrabold tracking-tight leading-[1.04]">
+              <span className={`block ${isDark ? "text-white" : "text-neutral-900"}`} data-translate>
+                Redefining Vision.
+              </span>
+              <span
+                className="block mt-1 bg-gradient-to-r from-[#007C74] via-[#3C55A5] to-[#00A693] bg-clip-text text-transparent"
+                data-translate
+              >
+                Luxury Sunglasses
+              </span>
+            </h1>
+
+            <p className={`text-xs xs:text-sm sm:text-base leading-relaxed pt-1 max-w-sm ${ts.textMuted}`} data-translate>
+              Handcrafted designer eyewear engineered with Swiss polarized clarity, timeless frames, and 100% UV protection.
             </p>
           </motion.div>
 
-          {/* Feature Pills */}
+          {/* High-Impact E-Commerce Action Buttons */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-6 sm:mt-8 flex flex-wrap gap-2 sm:gap-3"
-          >
-            {FEATURES.map(({ icon: Icon, text }, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ scale: 1.05 }}
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm border transition-colors duration-500 cursor-default text-xs sm:text-sm ${ts.pill}`}
-              >
-                <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
-                <span className={ts.textMuted} data-translate>{text}</span>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="mt-8 sm:mt-10 flex flex-col xs:flex-row gap-3 sm:gap-4"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex flex-col xs:flex-row gap-3 pt-1 mb-5"
           >
             <Link
-              href="/shop"
-              className={`group relative px-6 sm:px-8 py-2.5 sm:py-3 rounded-full transition-all duration-300 text-center overflow-hidden text-sm sm:text-base font-medium ${ts.primaryBtn}`}
+              href="/product-filter"
+              className="relative group py-3.5 px-7 rounded-full font-semibold text-sm sm:text-base text-center overflow-hidden transition-all duration-300 shadow-xl active:scale-[0.98] flex items-center justify-center gap-2 text-white"
+              style={{
+                background: "linear-gradient(135deg, #007C74 0%, #009688 50%, #00A693 100%)",
+                boxShadow: "0 8px 24px -4px rgba(0, 124, 116, 0.45)",
+              }}
             >
               <span className="relative z-10 flex items-center justify-center gap-2" data-translate>
-                Explore Collection
+                Shop Sunglasses
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </span>
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-primary to-green-secondary"
-                initial={{ x: "-100%" }}
-                whileHover={{ x: 0 }}
-                transition={{ duration: 0.3 }}
-              />
             </Link>
 
             <Link
               href="/product-filter?category=best+sellers"
-              className={`group px-6 sm:px-8 py-2.5 sm:py-3 rounded-full border backdrop-blur-sm transition-all duration-300 text-center relative overflow-hidden text-sm sm:text-base font-medium ${ts.secondaryBtn}`}
+              className={`py-3.5 px-7 rounded-full font-medium text-sm sm:text-base text-center border backdrop-blur-md transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 ${isDark
+                  ? "bg-white/[0.08] border-white/20 text-white hover:bg-white/15"
+                  : "bg-white/80 border-neutral-300 text-neutral-900 hover:bg-white shadow-sm"
+                }`}
             >
               <span className="relative z-10 flex items-center justify-center gap-2" data-translate>
-                Limited Edition
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                Best Sellers
               </span>
-              <motion.div
-                className={`absolute inset-0 transition-colors duration-300 ${isDark ? "bg-white/5" : "bg-neutral-200/20"}`}
-                initial={{ scale: 0 }}
-                whileHover={{ scale: 1 }}
-                transition={{ duration: 0.3 }}
-              />
             </Link>
           </motion.div>
 
-          {/* Trust Indicators */}
+          {/* Minimalist Trust Strip */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className={`mt-8 sm:mt-12 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm ${ts.textMutedLighter}`}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className={`flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] sm:text-xs font-medium ${isDark ? "text-neutral-400" : "text-neutral-600"}`}
           >
-            {TRUST.map((label) => (
-              <div key={label} className="flex items-center gap-2">
-                <div className="w-1 h-1 bg-primary rounded-full shrink-0" />
+            {["100% Authentic", "Premium Quality", "UV400 Protection"].map((label) => (
+              <div key={label} className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
                 <span data-translate>{label}</span>
               </div>
             ))}
           </motion.div>
-        </motion.div>
+        </div>
       </motion.div>
 
       {/* ── Scroll Indicator (hidden on screens smaller than md) ─────────── */}

@@ -361,7 +361,7 @@ export default function SEOContentSection() {
     <motion.section
       ref={containerRef}
       style={{ opacity }}
-      className={`relative w-full overflow-hidden bg-gradient-to-b ${styles.bg} transition-colors duration-500 py-16 sm:py-20 lg:py-24 px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20`}
+      className={`hidden md:block relative w-full overflow-hidden bg-gradient-to-b ${styles.bg} transition-colors duration-500 py-16 sm:py-20 lg:py-24 px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20`}
       aria-label="Glassophite Resources and Information"
     >
       {/* Background Dot Pattern */}

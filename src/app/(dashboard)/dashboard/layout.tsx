@@ -20,7 +20,8 @@ import {
   Menu,
   ClipboardList,
   HelpCircle,
-  Glasses
+  Glasses,
+  Layers,
 } from "lucide-react";
 import NotificationBell from "@/components/pages/dashboard/NotificationBell";
 import AuthGuard from "@/components/shared/AuthGuard";
@@ -49,6 +50,7 @@ function DashboardContent({ children }: { children: ReactNode }) {
     { label: "Orders", href: "/dashboard/orders", icon: ShoppingCart },
     { label: "Customers", href: "/dashboard/customers", icon: Users },
     { label: "Promo Coupons", href: "/dashboard/coupons", icon: Tag },
+    { label: "Promotional Banners", href: "/dashboard/banners", icon: Layers },
     { label: "Reviews Moderation", href: "/dashboard/reviews", icon: Star },
     { label: "FAQ Moderation", href: "/dashboard/faqs", icon: HelpCircle },
     { label: "Support Tickets", href: "/dashboard/support", icon: MessageSquare },

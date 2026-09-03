@@ -253,7 +253,7 @@ const DropDownMenus = () => {
         {
           subMenuTitle: "Aviator Sunglasses",
           imageUrl:
-            "https://www.randolphusa.com/cdn/shop/articles/Mr.-Randolph-color_600x600_crop_center.jpg?v=1584122243",
+            "https://www.randolphusa.com/cdn/product-filter/articles/Mr.-Randolph-color_600x600_crop_center.jpg?v=1584122243",
           chieldMenu: [
             { chieldMenuTitle: "Classic Aviator" },
             { chieldMenuTitle: "Modern Aviator" },

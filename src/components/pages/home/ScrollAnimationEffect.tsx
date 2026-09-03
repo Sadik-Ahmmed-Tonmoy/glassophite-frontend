@@ -194,7 +194,7 @@ const ScrollAnimationEffect = () => {
   });
 
   return (
-    <div ref={sectionRef} className="relative h-[250vh] sm:h-[350vh] lg:h-[400vh] bg-black">
+    <div ref={sectionRef} className="relative hidden md:block h-[250vh] sm:h-[350vh] lg:h-[400vh] bg-black">
       <div className="sticky top-0 h-screen w-full overflow-hidden">
         <div className="w-full h-full relative">
           {/* Canvas Layer */}

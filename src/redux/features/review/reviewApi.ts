@@ -3,6 +3,10 @@ import { baseApi } from "../../api/baseApi";
 const reviewApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Public
+    getApprovedReviews: builder.query({
+      query: (params = {}) => ({ url: "reviews/approved", params }),
+      providesTags: ["reviews"],
+    }),
     getProductReviews: builder.query({
       query: ({ productId, page = 1, limit = 10, sortBy = "newest" }) => ({
         url: `reviews/product/${productId}`,
@@ -57,6 +61,7 @@ const reviewApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetApprovedReviewsQuery,
   useGetProductReviewsQuery,
   useGetAllReviewsQuery,
   useCreateReviewMutation,

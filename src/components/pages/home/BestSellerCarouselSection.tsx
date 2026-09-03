@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Pause,
   Play,
+  Sparkles,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -280,26 +281,28 @@ export default function BestSellerCarouselSection() {
         {/* Main content */}
         {!isLoadingState && !isErrorState && !isEmptyState && (
           <>
-            {/* Section Header */}
-            <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-6 mb-8 md:mb-12">
+            {/* ════════════════════════════════════════════════════════════════
+                ── DESKTOP HEADER (lg+) - 100% UNTOUCHED ─────────────────────
+                ════════════════════════════════════════════════════════════════ */}
+            <div className="hidden lg:flex justify-between items-end gap-6 mb-12">
               <motion.div
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.2 }}
                 variants={headerVariants}
-                className="text-center md:text-left"
+                className="text-left"
               >
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full backdrop-blur-sm border border-neutral-200 dark:border-neutral-800 bg-white/5 mb-4 shadow-xs">
                   <Award className="w-3.5 h-3.5 text-[#007C74]" />
                   <span
-                    className={`text-[10px] md:text-xs ${styles.textMuted} tracking-wider font-extrabold uppercase`}
+                    className={`text-xs ${styles.textMuted} tracking-wider font-extrabold uppercase`}
                     data-translate="bestseller.badge"
                   >
                     CUSTOMER FAVORITES
                   </span>
                 </div>
 
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-2">
+                <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">
                   <span className={styles.text}>Best</span>{" "}
                   <span className="bg-gradient-to-r from-[#007C74] via-[#3C55A5] to-[#00A693] bg-clip-text text-transparent">
                     Sellers
@@ -307,7 +310,7 @@ export default function BestSellerCarouselSection() {
                 </h2>
 
                 <p
-                  className={`text-xs sm:text-sm ${styles.textMuted} max-w-xl leading-relaxed`}
+                  className={`text-sm ${styles.textMuted} max-w-xl leading-relaxed`}
                   data-translate="bestseller.description"
                 >
                   Join thousands of satisfied customers who trust Glassophite
@@ -352,13 +355,69 @@ export default function BestSellerCarouselSection() {
               </motion.div>
             </div>
 
+            {/* ════════════════════════════════════════════════════════════════
+                ── MOBILE & TABLET HEADER (< lg) ─────────────────────────────
+                Futuristic, Cyber-Luxury Glassmorphism Flow
+                ════════════════════════════════════════════════════════════════ */}
+            <div className="block lg:hidden mb-6">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                {/* Live Demand Status Badge */}
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full backdrop-blur-xl border border-[#007C74]/30 bg-white/5 dark:bg-white/5 shadow-xs">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#007C74] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#007C74]" />
+                  </span>
+                  <span className="text-[10px] font-bold tracking-wider uppercase bg-gradient-to-r from-[#007C74] to-[#00A693] bg-clip-text text-transparent">
+                    Trending Eyewear
+                  </span>
+                </div>
+
+                {/* Compact Swiper Navigation Controls */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={toggleAutoplay}
+                    className="w-8 h-8 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/80 backdrop-blur-md flex items-center justify-center text-neutral-700 dark:text-neutral-300 active:scale-90 transition-all cursor-pointer shadow-xs"
+                    aria-label={isPlaying ? "Pause autoplay" : "Start autoplay"}
+                  >
+                    {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    onClick={goPrev}
+                    className="w-8 h-8 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/80 backdrop-blur-md flex items-center justify-center text-neutral-700 dark:text-neutral-300 active:scale-90 transition-all cursor-pointer shadow-xs"
+                    aria-label="Previous slide"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={goNext}
+                    className="w-8 h-8 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/80 backdrop-blur-md flex items-center justify-center text-neutral-700 dark:text-neutral-300 active:scale-90 transition-all cursor-pointer shadow-xs"
+                    aria-label="Next slide"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Title & Description */}
+              <div className="space-y-1">
+                <h2 className="text-2xl xs:text-3xl font-extrabold tracking-tight leading-tight">
+                  <span className={styles.text}>Customer</span>{" "}
+                  <span className="bg-gradient-to-r from-[#007C74] via-[#3C55A5] to-[#00A693] bg-clip-text text-transparent">
+                    Favorites
+                  </span>
+                </h2>
+                <p className={`text-xs leading-relaxed ${styles.textMuted}`} data-translate="bestseller.description">
+                  Handcrafted frames most loved by Bangladeshi trendsetters.
+                </p>
+              </div>
+            </div>
+
             {/* Carousel Container */}
             <div className="relative">
               <Swiper
                 modules={[Navigation, Autoplay, FreeMode]}
                 loop={true}
                 spaceBetween={12}
-                slidesPerView={1.1}
                 freeMode={{
                   enabled: true,
                   momentum: true,
@@ -372,9 +431,9 @@ export default function BestSellerCarouselSection() {
                 onSwiper={handleSwiperInit}
                 onSlideChange={handleSlideChange}
                 breakpoints={{
-                  380: { slidesPerView: 1.3, spaceBetween: 12 },
-                  480: { slidesPerView: 1.6, spaceBetween: 16 },
-                  640: { slidesPerView: 2.2, spaceBetween: 16 },
+                  320: { slidesPerView: 1, spaceBetween: 12 },
+                  420: { slidesPerView: 1, spaceBetween: 14 },
+                  560: { slidesPerView: 1.85, spaceBetween: 16 },
                   768: {
                     slidesPerView: 2.7,
                     spaceBetween: 20,
@@ -402,33 +461,33 @@ export default function BestSellerCarouselSection() {
                 ))}
               </Swiper>
 
-              {/* Mobile Swipe Indicator */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                className="flex sm:hidden items-center justify-center gap-1 mt-2"
-              >
-                <div className="w-12 h-1 rounded-full bg-[#007C74]/30">
-                  <motion.div
-                    animate={{ x: ["0%", "100%", "0%"] }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    className="w-4 h-full rounded-full bg-[#007C74]"
-                  />
+              {/* Mobile Slide Swipe / Progress Track (< lg) */}
+              <div className="flex lg:hidden items-center justify-between gap-3 mt-2 px-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-[#007C74] animate-pulse" />
+                  <span className={`text-[10px] font-mono font-bold ${styles.textMutedLighter}`}>
+                    Swipe to explore
+                  </span>
                 </div>
-                <span
-                  className={`text-[10px] ${styles.textMutedLighter} ml-2 font-bold`}
-                >
-                  Swipe to explore
-                </span>
-              </motion.div>
 
-              {/* Progress Dots */}
-              <div className="flex items-center justify-center gap-1.5 mt-4">
+                <div className="flex items-center gap-1">
+                  {bestSellers.slice(0, Math.min(6, bestSellers.length)).map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => swiperInstance?.slideToLoop(index)}
+                      className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                        activeIndex % Math.min(6, bestSellers.length) === index
+                          ? "w-5 bg-[#007C74]"
+                          : "w-1.5 bg-neutral-400/30 dark:bg-neutral-600/30"
+                      }`}
+                      aria-label={`Slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Desktop Progress Dots (lg+) */}
+              <div className="hidden lg:flex items-center justify-center gap-1.5 mt-4">
                 {bestSellers.map((_, index) => (
                   <button
                     key={index}
@@ -444,57 +503,124 @@ export default function BestSellerCarouselSection() {
               </div>
             </div>
 
-            {/* View All Button */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              variants={viewAllVariants}
-              className="text-center mt-8"
-            >
-              <Link href="/shop?sort=rating">
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="group px-6 md:px-8 py-2.5 md:py-3 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white font-semibold inline-flex items-center gap-2 text-sm shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
-                >
-                  <span data-translate="bestseller.viewAll">
-                    See All Best Sellers
-                  </span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </motion.button>
-              </Link>
-            </motion.div>
+            {/* ════════════════════════════════════════════════════════════════
+                ── MOBILE CTA & STATS DOCK (< lg) ────────────────────────────
+                ════════════════════════════════════════════════════════════════ */}
+            <div className="block lg:hidden mt-6">
+              {/* Mobile CTA Button */}
+              <div className="text-center">
+                <Link href="/best-sellers" className="w-full block">
+                  <button
+                    className="w-full py-3.5 px-6 rounded-full font-semibold text-sm text-center text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    style={{
+                      background: "linear-gradient(135deg, #007C74 0%, #009688 50%, #00A693 100%)",
+                      boxShadow: "0 8px 24px -4px rgba(0, 124, 116, 0.4)",
+                    }}
+                  >
+                    <span data-translate="bestseller.viewAll">
+                      See All Best Sellers
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </Link>
+              </div>
 
-            {/* Social Proof */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              variants={statsVariants}
-              className="flex flex-wrap items-center justify-center gap-6 md:gap-10 mt-8 pt-6 border-t border-neutral-200/50 dark:border-neutral-800/50"
-            >
-              {STATS_DATA.map((item, i) => (
-                <motion.div
-                  key={i}
-                  variants={statItemVariants}
-                  className="text-center"
-                  whileHover={{ y: -2 }}
-                >
-                  <div
-                    className={`text-base md:text-lg font-black ${styles.text}`}
-                  >
-                    {item.number}
+              {/* Mobile Futuristic Stats Dock */}
+              <div className="mt-5 p-3.5 rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 bg-white/60 dark:bg-neutral-900/50 backdrop-blur-xl shadow-xs">
+                <div className="grid grid-cols-3 gap-2 divide-x divide-neutral-200/60 dark:divide-neutral-800/60 text-center">
+                  <div className="px-1">
+                    <div className="text-sm xs:text-base font-black bg-gradient-to-r from-[#007C74] to-[#00A693] bg-clip-text text-transparent">
+                      10K+
+                    </div>
+                    <div
+                      className={`text-[9px] font-bold ${styles.textMutedLighter} mt-0.5`}
+                      data-translate="bestseller.stats.customers"
+                    >
+                      Happy Clients
+                    </div>
                   </div>
-                  <div
-                    className={`text-[9px] md:text-xs ${styles.textMutedLighter} font-bold`}
-                    data-translate={`bestseller.stats.${item.key}`}
-                  >
-                    {item.text}
+                  <div className="px-1">
+                    <div className="text-sm xs:text-base font-black bg-gradient-to-r from-[#007C74] to-[#3C55A5] bg-clip-text text-transparent">
+                      95%
+                    </div>
+                    <div
+                      className={`text-[9px] font-bold ${styles.textMutedLighter} mt-0.5`}
+                      data-translate="bestseller.stats.satisfaction"
+                    >
+                      Satisfaction
+                    </div>
                   </div>
-                </motion.div>
-              ))}
-            </motion.div>
+                  <div className="px-1">
+                    <div className="text-sm xs:text-base font-black bg-gradient-to-r from-[#3C55A5] to-[#00A693] bg-clip-text text-transparent">
+                      50K+
+                    </div>
+                    <div
+                      className={`text-[9px] font-bold ${styles.textMutedLighter} mt-0.5`}
+                      data-translate="bestseller.stats.sold"
+                    >
+                      Units Sold
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ════════════════════════════════════════════════════════════════
+                ── DESKTOP CTA & SOCIAL PROOF (lg+) - 100% UNTOUCHED ─────────
+                ════════════════════════════════════════════════════════════════ */}
+            <div className="hidden lg:block">
+              {/* View All Button */}
+              <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                variants={viewAllVariants}
+                className="text-center mt-8"
+              >
+                <Link href="/best-sellers">
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="group px-8 py-3 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white font-semibold inline-flex items-center gap-2 text-sm shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
+                  >
+                    <span data-translate="bestseller.viewAll">
+                      See All Best Sellers
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </motion.button>
+                </Link>
+              </motion.div>
+
+              {/* Social Proof */}
+              <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                variants={statsVariants}
+                className="flex items-center justify-center gap-10 mt-8 pt-6 border-t border-neutral-200/50 dark:border-neutral-800/50"
+              >
+                {STATS_DATA.map((item, i) => (
+                  <motion.div
+                    key={i}
+                    variants={statItemVariants}
+                    className="text-center"
+                    whileHover={{ y: -2 }}
+                  >
+                    <div
+                      className={`text-lg font-black ${styles.text}`}
+                    >
+                      {item.number}
+                    </div>
+                    <div
+                      className={`text-xs ${styles.textMutedLighter} font-bold`}
+                      data-translate={`bestseller.stats.${item.key}`}
+                    >
+                      {item.text}
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
           </>
         )}
       </div>

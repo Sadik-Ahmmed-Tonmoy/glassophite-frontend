@@ -114,3 +114,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Swiper Testimonials Pagination */
+.testimonials-swiper .swiper-pagination-bullet {
+  width: 6px;
+  height: 6px;
+  background: rgba(150, 150, 150, 0.4);
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.testimonials-swiper .swiper-pagination-bullet-active {
+  background: #007c74 !important;
+  opacity: 1 !important;
+  width: 20px !important;
+  border-radius: 9999px !important;
+}

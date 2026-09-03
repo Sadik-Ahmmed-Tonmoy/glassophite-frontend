@@ -5,6 +5,7 @@ import BestSellerCarouselSection from "./BestSellerCarouselSection";
 import HeroCinematicSection from "./HeroCinematicSection";
 import MoreProductsShowcaseSection from "./MoreProductsShowcaseSection";
 import NewArrivalsSection from "./NewArrivalsSection";
+import PromotionalBannerSection from "./PromotionalBannerSection";
 import SEOContentSection from "./SEOContentSection";
 import ScrollAnimationEffect from "./ScrollAnimationEffect";
 import Testimonials from "./TestimonialsSection";
@@ -16,7 +17,7 @@ const HomeComponent = () => {
       <HeroCinematicSection />
       <BestSellerCarouselSection />
       <WhyChooseGlassophiteSection />
-      {/* <CollectionSpotlightSection /> */}
+      <PromotionalBannerSection />
       <NewArrivalsSection />
       <MoreProductsShowcaseSection />
       {/* <StyleLookbookShowcaseSection /> */}

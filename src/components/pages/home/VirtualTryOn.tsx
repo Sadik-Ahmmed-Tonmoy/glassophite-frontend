@@ -1088,7 +1088,7 @@ export default function VirtualTryOn() {
 
         {/* CTA */}
         <div className="text-center mt-6 sm:mt-8">
-          <Link href="/shop">
+          <Link href="/product-filter">
             <motion.button
               whileHover={{ scale: 1.05 }}
               className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-[#007C74] to-[#3C55A5] text-white text-xs sm:text-sm font-medium inline-flex items-center gap-1.5"

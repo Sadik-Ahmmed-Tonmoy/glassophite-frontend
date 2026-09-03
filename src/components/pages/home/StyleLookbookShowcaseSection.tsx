@@ -348,7 +348,7 @@ export default function StyleLookbookShowcaseSection() {
                   Looking for custom options?
                 </span>
                 <Link
-                  href="/shop"
+                  href="/product-filter"
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-[#007C74] hover:text-[#00A693] transition-colors"
                 >
                   Browse Full Shop

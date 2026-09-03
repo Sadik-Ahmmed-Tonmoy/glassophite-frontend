@@ -1,5 +1,5 @@
 "use client"
-
+ 
 import { useCart } from "@/hooks/use-cart"
 import { MdOutlineShoppingBag } from "react-icons/md"
 import { Loader2 } from "lucide-react"
@@ -8,16 +8,42 @@ import { cn } from "@/lib/utils"
 
 interface CartButtonProps {
   onClick?: () => void;
+  className?: string;
+  isMobile?: boolean;
 }
 
-export default function CartButton({ onClick }: CartButtonProps) {
+export default function CartButton({ onClick, className, isMobile }: CartButtonProps) {
   const { totalItems, isLoading, isFetching } = useCart()
   const showLoader = isLoading || isFetching;
+
+  if (isMobile) {
+    return (
+      <button
+        onClick={onClick}
+        className={cn(
+          "relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 active:scale-95 transition-all cursor-pointer",
+          className
+        )}
+        aria-label="Open shopping bag"
+      >
+        <MdOutlineShoppingBag className="w-5 h-5" />
+        {showLoader ? (
+          <span className="absolute -top-0.5 -right-0.5 rounded-full h-4 w-4 bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center text-[10px] shadow-sm">
+            <Loader2 className="w-2.5 h-2.5 animate-spin text-[#007C74]" />
+          </span>
+        ) : totalItems > 0 ? (
+          <span className="absolute -top-0.5 -right-0.5 rounded-full h-4 w-4 min-w-[16px] text-white flex items-center justify-center bg-[#007C74] text-[10px] font-extrabold shadow-sm">
+            {totalItems}
+          </span>
+        ) : null}
+      </button>
+    )
+  }
 
   return (
     <button
       onClick={onClick}
-      className={`${styles.accountButton} ${styles.textHoverEffect} relative cursor-pointer`}
+      className={cn(`${styles.accountButton} ${styles.textHoverEffect} relative cursor-pointer`, className)}
       aria-label="Open cart"
     >
       <MdOutlineShoppingBag className="w-6 h-6" />
@@ -37,3 +63,4 @@ export default function CartButton({ onClick }: CartButtonProps) {
     </button>
   )
 }
+

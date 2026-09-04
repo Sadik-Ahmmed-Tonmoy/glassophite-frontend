@@ -116,7 +116,7 @@ export default function PromotionalBannerSection() {
   if (!currentBanner) return null;
 
   return (
-    <section className="relative w-full py-10 sm:py-16 lg:py-20 overflow-hidden">
+    <section className="relative w-full overflow-hidden">
       <div className="w-full mx-auto ">
         <motion.div
           initial={{ opacity: 0, y: 24 }}

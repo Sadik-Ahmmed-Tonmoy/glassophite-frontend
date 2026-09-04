@@ -3,12 +3,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { useGetApprovedReviewsQuery } from "@/redux/features/review/reviewApi";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
   Award,
-  Calendar,
   CheckCircle2,
   Glasses,
   Heart,
@@ -19,12 +19,11 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
-  Verified,
+  Verified
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
-import { useRef, useState, useMemo, useEffect, useCallback } from "react";
-import { useGetApprovedReviewsQuery } from "@/redux/features/review/reviewApi";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // Demo avatar images
 const AVATAR_IMAGES = [
@@ -196,29 +195,29 @@ export default function Testimonials() {
     () =>
       isDark
         ? {
-            bg: "from-black via-gray-900 to-black",
-            cardBg: "bg-neutral-900/90 border-neutral-800",
-            activeCardBg: "bg-gradient-to-b from-neutral-900 via-neutral-950 to-black border-[#007C74]/50 shadow-[0_20px_50px_rgba(0,124,116,0.25)]",
-            text: "text-white",
-            textMuted: "text-neutral-300",
-            textMutedLighter: "text-neutral-400",
-            border: "border-white/10",
-            star: "text-amber-400",
-            verified: "text-[#00A693]",
-            quote: "text-white/5",
-          }
+          bg: "from-black via-gray-900 to-black",
+          cardBg: "bg-neutral-900/90 border-neutral-800",
+          activeCardBg: "bg-gradient-to-b from-neutral-900 via-neutral-950 to-black border-[#007C74]/50 shadow-[0_20px_50px_rgba(0,124,116,0.25)]",
+          text: "text-white",
+          textMuted: "text-neutral-300",
+          textMutedLighter: "text-neutral-400",
+          border: "border-white/10",
+          star: "text-amber-400",
+          verified: "text-[#00A693]",
+          quote: "text-white/5",
+        }
         : {
-            bg: "from-neutral-50 via-white to-neutral-50",
-            cardBg: "bg-white/95 border-neutral-200/80 shadow-md",
-            activeCardBg: "bg-[#111827] text-white border-neutral-900 shadow-[0_24px_50px_rgba(0,0,0,0.35)]",
-            text: "text-neutral-900",
-            textMuted: "text-neutral-600",
-            textMutedLighter: "text-neutral-500",
-            border: "border-neutral-200",
-            star: "text-amber-400",
-            verified: "text-[#007C74]",
-            quote: "text-neutral-200",
-          },
+          bg: "from-neutral-50 via-white to-neutral-50",
+          cardBg: "bg-white/95 border-neutral-200/80 shadow-md",
+          activeCardBg: "bg-[#111827] text-white border-neutral-900 shadow-[0_24px_50px_rgba(0,0,0,0.35)]",
+          text: "text-neutral-900",
+          textMuted: "text-neutral-600",
+          textMutedLighter: "text-neutral-500",
+          border: "border-neutral-200",
+          star: "text-amber-400",
+          verified: "text-[#007C74]",
+          quote: "text-neutral-200",
+        },
     [isDark],
   );
 
@@ -372,11 +371,10 @@ export default function Testimonials() {
                 setActiveFilter("all");
                 setActiveIndex(0);
               }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                activeFilter === "all"
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${activeFilter === "all"
                   ? "bg-[#007C74] text-white shadow-md scale-105"
                   : "bg-neutral-100 dark:bg-neutral-800/80 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-              }`}
+                }`}
             >
               All Stories ({allEnhancedReviews.length})
             </button>
@@ -385,11 +383,10 @@ export default function Testimonials() {
                 setActiveFilter("5star");
                 setActiveIndex(0);
               }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                activeFilter === "5star"
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${activeFilter === "5star"
                   ? "bg-[#007C74] text-white shadow-md scale-105"
                   : "bg-neutral-100 dark:bg-neutral-800/80 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-              }`}
+                }`}
             >
               <Star className="w-3 h-3 fill-current text-amber-400" />
               5-Star Loved ({fiveStarReviews})
@@ -399,11 +396,10 @@ export default function Testimonials() {
                 setActiveFilter("verified");
                 setActiveIndex(0);
               }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                activeFilter === "verified"
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${activeFilter === "verified"
                   ? "bg-[#007C74] text-white shadow-md scale-105"
                   : "bg-neutral-100 dark:bg-neutral-800/80 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-              }`}
+                }`}
             >
               <CheckCircle2 className="w-3 h-3 text-[#00A693]" />
               Verified Buyers ({verifiedReviews})
@@ -469,15 +465,14 @@ export default function Testimonials() {
                     mass: 0.8,
                   }}
                   onClick={() => setActiveIndex(idx)}
-                  className={`absolute top-4 w-[280px] xs:w-[310px] sm:w-[350px] h-[310px] sm:h-[340px] rounded-2xl cursor-pointer transition-shadow duration-300 ${
-                    isCenter
+                  className={`absolute top-4 w-[280px] xs:w-[310px] sm:w-[350px] h-[310px] sm:h-[340px] rounded-2xl cursor-pointer transition-shadow duration-300 ${isCenter
                       ? isDark
                         ? styles.activeCardBg
                         : "bg-[#111827] text-white border border-neutral-800 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] ring-1 ring-[#007C74]/50"
                       : isDark
                         ? `${styles.cardBg} border backdrop-blur-xl hover:border-neutral-700`
                         : "bg-white border border-neutral-200/90 shadow-lg hover:shadow-xl"
-                  }`}
+                    }`}
                   style={{
                     // Distinct geometric corner notch on active card
                     clipPath: isCenter
@@ -495,10 +490,9 @@ export default function Testimonials() {
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-3">
                         <div className="flex items-center gap-3">
-                          <div
-                            className={`relative w-11 h-11 rounded-full overflow-hidden shrink-0 ring-2 ${
-                              isCenter ? "ring-[#007C74] shadow-md shadow-[#007C74]/20" : "ring-neutral-200 dark:ring-neutral-700"
-                            } bg-gradient-to-tr from-[#007C74] to-[#3C55A5] flex items-center justify-center text-white font-bold text-sm`}
+                          {/* <div
+                            className={`relative w-11 h-11 rounded-full overflow-hidden shrink-0 ring-2 ${isCenter ? "ring-[#007C74] shadow-md shadow-[#007C74]/20" : "ring-neutral-200 dark:ring-neutral-700"
+                              } bg-gradient-to-tr from-[#007C74] to-[#3C55A5] flex items-center justify-center text-white font-bold text-sm`}
                           >
                             {review.avatar ? (
                               <Image
@@ -511,17 +505,16 @@ export default function Testimonials() {
                             ) : (
                               <span>{(review.name || "C").charAt(0).toUpperCase()}</span>
                             )}
-                          </div>
+                          </div> */}
 
                           <div className="min-w-0">
                             <p
-                              className={`text-sm font-bold truncate ${
-                                isCenter
+                              className={`text-sm font-bold truncate ${isCenter
                                   ? "text-white"
                                   : isDark
                                     ? "text-white"
                                     : "text-neutral-900"
-                              }`}
+                                }`}
                             >
                               {review.name}
                             </p>
@@ -536,11 +529,10 @@ export default function Testimonials() {
 
                         {/* Top Quote Icon */}
                         <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                            isCenter
+                          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isCenter
                               ? "bg-[#007C74]/30 text-[#00A693]"
                               : "bg-neutral-100 dark:bg-neutral-800 text-neutral-400"
-                          }`}
+                            }`}
                         >
                           <Quote className="w-4 h-4" />
                         </div>
@@ -552,21 +544,19 @@ export default function Testimonials() {
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
-                              className={`w-3.5 h-3.5 ${
-                                i < (review.rating || 5)
+                              className={`w-3.5 h-3.5 ${i < (review.rating || 5)
                                   ? "fill-current text-amber-400"
                                   : "text-neutral-500"
-                              }`}
+                                }`}
                             />
                           ))}
                         </div>
 
                         <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                            isCenter
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${isCenter
                               ? "bg-[#007C74]/25 text-[#00A693] border border-[#007C74]/30"
                               : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
-                          }`}
+                            }`}
                         >
                           <Glasses className="w-3 h-3 shrink-0" />
                           <span className="truncate max-w-[120px]">{review.productName}</span>
@@ -575,13 +565,12 @@ export default function Testimonials() {
 
                       {/* Review Comment */}
                       <p
-                        className={`text-xs sm:text-sm leading-relaxed line-clamp-4 font-normal ${
-                          isCenter
+                        className={`text-xs sm:text-sm leading-relaxed line-clamp-4 font-normal ${isCenter
                             ? "text-neutral-200"
                             : isDark
                               ? "text-neutral-300"
                               : "text-neutral-600"
-                        }`}
+                          }`}
                       >
                         &quot;{review.comment}&quot;
                       </p>
@@ -601,13 +590,12 @@ export default function Testimonials() {
                       {/* Helpful Button */}
                       <button
                         onClick={(e) => toggleLike(review.id, e)}
-                        className={`px-2.5 py-1 rounded-xl border transition-all flex items-center gap-1.5 text-[11px] font-bold cursor-pointer active:scale-90 ${
-                          likedReviews[review.id]
+                        className={`px-2.5 py-1 rounded-xl border transition-all flex items-center gap-1.5 text-[11px] font-bold cursor-pointer active:scale-90 ${likedReviews[review.id]
                             ? "bg-[#007C74] text-white border-[#007C74]"
                             : isCenter
                               ? "border-neutral-700 bg-neutral-800/80 text-neutral-300 hover:border-[#007C74]/60"
                               : "border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:border-[#007C74]/60"
-                        }`}
+                          }`}
                         aria-label="Helpful review"
                       >
                         <Heart className={`w-3.5 h-3.5 ${likedReviews[review.id] ? "fill-current text-rose-400" : ""}`} />

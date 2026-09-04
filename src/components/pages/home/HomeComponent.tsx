@@ -17,8 +17,8 @@ const HomeComponent = () => {
       <HeroCinematicSection />
       <BestSellerCarouselSection />
       <WhyChooseGlassophiteSection />
-      <PromotionalBannerSection />
       <NewArrivalsSection />
+      <PromotionalBannerSection />
       <MoreProductsShowcaseSection />
       {/* <StyleLookbookShowcaseSection /> */}
       <ScrollAnimationEffect />

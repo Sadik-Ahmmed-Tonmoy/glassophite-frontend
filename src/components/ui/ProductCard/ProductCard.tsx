@@ -384,8 +384,8 @@ function ProductCard({ product }: ProductCardProps) {
           <p
             className={`text-xs ${styles.textMuted} mt-1 line-clamp-1 hidden xs:block`}
           >
-            {(selectedVariant.shortDescription?.length ?? 0) > 50
-              ? selectedVariant.shortDescription?.slice(0, 50) + "..."
+            {(selectedVariant.shortDescription?.length ?? 0) > 45
+              ? selectedVariant.shortDescription?.slice(0, 45) + "..."
               : selectedVariant.shortDescription}
           </p>
 

@@ -117,13 +117,13 @@ export default function PromotionalBannerSection() {
 
   return (
     <section className="relative w-full py-10 sm:py-16 lg:py-20 overflow-hidden">
-      <div className="container mx-auto px-3 sm:px-6 md:px-10 lg:px-14 xl:px-20">
+      <div className="w-full mx-auto ">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.7 }}
-          className="relative rounded-3xl overflow-hidden border border-neutral-200/80 dark:border-white/10 shadow-2xl bg-neutral-950 group"
+          className="relative  overflow-hidden border border-neutral-200/80 dark:border-white/10 shadow-2xl bg-neutral-950 group"
         >
           {/* Background Media Container with Dual Desktop/Mobile Image */}
           <div className="relative w-full min-h-[460px] sm:min-h-[500px] md:min-h-[540px] lg:min-h-[580px] flex items-center">
@@ -159,7 +159,8 @@ export default function PromotionalBannerSection() {
             <div className="absolute bottom-0 right-10 w-96 h-96 bg-[#3C55A5]/20 rounded-full blur-[120px] pointer-events-none" />
 
             {/* Banner Foreground Content */}
-            <div className="relative z-10 p-6 sm:p-10 md:p-14 lg:p-16 max-w-2xl w-full flex flex-col justify-center">
+          <div className="container">
+  <div className=" relative z-10 p-6 sm:p-10 md:p-14 lg:p-16 max-w-2xl w-full flex flex-col justify-center">
               {/* Badge & Discount Tags */}
               <div className="flex flex-wrap items-center gap-2.5 mb-4">
                 {currentBanner.badge && (
@@ -248,6 +249,7 @@ export default function PromotionalBannerSection() {
                 </div>
               </div>
             </div>
+          </div>
 
             {/* Carousel Pagination Dots */}
             {total > 1 && (

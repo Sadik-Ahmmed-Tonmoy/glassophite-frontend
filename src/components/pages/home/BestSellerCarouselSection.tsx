@@ -11,16 +11,15 @@ import {
   ChevronLeft,
   ChevronRight,
   Pause,
-  Play,
-  Sparkles,
+  Play
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import Link from "next/link";
 import Image from "next/image";
-import { useRef, useState, useMemo } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Autoplay, FreeMode } from "swiper/modules";
+import Link from "next/link";
+import { useMemo, useRef, useState } from "react";
 import type { Swiper as SwiperType } from "swiper";
+import { Autoplay, FreeMode, Navigation } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 
 // @ts-ignore
 import "swiper/css";
@@ -125,17 +124,17 @@ export default function BestSellerCarouselSection() {
     () =>
       isDark
         ? {
-            bg: "from-black via-gray-900 to-black",
-            text: "text-white",
-            textMuted: "text-neutral-300",
-            textMutedLighter: "text-neutral-400",
-          }
+          bg: "from-black via-gray-900 to-black",
+          text: "text-white",
+          textMuted: "text-neutral-300",
+          textMutedLighter: "text-neutral-400",
+        }
         : {
-            bg: "from-white via-white to-neutral-100",
-            text: "text-neutral-900",
-            textMuted: "text-neutral-600",
-            textMutedLighter: "text-neutral-500",
-          },
+          bg: "from-white via-white to-neutral-100",
+          text: "text-neutral-900",
+          textMuted: "text-neutral-600",
+          textMutedLighter: "text-neutral-500",
+        },
     [isDark],
   );
 
@@ -475,11 +474,10 @@ export default function BestSellerCarouselSection() {
                     <button
                       key={index}
                       onClick={() => swiperInstance?.slideToLoop(index)}
-                      className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                        activeIndex % Math.min(6, bestSellers.length) === index
+                      className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${activeIndex % Math.min(6, bestSellers.length) === index
                           ? "w-5 bg-[#007C74]"
                           : "w-1.5 bg-neutral-400/30 dark:bg-neutral-600/30"
-                      }`}
+                        }`}
                       aria-label={`Slide ${index + 1}`}
                     />
                   ))}
@@ -492,11 +490,10 @@ export default function BestSellerCarouselSection() {
                   <button
                     key={index}
                     onClick={() => swiperInstance?.slideToLoop(index)}
-                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                      activeIndex === index
+                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${activeIndex === index
                         ? "w-6 bg-[#007C74]"
                         : "w-1.5 bg-neutral-500/30"
-                    }`}
+                      }`}
                     aria-label={`Go to slide ${index + 1}`}
                   />
                 ))}
